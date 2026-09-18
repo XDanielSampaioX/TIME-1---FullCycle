@@ -1,2 +1,12 @@
 # TIME-1---FullCycle
-Esse repositório tem com objetivo manter um projeto durante todo o curso Geração Tech - FullCycle, permitindo que o projeto esteja em constante evolução durante a trajetória do curso, implementando melhorias e planejamento colaborativo contínuo.
+
+## Colaboradores
+
+- bma9616@gmail.com
+- asc.lima15@gmail.com
+- danielsampaio127@gmail.com
+
+## Objetivo
+
+Este repositório tem como objetivo centralizar o projeto da equipe no curso Geração Tech - FullCycle.  
+No momento, o desafio é escolher uma sugestão de projeto (academia, restaurante, biblioteca, estacionamento, delivery, e-commerce, eventos ou reserva de sala) e organizar a entrega no GitHub com as colunas: **Problema**, **Requisitos**, **Épicos** e **Cards** (formato Kanban).
