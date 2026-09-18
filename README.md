@@ -5,6 +5,7 @@
 - bma9616@gmail.com
 - asc.lima15@gmail.com
 - danielsampaio127@gmail.com
+- juliactp.santos@gmail.com
 
 ## Objetivo
 
