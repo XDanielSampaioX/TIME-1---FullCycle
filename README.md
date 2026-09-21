@@ -6,6 +6,7 @@
 - asc.lima15@gmail.com
 - danielsampaio127@gmail.com
 - juliactp.santos@gmail.com
+- paulovictormcarneiro@gmail.com
 
 ## Objetivo
 
