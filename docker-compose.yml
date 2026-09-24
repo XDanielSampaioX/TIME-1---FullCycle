@@ -1,16 +1,42 @@
 services:
   banco:
-    build:
-      context: ./rotaeBD
-      dockerfile: Dockerfile
-    container_name: rotae-banco
+    image: postgres:16-alpine
+    container_name: rotae-db
     restart: unless-stopped
     env_file:
-      - ./rotaeBD/.env
+      - ./rotaeBackend/.env
+    environment:
+      POSTGRES_DB: ${DB_NAME:-rotae_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
-      - 5432:5432
+      - "5432:5432"
     volumes:
       - banco_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./rotaeBackend
+      dockerfile: Dockerfile.dev
+    container_name: rotae-backend
+    restart: unless-stopped
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./rotaeBackend:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./rotaeBackend/.env
+    depends_on:
+      banco:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -30,7 +56,7 @@ services:
     networks:
       - app-network
     depends_on:
-      - banco
+      - backend
 
   nginx:
     build:
@@ -40,10 +66,13 @@ services:
     restart: unless-stopped
     ports:
       - 80:80
+    volumes:
+      - ./rotaeNginx/nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
       - app-network
     depends_on:
       - frontend
+      - backend
 
 networks:
   app-network:
