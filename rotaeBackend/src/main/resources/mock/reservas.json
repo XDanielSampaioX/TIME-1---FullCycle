@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "usuarioId": 1,
+    "viagemId": 1,
+    "status": "PAGO",
+    "valorTotal": 8990,
+    "expiraEm": "2026-09-23T10:30:00-03:00",
+    "criadoEm": "2026-09-23T10:00:00-03:00",
+    "atualizadoEm": "2026-09-23T10:20:00-03:00"
+  },
+  {
+    "id": 2,
+    "usuarioId": 2,
+    "viagemId": 2,
+    "status": "PAGAMENTO_PENDENTE",
+    "valorTotal": 7490,
+    "expiraEm": "2026-09-23T12:00:00-03:00",
+    "criadoEm": "2026-09-23T11:30:00-03:00",
+    "atualizadoEm": "2026-09-23T11:30:00-03:00"
+  }
+]

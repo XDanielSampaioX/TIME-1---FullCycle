@@ -1,0 +1,7 @@
+[
+  { "id": 1, "onibusId": 1, "numero": 1 },
+  { "id": 2, "onibusId": 1, "numero": 2 },
+  { "id": 3, "onibusId": 1, "numero": 3 },
+  { "id": 4, "onibusId": 2, "numero": 1 },
+  { "id": 5, "onibusId": 2, "numero": 2 }
+]
