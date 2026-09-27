@@ -1,0 +1,4 @@
+[
+  { "id": 1, "reservaId": 1, "viagemAssentoId": 1, "passageiroId": 1, "status": "CONFIRMADO", "criadoEm": "2026-09-23T10:20:00-03:00", "atualizadoEm": "2026-09-23T10:20:00-03:00" },
+  { "id": 2, "reservaId": 2, "viagemAssentoId": 4, "passageiroId": 2, "status": "CANCELADO", "criadoEm": "2026-09-23T11:30:00-03:00", "atualizadoEm": "2026-09-23T11:30:00-03:00" }
+]

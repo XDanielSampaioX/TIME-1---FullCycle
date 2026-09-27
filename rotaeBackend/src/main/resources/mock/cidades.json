@@ -1,0 +1,5 @@
+[
+  { "id": 1, "nome": "Fortaleza", "uf": "CE", "imagemUrl": "https://images.example.com/fortaleza.jpg", "criadoEm": "2026-09-01T08:00:00-03:00", "atualizadoEm": "2026-09-01T08:00:00-03:00" },
+  { "id": 2, "nome": "Juazeiro do Norte", "uf": "CE", "imagemUrl": "https://images.example.com/juazeiro.jpg", "criadoEm": "2026-09-01T08:00:00-03:00", "atualizadoEm": "2026-09-01T08:00:00-03:00" },
+  { "id": 3, "nome": "Sobral", "uf": "CE", "imagemUrl": "https://images.example.com/sobral.jpg", "criadoEm": "2026-09-01T08:00:00-03:00", "atualizadoEm": "2026-09-01T08:00:00-03:00" }
+]

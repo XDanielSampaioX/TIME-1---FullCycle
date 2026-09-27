@@ -1,0 +1,4 @@
+[
+  { "id": 1, "userId": 1, "nome": "Maria Silva", "email": "maria.mock@example.com", "celular": "85999990001", "dataNasc": "1990-05-10", "cpf": "11111111111", "criadoEm": "2026-09-01T08:00:00-03:00", "atualizadoEm": "2026-09-01T08:00:00-03:00" },
+  { "id": 2, "userId": null, "nome": "Ana Souza", "email": "ana.passageira@example.com", "celular": "85999990003", "dataNasc": "1995-03-12", "cpf": "33333333333", "criadoEm": "2026-09-03T08:00:00-03:00", "atualizadoEm": "2026-09-03T08:00:00-03:00" }
+]

@@ -26,7 +26,7 @@ export function FormularioCadastroUsuario() {
   }
 
   return (
-    <form onSubmit={enviarFormulario} className="usuario-form">
+    <form className="usuario-form" onSubmit={enviarFormulario}>
       <label>
         Nome
         <input required value={nome} onChange={(event) => setNome(event.target.value)} />

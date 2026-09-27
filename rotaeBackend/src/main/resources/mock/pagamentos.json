@@ -1,0 +1,4 @@
+[
+  { "id": 1, "reservaId": 1, "valorCentavos": 8990, "status": "APROVADO", "referenciaExterna": "mock-pix-001", "metodoPagamento": "PIX", "criadoEm": "2026-09-23T10:15:00-03:00", "atualizadoEm": "2026-09-23T10:20:00-03:00" },
+  { "id": 2, "reservaId": 2, "valorCentavos": 7490, "status": "PENDENTE", "referenciaExterna": "mock-pix-002", "metodoPagamento": "PIX", "criadoEm": "2026-09-23T11:35:00-03:00", "atualizadoEm": "2026-09-23T11:35:00-03:00" }
+]

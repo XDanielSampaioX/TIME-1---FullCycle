@@ -10,11 +10,6 @@ export default function Page() {
       <PopularDestinations />
       <HowItWorks />
       <SecuritySection />
-      <footer className="home-footer">
-        <span>✦ rotaê</span>
-        <span>O caminho importa tanto quanto o destino.</span>
-        <small>© 2026 Rotaê</small>
-      </footer>
     </main>
   );
 }

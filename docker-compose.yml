@@ -1,18 +1,18 @@
 services:
-  banco:
-    build:
-      context: ./rotaeBD
-      dockerfile: Dockerfile
-    container_name: rotae-banco
-    restart: unless-stopped
-    env_file:
-      - ./rotaeBD/.env
-    ports:
-      - 5432:5432
-    volumes:
-      - banco_data:/var/lib/postgresql/data
-    networks:
-      - app-network
+  # banco:
+  #   build:
+  #     context: ./rotaeBD
+  #     dockerfile: Dockerfile
+  #   container_name: rotae-banco
+  #   restart: unless-stopped
+  #   env_file:
+  #     - ./rotaeBD/.env
+  #   ports:
+  #     - 5432:5432
+  #   volumes:
+  #     - banco_data:/var/lib/postgresql/data
+  #   networks:
+  #     - app-network
 
   frontend:
     build:
@@ -30,24 +30,35 @@ services:
     networks:
       - app-network
     depends_on:
-      - banco
+      - backend
 
-  nginx:
+  backend:
     build:
-      context: ./rotaeNginx
+      context: ./rotaeBackend
       dockerfile: Dockerfile
-    container_name: rotae-nginx
+    container_name: rotae-backend
     restart: unless-stopped
     ports:
-      - 80:80
+      - "8080:8080"
     networks:
       - app-network
-    depends_on:
-      - frontend
+
+  # nginx:
+  #   build:
+  #     context: ./rotaeNginx
+  #     dockerfile: Dockerfile
+  #   container_name: rotae-nginx
+  #   restart: unless-stopped
+  #   ports:
+  #     - 80:80
+  #   networks:
+  #     - app-network
+  #   depends_on:
+  #     - frontend
 
 networks:
   app-network:
     driver: bridge
 
-volumes:
-  banco_data:
+# volumes:
+#   banco_data:
