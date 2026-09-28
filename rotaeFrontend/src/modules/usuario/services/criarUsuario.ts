@@ -1,7 +1,8 @@
 import type { Usuario } from "@/modules/usuario/types/usuario";
+import type { CadastroUsuarioPayload } from "@/modules/usuario/types/cadastroUsuarioPayload";
 import { apiUrl } from "@/lib/api";
 
-export async function criarUsuario(dados: Usuario): Promise<Usuario> {
+export async function criarUsuario(dados: CadastroUsuarioPayload): Promise<Usuario> {
   const resposta = await fetch(apiUrl("/api/usuarios"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },

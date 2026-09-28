@@ -3,12 +3,13 @@
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import { criarUsuario } from "@/modules/usuario/services/criarUsuario";
 import type { Usuario } from "@/modules/usuario/types/usuario";
+import type { CadastroUsuarioPayload } from "@/modules/usuario/types/cadastroUsuarioPayload";
 
 type UsuarioContextValue = {
   usuario: Usuario | null;
   carregando: boolean;
   erro: string | null;
-  cadastrar: (dados: Usuario) => Promise<void>;
+  cadastrar: (dados: CadastroUsuarioPayload) => Promise<void>;
 };
 
 const UsuarioContext = createContext<UsuarioContextValue | undefined>(undefined);
@@ -18,7 +19,7 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  const cadastrar = useCallback(async (dados: Usuario) => {
+  const cadastrar = useCallback(async (dados: CadastroUsuarioPayload) => {
     setCarregando(true);
     setErro(null);
 
