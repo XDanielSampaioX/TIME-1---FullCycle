@@ -15,7 +15,7 @@ export function FormularioCadastroUsuario() {
     setSucesso("");
 
     try {
-      await cadastrar({ nome, email, senhaHash: senha });
+      await cadastrar({ nome, email, senha });
       setNome("");
       setEmail("");
       setSenha("");
