@@ -1,12 +1,17 @@
 "use client";
 
-import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 import { criarUsuario } from "@/modules/usuario/services/criarUsuario";
-import type { Usuario } from "@/modules/usuario/types/usuario";
 import type { CadastroUsuarioPayload } from "@/modules/usuario/types/cadastroUsuarioPayload";
 
 type UsuarioContextValue = {
-  usuario: Usuario | null;
   carregando: boolean;
   erro: string | null;
   cadastrar: (dados: CadastroUsuarioPayload) => Promise<void>;
@@ -15,7 +20,6 @@ type UsuarioContextValue = {
 const UsuarioContext = createContext<UsuarioContextValue | undefined>(undefined);
 
 export function UsuarioProvider({ children }: { children: ReactNode }) {
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -24,7 +28,7 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
     setErro(null);
 
     try {
-      setUsuario(await criarUsuario(dados));
+      await criarUsuario(dados);
     } catch {
       setErro("Não foi possível realizar o cadastro.");
       throw new Error("Falha no cadastro do usuário.");
@@ -34,8 +38,8 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ usuario, carregando, erro, cadastrar }),
-    [usuario, carregando, erro, cadastrar],
+    () => ({ carregando, erro, cadastrar }),
+    [carregando, erro, cadastrar],
   );
 
   return <UsuarioContext.Provider value={value}>{children}</UsuarioContext.Provider>;
@@ -43,6 +47,8 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
 
 export function useUsuario() {
   const context = useContext(UsuarioContext);
-  if (!context) throw new Error("useUsuario deve ser usado dentro de UsuarioProvider.");
+  if (!context) {
+    throw new Error("useUsuario deve ser usado dentro de UsuarioProvider.");
+  }
   return context;
 }
