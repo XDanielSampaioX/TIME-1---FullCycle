@@ -1,0 +1,15 @@
+FROM python:3.13-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 
+# Impede a criação de arquivos .pyc
+ENV PYTHONUNBUFFERED=1 
+# Traz os logs direto pro console
+
+WORKDIR /app
+
+COPY requirements.txt requirements-dev.txt /app/
+RUN pip install --no-cache-dir -r requirements-dev.txt
+
+COPY . /app/
+
+EXPOSE 8000
