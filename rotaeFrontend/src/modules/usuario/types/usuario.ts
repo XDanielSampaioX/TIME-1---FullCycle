@@ -5,6 +5,4 @@ export type Usuario = {
   celular?: string;
   dataNasc?: string;
   cpf?: string;
-  criadoEm?: string;
-  atualizadoEm?: string;
 };
