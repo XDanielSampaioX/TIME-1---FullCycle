@@ -1,6 +1,5 @@
-export type ClasseViagem = "CONVENCIONAL" | "EXECUTIVA";
-
-export type StatusViagem = "AGENDADA" | "COMPLETADA" | "CANCELADA";
+import type { ClasseViagem } from "./classeViagem";
+import type { StatusViagem } from "./statusViagem";
 
 export type Viagem = {
   id?: number;

@@ -1,0 +1,264 @@
+.checkout-etapas {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  padding: 1.5rem 1rem;
+  margin: 0;
+  list-style: none;
+  border-bottom: 1px solid var(--viagem-borda);
+  background: var(--color-surface-card);
+}
+
+.checkout-etapas li {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  color: var(--viagem-texto);
+  font-size: .875rem;
+}
+
+.checkout-etapas li > span {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--viagem-suave);
+  font-weight: 700;
+}
+
+.checkout-etapas li[aria-current] {
+  color: var(--color-text-primary);
+  font-weight: 700;
+}
+
+.checkout-etapas li[aria-current] > span {
+  background: var(--color-accent-500);
+}
+
+.assento-voltar,
+.assento-atualizar {
+  display: block;
+  width: min(calc(100% - 2 * var(--page-gutter)), var(--content-width));
+  margin: 1.5rem auto;
+  font-size: .875rem;
+}
+
+.assento-atualizar {
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.assento-conteudo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  align-items: start;
+  gap: 2.5rem;
+  width: min(calc(100% - 2 * var(--page-gutter)), var(--content-width));
+  margin: 0 auto 2rem;
+}
+
+.assento-mapa,
+.assento-resumo {
+  border: 1px solid var(--viagem-borda);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-card);
+}
+
+.assento-mapa {
+  padding: 2rem;
+}
+
+.assento-mapa h1 {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.assento-mapa > p {
+  margin: .25rem 0 1.5rem;
+  color: var(--viagem-texto);
+  font-size: .8125rem;
+}
+
+.assento-onibus {
+  padding: 1.25rem;
+  border: 1px solid var(--viagem-borda);
+  border-radius: 1rem;
+  background: var(--color-surface-page);
+}
+
+.assento-frente {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: .75rem;
+  border-bottom: 1px solid var(--viagem-borda);
+  color: var(--viagem-texto);
+  font-size: .75rem;
+  font-weight: 700;
+}
+
+.assento-grade {
+  display: grid;
+  grid-template-columns: 40px 40px minmax(30px, 1fr) 40px 40px;
+  grid-auto-rows: 40px;
+  gap: 10px;
+  min-height: 20rem;
+}
+
+.assento-poltrona {
+  width: 40px;
+  height: 40px;
+  border: 1.5px solid var(--viagem-verde);
+  border-radius: 6px;
+  background: var(--color-surface-card);
+  font-size: .75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.assento-poltrona[aria-pressed="true"] {
+  border-color: var(--color-accent-500);
+  background: var(--color-accent-500);
+}
+
+.assento-poltrona[data-ocupado="true"] {
+  border-color: var(--viagem-borda);
+  background: var(--viagem-borda);
+  color: var(--viagem-texto);
+}
+
+.assento-poltrona:disabled {
+  cursor: not-allowed;
+}
+
+.assento-poltrona:disabled[data-ocupado="false"]:not([aria-pressed="true"]) {
+  opacity: .55;
+}
+
+.assento-corredor {
+  grid-column: 3;
+  grid-row: 1 / span 7;
+  align-self: center;
+  justify-self: center;
+  color: var(--viagem-texto);
+  font-size: .625rem;
+  writing-mode: vertical-rl;
+}
+
+.assento-legenda {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  font-size: .75rem;
+}
+
+.assento-legenda span {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.assento-legenda i {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--viagem-verde);
+  border-radius: 4px;
+}
+
+.assento-legenda i[data-selecionado] {
+  border-color: var(--color-accent-500);
+  background: var(--color-accent-500);
+}
+
+.assento-legenda i[data-ocupado] {
+  border-color: var(--viagem-borda);
+  background: var(--viagem-borda);
+}
+
+.assento-resumo {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+  font-size: .8125rem;
+}
+
+.assento-resumo h2 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.assento-resumo p,
+.assento-resumo dt {
+  color: var(--viagem-texto);
+}
+
+.assento-resumo dl {
+  display: grid;
+  gap: .75rem;
+}
+
+.assento-resumo dl > div,
+.assento-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.assento-resumo dd {
+  font-weight: 600;
+}
+
+.assento-total {
+  align-items: center;
+  font-size: .875rem;
+}
+
+.assento-total strong:last-child {
+  color: var(--viagem-verde);
+  font-size: 1.375rem;
+}
+
+@media (max-width: 900px) {
+  .assento-conteudo {
+    grid-template-columns: 1fr;
+    max-width: 42rem;
+  }
+
+  .checkout-etapas {
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .checkout-etapas img {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .assento-mapa {
+    padding: 1rem;
+  }
+
+  .assento-onibus {
+    padding: .75rem;
+  }
+
+  .assento-grade {
+    gap: 6px;
+  }
+
+  .assento-resumo img {
+    max-width: 100%;
+  }
+
+  .checkout-etapas li {
+    gap: .4rem;
+    font-size: .7rem;
+  }
+}

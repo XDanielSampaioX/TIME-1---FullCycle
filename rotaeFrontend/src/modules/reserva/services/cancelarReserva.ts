@@ -8,6 +8,9 @@ export async function cancelarReserva(id: number): Promise<Reserva> {
     body: JSON.stringify({ status: "CANCELADO" }),
   });
 
-  if (!resposta.ok) throw new Error("Não foi possível cancelar a reserva.");
+  if (!resposta.ok) {
+    throw new Error("Não foi possível cancelar a reserva.");
+  }
+  
   return resposta.json() as Promise<Reserva>;
 }

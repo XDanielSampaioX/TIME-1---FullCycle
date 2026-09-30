@@ -8,6 +8,9 @@ export async function criarReserva(dados: Reserva): Promise<Reserva> {
     body: JSON.stringify(dados),
   });
 
-  if (!resposta.ok) throw new Error("Não foi possível criar a reserva.");
+  if (!resposta.ok) {
+    throw new Error("Não foi possível criar a reserva.");
+  }
+  
   return resposta.json() as Promise<Reserva>;
 }

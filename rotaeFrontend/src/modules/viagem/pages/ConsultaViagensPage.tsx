@@ -1,16 +1,16 @@
-import { ListaViagens } from "@/modules/viagem/components/ListaViagens";
-import { ViagemProvider } from "@/modules/viagem/contexts/ViagemContext";
+import { ListaViagens } from "../components/ListaViagens";
+import { ResumoBuscaViagem } from "../components/ResumoBuscaViagem";
+import { ViagemProvider } from "../contexts/ViagemContext";
+import type { BuscaViagem } from "../types/buscaViagem";
+import "./viagens.css";
 
-export function ConsultaViagensPage() {
+export function ConsultaViagensPage({ busca }: { busca: BuscaViagem }) {
   return (
     <ViagemProvider>
       <main className="viagem-page">
-        <section className="viagem-content">
-          <p className="usuario-eyebrow">Rotaê</p>
-          <h1>Viagens disponíveis</h1>
-          <p>Consulte horários e valores para escolher sua próxima viagem.</p>
-          <ListaViagens />
-        </section>
+        <h1 className="sr-only">Viagens disponíveis</h1>
+        <ResumoBuscaViagem busca={busca} />
+        <ListaViagens key={JSON.stringify(busca)} busca={busca} />
       </main>
     </ViagemProvider>
   );

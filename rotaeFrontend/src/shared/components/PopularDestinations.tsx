@@ -20,7 +20,8 @@ export function PopularDestinations() {
                         <span>
                             <strong>{destination.city} ({destination.state})</strong>
                             <small>{destination.price}</small>
-                        </span></Link>)}
+                        </span>
+                    </Link>)}
                 </div>
             </Container>
         </section>

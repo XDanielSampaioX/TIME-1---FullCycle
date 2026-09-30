@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ListaReservas } from "@/modules/reserva/components/ListaReservas";
 import { ReservaProvider } from "@/modules/reserva/contexts/ReservaContext";
 
@@ -6,9 +7,13 @@ export function ConsultaReservasPage() {
     <ReservaProvider>
       <main className="reserva-page">
         <section className="reserva-content">
-          <p className="usuario-eyebrow">Rotaê</p>
-          <h1>Minhas reservas</h1>
-          <p>Consulte o status das suas reservas e cancele quando necessário.</p>
+          <header className="reserva-intro">
+            <div>
+              <h1>Minhas viagens</h1>
+              <p>Acompanhe suas reservas, pagamentos e bilhetes em um só lugar.</p>
+            </div>
+            <Link className="reserva-new-trip" href="/viagens">＋ Encontrar nova viagem</Link>
+          </header>
           <ListaReservas />
         </section>
       </main>

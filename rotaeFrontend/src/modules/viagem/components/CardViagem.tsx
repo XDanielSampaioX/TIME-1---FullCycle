@@ -1,23 +1,57 @@
-import type { Viagem } from "@/modules/viagem/types/viagem";
+import Image from "next/image";
+import Link from "next/link";
+import type { ViagemDisponivel } from "../types/viagemDisponivel";
+import type { BuscaViagem } from "../types/buscaViagem";
 
-function formatarPreco(precoCentavos: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-    precoCentavos / 100,
-  );
-}
+export function CardViagem({ resultado, busca, recomendado }: {
+  resultado: ViagemDisponivel;
+  busca: BuscaViagem;
+  recomendado: boolean;
+}) {
+  const { viagem, origem, destino, assentosLivres } = resultado;
+  const minutos = Math.round((Date.parse(viagem.chegadaEm) - Date.parse(viagem.partidaEm)) / 60000);
+  const parametros = new URLSearchParams({
+    origem: busca.origem,
+    destino: busca.destino,
+    partida: busca.partida,
+    passageiros: String(busca.passageiros),
+  });
 
-export function CardViagem({ viagem }: { viagem: Viagem }) {
   return (
-    <article className="viagem-card">
-      <div>
-        <strong>Viagem #{viagem.id}</strong>
-        <span className="viagem-status">{viagem.status}</span>
+    <article className="viagem-card" data-recomendado={recomendado} aria-label={`Viagem ${viagem.id}`}>
+      {recomendado && (
+        <div className="viagem-recomendacao">★ MELHOR PREÇO RECOMENDADO</div>
+      )}
+      <div className="viagem-card-corpo">
+        <div className="viagem-trajeto">
+          <div>
+            <time dateTime={viagem.partidaEm}>{viagem.partidaEm.slice(11, 16)}</time>
+            <span>{origem.nome} ({origem.uf})</span>
+          </div>
+          <div className="viagem-duracao">
+            <span>{Math.floor(minutos / 60)}h{String(minutos % 60).padStart(2, "0")}</span>
+            <Image src="/viagens/trajeto.svg" width={72} height={6} alt="" />
+            <small>{viagem.partidaEm.slice(0, 10) === viagem.chegadaEm.slice(0, 10) ? "MESMO DIA" : "DIA SEGUINTE"}</small>
+          </div>
+          <div>
+            <time dateTime={viagem.chegadaEm}>{viagem.chegadaEm.slice(11, 16)}</time>
+            <span>{destino.nome} ({destino.uf})</span>
+          </div>
+        </div>
+        <div className="viagem-classe">
+          <span className="viagem-badge">{viagem.classe === "EXECUTIVA" ? "Executiva" : viagem.classe === "CONVENCIONAL" ? "Convencional" : "Classe não informada"}</span>
+          <small>{assentosLivres} {assentosLivres === 1 ? "assento livre" : "assentos livres"}</small>
+        </div>
+        <div className="viagem-compra">
+          <div>
+            <small>Por passageiro</small>
+            <strong>{(viagem.precoCentavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong>
+          </div>
+          <Link className="viagem-selecionar" href={`/viagens/${viagem.id}/assentos?${parametros}`}>
+            Selecionar
+          </Link>
+        </div>
       </div>
-      <h2>Cidade {viagem.origemId} → Cidade {viagem.destinoId}</h2>
-      {viagem.classe && <p>Classe: {viagem.classe}</p>}
-      <p>Partida: {new Date(viagem.partidaEm).toLocaleString("pt-BR")}</p>
-      <p>Chegada: {new Date(viagem.chegadaEm).toLocaleString("pt-BR")}</p>
-      <strong>{formatarPreco(viagem.precoCentavos)}</strong>
     </article>
   );
 }

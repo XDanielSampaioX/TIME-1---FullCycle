@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import { cancelarReserva } from "@/modules/reserva/services/cancelarReserva";
 import { listarReservas } from "@/modules/reserva/services/listarReservas";
 import type { Reserva } from "@/modules/reserva/types/reserva";
@@ -13,9 +21,11 @@ type ReservaContextValue = {
   cancelar: (id: number) => Promise<void>;
 };
 
-const ReservaContext = createContext<ReservaContextValue | undefined>(undefined);
+export const ReservaContext =
+  createContext<ReservaContextValue | undefined>(undefined);
 
-export function ReservaProvider({ children }: { children: ReactNode }) {
+export function ReservaProvider({ children, }: { children: ReactNode }) {
+
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -25,7 +35,9 @@ export function ReservaProvider({ children }: { children: ReactNode }) {
     setErro(null);
 
     try {
-      setReservas(await listarReservas());
+      const reservas = await listarReservas();
+
+      setReservas(reservas);
     } catch {
       setErro("Não foi possível carregar as reservas.");
     } finally {
@@ -33,25 +45,56 @@ export function ReservaProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const cancelar = useCallback(async (id: number) => {
-    await cancelarReserva(id);
-    await recarregar();
-  }, [recarregar]);
+  const cancelar = useCallback(
+    async (id: number) => {
+      await cancelarReserva(id);
+      await recarregar();
+    },
+    [recarregar],
+  );
 
   useEffect(() => {
-    void recarregar();
-  }, [recarregar]);
+    let ativo = true;
 
-  const value = useMemo(
-    () => ({ reservas, carregando, erro, recarregar, cancelar }),
+    async function carregarInicial() {
+      try {
+        const reservas = await listarReservas();
+
+        if (ativo) {
+          setReservas(reservas);
+        }
+      } catch {
+        if (ativo) {
+          setErro("Não foi possível carregar as reservas.");
+        }
+      } finally {
+        if (ativo) {
+          setCarregando(false);
+        }
+      }
+    }
+
+    void carregarInicial();
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  const value = useMemo(() => ({
+    reservas,
+    carregando,
+    erro,
+    recarregar,
+    cancelar,
+  }),
     [reservas, carregando, erro, recarregar, cancelar],
   );
 
-  return <ReservaContext.Provider value={value}>{children}</ReservaContext.Provider>;
+  return (
+    <ReservaContext.Provider value={value}>
+      {children}
+    </ReservaContext.Provider>
+  );
 }
 
-export function useReserva() {
-  const context = useContext(ReservaContext);
-  if (!context) throw new Error("useReserva deve ser usado dentro de ReservaProvider.");
-  return context;
-}
