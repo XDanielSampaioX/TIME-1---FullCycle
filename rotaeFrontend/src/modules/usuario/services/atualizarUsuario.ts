@@ -1,9 +1,10 @@
 import type { Usuario } from "@/modules/usuario/types/usuario";
+import type { AtualizacaoUsuarioPayload } from "@/modules/usuario/types/atualizacaoUsuarioPayload";
 import { apiUrl } from "@/lib/api";
 
 export async function atualizarUsuario(
   id: number,
-  dados: Partial<Usuario>,
+  dados: AtualizacaoUsuarioPayload,
 ): Promise<Usuario> {
   const resposta = await fetch(apiUrl(`/api/usuarios/${id}`), {
     method: "PUT",
