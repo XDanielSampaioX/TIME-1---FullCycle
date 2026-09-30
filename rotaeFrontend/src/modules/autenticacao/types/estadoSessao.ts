@@ -1,4 +1,4 @@
-import type { Usuario } from "./usuario";
+import type { Usuario } from "@/modules/usuario/types/usuario";
 
 export type EstadoSessao =
   | { status: "carregando" }
