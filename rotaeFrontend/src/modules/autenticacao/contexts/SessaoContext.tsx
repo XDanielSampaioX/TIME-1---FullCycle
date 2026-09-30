@@ -47,11 +47,12 @@ export function SessaoProvider({
 
   useEffect(() => {
     const versaoAtual = ++versaoDaSessao.current;
+    let ativo = true;
 
     void servicoSessao
       .restaurar()
       .then((usuarioRestaurado) => {
-        if (versaoAtual !== versaoDaSessao.current) return;
+        if (!ativo || versaoAtual !== versaoDaSessao.current) return;
 
         setEstadoSessao(
           usuarioRestaurado
@@ -60,7 +61,7 @@ export function SessaoProvider({
         );
       })
       .catch(() => {
-        if (versaoAtual !== versaoDaSessao.current) return;
+        if (!ativo || versaoAtual !== versaoDaSessao.current) return;
 
         setEstadoSessao({
           status: "erro",
@@ -69,10 +70,8 @@ export function SessaoProvider({
       });
 
     return () => {
-      if (versaoAtual === versaoDaSessao.current) {
-        versaoDaSessao.current++;
-      }
-    };
+  ativo = false;
+};
   }, [servicoSessao]);
 
   const entrar = useCallback(

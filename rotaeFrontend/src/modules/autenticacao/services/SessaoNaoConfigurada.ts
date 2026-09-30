@@ -1,5 +1,4 @@
 import type { ContratoSessao } from "./contratoSessao";
-import type { LoginUsuarioPayload } from "@/modules/autenticacao/types/loginUsuarioPayload";
 import type { Usuario } from "@/modules/usuario/types/usuario";
 
 export class SessaoNaoConfigurada implements ContratoSessao {
@@ -7,7 +6,7 @@ export class SessaoNaoConfigurada implements ContratoSessao {
     return null;
   }
 
-  async entrar(_dados: LoginUsuarioPayload): Promise<Usuario> {
+  async entrar(): Promise<Usuario> {
     throw new Error("O login ainda não está disponível no backend.");
   }
 
