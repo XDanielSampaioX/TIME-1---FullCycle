@@ -81,11 +81,11 @@ export function SessaoProvider({
       setErroAcao(null);
 
       try {
-        const usuarioAutenticado = await servicoSessao.entrar(dados);
+        const resposta = await servicoSessao.entrar(dados);
         if (versaoAtual === versaoDaSessao.current) {
           setEstadoSessao({
             status: "autenticado",
-            usuario: usuarioAutenticado,
+            usuario: resposta.user,
           });
         }
       } catch {
