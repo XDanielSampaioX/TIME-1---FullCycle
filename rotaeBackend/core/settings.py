@@ -65,6 +65,8 @@ INSTALLED_APPS = [
     'reservas',
 ]
 
+AUTH_USER_MODEL = "usuarios.Usuario"
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -129,6 +131,8 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
+    # Tokens carregam um hash da senha: trocar a senha invalida os access tokens já emitidos.
+    "CHECK_REVOKE_TOKEN": True,
 }
 
 

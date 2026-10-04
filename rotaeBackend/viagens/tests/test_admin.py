@@ -1,5 +1,4 @@
 import pytest
-from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.urls import reverse
 
@@ -8,13 +7,6 @@ from viagens.models import Onibus, Viagem
 from .conftest import amanha_as
 
 pytestmark = pytest.mark.django_db
-
-
-@pytest.fixture
-def admin_client(client):
-    usuario = get_user_model().objects.create_superuser("admin", "admin@rotae.com", "senha-forte-123")
-    client.force_login(usuario)
-    return client
 
 
 def test_cadastrar_onibus_no_admin_cria_os_assentos(admin_client):
