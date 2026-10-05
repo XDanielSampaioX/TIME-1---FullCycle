@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'drf_spectacular',
+    'django_filters',
 
     # Dominios
     'usuarios',
@@ -73,6 +74,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Converte query params camelCase (?precoMin=) para snake_case (preco_min)
+    'djangorestframework_camel_case.middleware.CamelCaseMiddleWare',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -107,6 +110,16 @@ REST_FRAMEWORK = {
         "rest_framework.pagination.PageNumberPagination"
     ),
     "PAGE_SIZE": 10,
+    # JSON em camelCase para o frontend; o backend continua em snake_case
+    "DEFAULT_RENDERER_CLASSES": (
+        "djangorestframework_camel_case.render.CamelCaseJSONRenderer",
+        "djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer",
+    ),
+    "DEFAULT_PARSER_CLASSES": (
+        "djangorestframework_camel_case.parser.CamelCaseJSONParser",
+        "djangorestframework_camel_case.parser.CamelCaseFormParser",
+        "djangorestframework_camel_case.parser.CamelCaseMultiPartParser",
+    ),
 }
 
 
@@ -125,13 +138,18 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API para reserva de passagens de ônibus",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "POSTPROCESSING_HOOKS": [
+        "drf_spectacular.hooks.postprocess_schema_enums",
+        "drf_spectacular.contrib.djangorestframework_camel_case.camelize_serializer_fields",
+    ],
 }
 
 
 # CORS
+# Padrão: Next.js direto (porta 3000) e o frontend servido pelo Nginx (porta 80).
 CORS_ALLOWED_ORIGINS = config(
     "CORS_ALLOWED_ORIGINS",
-    default="http://localhost:3000",
+    default="http://localhost:3000,http://127.0.0.1:3000,http://localhost,http://127.0.0.1",
     cast=Csv()
 )
 
