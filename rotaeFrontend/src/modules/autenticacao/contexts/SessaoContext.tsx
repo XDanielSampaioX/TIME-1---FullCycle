@@ -70,8 +70,8 @@ export function SessaoProvider({
       });
 
     return () => {
-  ativo = false;
-};
+      ativo = false;
+    };
   }, [servicoSessao]);
 
   const entrar = useCallback(
@@ -89,10 +89,12 @@ export function SessaoProvider({
           });
         }
       } catch {
-        setErroAcao("Não foi possível entrar. Verifique a disponibilidade do login.");
+        if (versaoAtual === versaoDaSessao.current) {
+          setErroAcao("Não foi possível entrar. Verifique a disponibilidade do login.");
+        }
         throw new Error("Falha no login do usuário.");
       } finally {
-        setCarregandoAcao(false);
+        if (versaoAtual === versaoDaSessao.current) setCarregandoAcao(false);
       }
     },
     [servicoSessao],
@@ -109,21 +111,34 @@ export function SessaoProvider({
         setEstadoSessao({ status: "nao_autenticado" });
       }
     } catch {
-      setErroAcao("Não foi possível encerrar a sessão.");
+      if (versaoAtual === versaoDaSessao.current) {
+        setErroAcao("Não foi possível encerrar a sessão.");
+      }
       throw new Error("Falha ao sair da sessão.");
     } finally {
-      setCarregandoAcao(false);
+      if (versaoAtual === versaoDaSessao.current) setCarregandoAcao(false);
     }
   }, [servicoSessao]);
 
   const invalidar = useCallback(() => {
-    versaoDaSessao.current++;
+    const versaoAtual = ++versaoDaSessao.current;
+    setCarregandoAcao(false);
+    setErroAcao(null);
     setEstadoSessao({ status: "nao_autenticado" });
-  }, []);
+    void servicoSessao.sair().catch(() => {
+      if (versaoAtual === versaoDaSessao.current) {
+        setEstadoSessao({
+          status: "erro",
+          mensagem: "Não foi possível invalidar a sessão.",
+        });
+      }
+    });
+  }, [servicoSessao]);
 
   const atualizarUsuarioDaSessao = useCallback((usuarioAtualizado: Usuario) => {
     setEstadoSessao((estadoAnterior) =>
-      estadoAnterior.status === "autenticado"
+      estadoAnterior.status === "autenticado" &&
+      estadoAnterior.usuario.id === usuarioAtualizado.id
         ? { status: "autenticado", usuario: usuarioAtualizado }
         : estadoAnterior,
     );
