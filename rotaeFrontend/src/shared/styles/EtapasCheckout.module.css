@@ -1,0 +1,51 @@
+.etapas {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  padding: 1.5rem 1rem;
+  margin: 0;
+  list-style: none;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-card);
+}
+
+.etapas li {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  color: var(--color-text-secondary);
+  font-size: .875rem;
+}
+
+.etapas li > span {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-surface-subtle);
+  font-weight: 700;
+}
+
+.etapas li[aria-current="step"] {
+  color: var(--color-text-primary);
+  font-weight: 700;
+}
+
+.etapas li[aria-current="step"] > span {
+  background: var(--color-accent-500);
+}
+
+@media (max-width: 900px) {
+  .etapas {
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .etapas li {
+    gap: .4rem;
+    font-size: .7rem;
+  }
+}

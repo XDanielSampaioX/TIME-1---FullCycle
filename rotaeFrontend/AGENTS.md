@@ -7,3 +7,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Regra de responsabilidade única do frontend
+
+- Cada tipo ou contrato TypeScript com responsabilidade própria deve ficar em um arquivo separado dentro do módulo funcional.
+- Reutilizar o mesmo tipo quando entidade e payload tiverem o mesmo contrato; criar tipos separados somente quando houver responsabilidade ou formato realmente diferente.
+- Serviços também devem ser separados por caso de uso ou funcionalidade, mantendo uma responsabilidade por arquivo.
