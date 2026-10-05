@@ -1,9 +1,6 @@
-from django.db import IntegrityError, transaction
-from rest_framework import serializers
+from django.db import transaction
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from .models import Usuario
 
 
 def revogar_refresh_tokens(usuario):
@@ -32,20 +29,3 @@ def alterar_senha(usuario, nova_senha):
 
     refresh = RefreshToken.for_user(usuario)
     return {"access": str(refresh.access_token), "refresh": str(refresh)}
-
-
-def salvar_respeitando_unicidade(salvar, dados, instancia=None):
-    """Converte o IntegrityError de uma corrida em e-mail/CPF duplicado no mesmo 400 da validação."""
-    try:
-        with transaction.atomic():
-            return salvar()
-    except IntegrityError as erro:
-        outros = Usuario.objects.exclude(pk=getattr(instancia, "pk", None))
-        erros = {}
-        for campo in ("email", "cpf"):
-            valor = dados.get(campo)
-            if valor and outros.filter(**{campo: valor}).exists():
-                erros[campo] = [Usuario._meta.get_field(campo).error_messages["unique"]]
-        if not erros:
-            raise
-        raise serializers.ValidationError(erros) from erro

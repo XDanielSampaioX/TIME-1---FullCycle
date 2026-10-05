@@ -2,18 +2,45 @@ from collections.abc import Mapping
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import IntegrityError, transaction
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Usuario
-from .services import salvar_respeitando_unicidade
-from .validators import so_digitos, validar_senha
+from .validators import so_digitos
 
 CAMPOS_PUBLICOS = ("id", "nome", "email", "celular", "data_nasc", "cpf", "criado_em", "atualizado_em")
 
 
+def salvar_respeitando_unicidade(salvar, dados, instancia=None):
+    """Converte o IntegrityError de uma corrida em e-mail/CPF duplicado no mesmo 400 da validação."""
+    try:
+        with transaction.atomic():
+            return salvar()
+    except IntegrityError as erro:
+        outros = Usuario.objects.exclude(pk=getattr(instancia, "pk", None))
+        erros = {}
+        for campo in ("email", "cpf"):
+            valor = dados.get(campo)
+            if valor and outros.filter(**{campo: valor}).exists():
+                erros[campo] = [Usuario._meta.get_field(campo).error_messages["unique"]]
+        if not erros:
+            raise
+        raise serializers.ValidationError(erros) from erro
+
+
+def validar_senha(senha, usuario):
+    try:
+        validate_password(senha, usuario)
+    except DjangoValidationError as erro:
+        raise serializers.ValidationError(list(erro.messages)) from erro
+
+
 class UsuarioSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Usuario
         fields = CAMPOS_PUBLICOS
