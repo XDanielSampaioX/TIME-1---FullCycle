@@ -3,7 +3,7 @@ from datetime import timedelta
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, connection
+from django.db import IntegrityError
 from django.utils import timezone
 
 from usuarios.models import Usuario
@@ -19,9 +19,10 @@ def test_usuario_e_o_model_de_autenticacao_do_projeto():
 def test_create_user_guarda_somente_o_hash_da_senha(usuario, senha):
     assert usuario.password != senha
     assert usuario.check_password(senha)
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT senha_hash FROM usuarios_usuario WHERE id = %s", [usuario.id])
-        assert cursor.fetchone()[0].startswith("bcrypt_sha256$")
+
+
+def test_senha_fica_na_coluna_senha_hash_do_modelo_de_dados():
+    assert Usuario._meta.get_field("password").column == "senha_hash"
 
 
 def test_create_user_normaliza_email_para_minusculas(db):

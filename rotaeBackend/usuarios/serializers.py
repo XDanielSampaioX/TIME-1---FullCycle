@@ -2,15 +2,13 @@ from collections.abc import Mapping
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import IntegrityError, transaction
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Usuario
-from .validators import so_digitos
+from .services import salvar_respeitando_unicidade
+from .validators import so_digitos, validar_senha
 
 CAMPOS_PUBLICOS = ("id", "nome", "email", "celular", "data_nasc", "cpf", "criado_em", "atualizado_em")
 
@@ -36,30 +34,6 @@ class NormalizaDadosMixin:
             if isinstance(data.get(campo), str):
                 data[campo] = so_digitos(data[campo])
         return super().to_internal_value(data)
-
-
-def salvar_respeitando_unicidade(salvar, dados, instancia=None):
-    """Converte o IntegrityError de uma corrida em e-mail/CPF duplicado no mesmo 400 da validação."""
-    try:
-        with transaction.atomic():
-            return salvar()
-    except IntegrityError as erro:
-        outros = Usuario.objects.exclude(pk=getattr(instancia, "pk", None))
-        erros = {}
-        for campo in ("email", "cpf"):
-            valor = dados.get(campo)
-            if valor and outros.filter(**{campo: valor}).exists():
-                erros[campo] = [Usuario._meta.get_field(campo).error_messages["unique"]]
-        if not erros:
-            raise
-        raise serializers.ValidationError(erros) from erro
-
-
-def validar_senha(senha, usuario):
-    try:
-        validate_password(senha, usuario)
-    except DjangoValidationError as erro:
-        raise serializers.ValidationError(list(erro.messages)) from erro
 
 
 class CadastroUsuarioSerializer(NormalizaDadosMixin, serializers.ModelSerializer):
@@ -111,19 +85,6 @@ class LoginSerializer(serializers.Serializer):
             "refresh": str(refresh),
             "user": UsuarioSerializer(usuario).data,
         }
-
-
-class TokensSerializer(serializers.Serializer):
-    """Só documenta pares de tokens no Swagger."""
-
-    access = serializers.CharField()
-    refresh = serializers.CharField()
-
-
-class LoginRespostaSerializer(TokensSerializer):
-    """Só documenta a resposta do login no Swagger."""
-
-    user = UsuarioSerializer()
 
 
 class AtualizacaoUsuarioSerializer(NormalizaDadosMixin, serializers.ModelSerializer):

@@ -1,6 +1,20 @@
 from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework import serializers
 
-from usuarios.serializers import LoginRespostaSerializer, LoginSerializer
+from usuarios.serializers import LoginSerializer, UsuarioSerializer
+
+
+class TokensSerializer(serializers.Serializer):
+    """Só documenta pares de tokens no Swagger."""
+
+    access = serializers.CharField()
+    refresh = serializers.CharField()
+
+
+class LoginRespostaSerializer(TokensSerializer):
+    """Só documenta a resposta do login no Swagger."""
+
+    user = UsuarioSerializer()
 
 login_schema = extend_schema(
     summary="Login",

@@ -1,7 +1,9 @@
 import re
 
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from rest_framework import serializers
 
 
 def so_digitos(valor):
@@ -33,3 +35,10 @@ def validar_celular(valor):
 def validar_data_nascimento(valor):
     if valor and valor > timezone.localdate():
         raise ValidationError("Data de nascimento não pode estar no futuro.", code="data_nasc_futura")
+
+
+def validar_senha(senha, usuario):
+    try:
+        validate_password(senha, usuario)
+    except ValidationError as erro:
+        raise serializers.ValidationError(list(erro.messages)) from erro

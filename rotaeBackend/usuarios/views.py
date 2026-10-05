@@ -1,8 +1,10 @@
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenRefreshView
+
+from core.api.permissions import RotaPublica
 
 from .serializers import (
     AlteracaoSenhaSerializer,
@@ -22,11 +24,8 @@ from .swagger import (
 
 
 @cadastro_usuario_schema
-class CadastroUsuarioView(CreateAPIView):
+class CadastroUsuarioView(RotaPublica, CreateAPIView):
     serializer_class = CadastroUsuarioSerializer
-    permission_classes = (AllowAny,)
-    # Rota pública: um token velho no cabeçalho não pode impedir o cadastro.
-    authentication_classes = ()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -36,10 +35,8 @@ class CadastroUsuarioView(CreateAPIView):
 
 
 @login_schema
-class LoginView(GenericAPIView):
+class LoginView(RotaPublica, GenericAPIView):
     serializer_class = LoginSerializer
-    permission_classes = (AllowAny,)
-    authentication_classes = ()
 
     def get_authenticate_header(self, request):
         # Sem autenticadores o DRF trocaria o 401 de credenciais inválidas por 403.
