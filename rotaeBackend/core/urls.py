@@ -7,6 +7,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from .health import HealthView
 
 api_v1_patterns = [
+    path("", include("usuarios.urls")),
     path("", include("viagens.urls")),
 ]
 
