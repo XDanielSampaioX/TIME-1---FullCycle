@@ -42,9 +42,9 @@ class Assento(models.Model):
 
     class Meta:
         ordering = ("onibus", "numero")
-        constraints = [
+        constraints = (
             models.UniqueConstraint(fields=("onibus", "numero"), name="assento_numero_unico_por_onibus"),
-        ]
+        )
 
     def __str__(self):
         return f"{self.onibus} - Assento {self.numero}"
@@ -90,13 +90,13 @@ class Viagem(models.Model):
     class Meta:
         verbose_name_plural = "Viagens"
         ordering = ("partida_em",)
-        indexes = [
+        indexes = (
             models.Index(fields=("origem", "destino", "partida_em"), name="viagem_busca_idx"),
-        ]
-        constraints = [
+        )
+        constraints = (
             models.CheckConstraint(condition=~Q(origem=F("destino")), name="viagem_origem_diferente_destino"),
             models.CheckConstraint(condition=Q(chegada_em__gt=F("partida_em")), name="viagem_chegada_apos_partida"),
-        ]
+        )
 
     def __str__(self):
         partida = timezone.localtime(self.partida_em).strftime("%d/%m/%Y %H:%M")
@@ -140,9 +140,9 @@ class ViagemAssento(models.Model):
         verbose_name = "Assento da viagem"
         verbose_name_plural = "Assentos das viagens"
         ordering = ("viagem", "assento__numero")
-        constraints = [
+        constraints = (
             models.UniqueConstraint(fields=("viagem", "assento"), name="viagem_assento_unico"),
-        ]
+        )
 
     def __str__(self):
         return f"{self.viagem} - Assento {self.assento.numero} ({self.status})"

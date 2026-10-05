@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.generics import ListAPIView, RetrieveAPIView
-from rest_framework.permissions import AllowAny
+
+from core.api.permissions import RotaPublica
 
 from .filters import ViagemFilter
 from .models import Cidade, Viagem, ViagemAssento
@@ -12,14 +13,6 @@ from .swagger import (
     viagens_detail_schema,
     viagens_list_schema,
 )
-
-
-class RotaPublica:
-    """Consulta aberta: sem autenticação, um token velho no cabeçalho (frontend ou "Authorize"
-    do Swagger) não bloqueia a busca, e o Swagger deixa de mostrar o cadeado."""
-
-    authentication_classes = ()
-    permission_classes = (AllowAny,)
 
 
 @cidades_list_schema
