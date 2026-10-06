@@ -15,29 +15,6 @@ from .validators import so_digitos
 CAMPOS_PUBLICOS = ("id", "nome", "email", "celular", "data_nasc", "cpf", "criado_em", "atualizado_em")
 
 
-class UsuarioSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Usuario
-        fields = CAMPOS_PUBLICOS
-        read_only_fields = CAMPOS_PUBLICOS
-
-
-class NormalizaDadosMixin:
-    """Normaliza e-mail, CPF e celular antes das validações de formato e unicidade."""
-
-    def to_internal_value(self, data):
-        if not isinstance(data, Mapping):
-            # Deixa o DRF responder 400 ("Invalid data") para listas, textos etc.
-            return super().to_internal_value(data)
-        data = data.copy()
-        if isinstance(data.get("email"), str):
-            data["email"] = data["email"].strip().lower()
-        for campo in ("cpf", "celular"):
-            if isinstance(data.get(campo), str):
-                data[campo] = so_digitos(data[campo])
-        return super().to_internal_value(data)
-
-
 def salvar_respeitando_unicidade(salvar, dados, instancia=None):
     """Converte o IntegrityError de uma corrida em e-mail/CPF duplicado no mesmo 400 da validação."""
     try:
@@ -60,6 +37,30 @@ def validar_senha(senha, usuario):
         validate_password(senha, usuario)
     except DjangoValidationError as erro:
         raise serializers.ValidationError(list(erro.messages)) from erro
+
+
+class UsuarioSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Usuario
+        fields = CAMPOS_PUBLICOS
+        read_only_fields = CAMPOS_PUBLICOS
+
+
+class NormalizaDadosMixin:
+    """Normaliza e-mail, CPF e celular antes das validações de formato e unicidade."""
+
+    def to_internal_value(self, data):
+        if not isinstance(data, Mapping):
+            # Deixa o DRF responder 400 ("Invalid data") para listas, textos etc.
+            return super().to_internal_value(data)
+        data = data.copy()
+        if isinstance(data.get("email"), str):
+            data["email"] = data["email"].strip().lower()
+        for campo in ("cpf", "celular"):
+            if isinstance(data.get(campo), str):
+                data[campo] = so_digitos(data[campo])
+        return super().to_internal_value(data)
 
 
 class CadastroUsuarioSerializer(NormalizaDadosMixin, serializers.ModelSerializer):
@@ -111,19 +112,6 @@ class LoginSerializer(serializers.Serializer):
             "refresh": str(refresh),
             "user": UsuarioSerializer(usuario).data,
         }
-
-
-class TokensSerializer(serializers.Serializer):
-    """Só documenta pares de tokens no Swagger."""
-
-    access = serializers.CharField()
-    refresh = serializers.CharField()
-
-
-class LoginRespostaSerializer(TokensSerializer):
-    """Só documenta a resposta do login no Swagger."""
-
-    user = UsuarioSerializer()
 
 
 class AtualizacaoUsuarioSerializer(NormalizaDadosMixin, serializers.ModelSerializer):

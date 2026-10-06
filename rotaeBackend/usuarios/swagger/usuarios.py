@@ -4,9 +4,10 @@ from usuarios.serializers import (
     AlteracaoSenhaSerializer,
     AtualizacaoUsuarioSerializer,
     CadastroUsuarioSerializer,
-    TokensSerializer,
     UsuarioSerializer,
 )
+
+from .auth import TokensSerializer
 
 cadastro_usuario_schema = extend_schema(
     summary="Cadastrar usuário",

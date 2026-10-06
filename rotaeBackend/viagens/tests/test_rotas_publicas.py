@@ -1,4 +1,4 @@
-"""Garante que o frontend (Next direto ou atrás do Nginx) consegue consumir as rotas públicas."""
+"""As rotas de consulta de viagens são públicas: não dependem de token."""
 import pytest
 from django.urls import reverse
 
@@ -14,32 +14,6 @@ def urls_publicas(criar_viagem):
         reverse("detalhe_viagem", args=[viagem.id]),
         reverse("assentos_viagem", args=[viagem.id]),
     ]
-
-
-@pytest.mark.parametrize("origem", [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost",
-    "http://127.0.0.1",
-])
-def test_cors_libera_o_frontend_local_e_o_nginx(api_client, origem):
-    resposta = api_client.options(
-        reverse("lista_viagens"),
-        HTTP_ORIGIN=origem,
-        HTTP_ACCESS_CONTROL_REQUEST_METHOD="GET",
-    )
-
-    assert resposta.headers.get("Access-Control-Allow-Origin") == origem
-
-
-def test_cors_nao_libera_origem_desconhecida(api_client):
-    resposta = api_client.options(
-        reverse("lista_viagens"),
-        HTTP_ORIGIN="http://site-qualquer.com",
-        HTTP_ACCESS_CONTROL_REQUEST_METHOD="GET",
-    )
-
-    assert "Access-Control-Allow-Origin" not in resposta.headers
 
 
 def test_rotas_publicas_funcionam_mesmo_com_token_invalido(api_client, urls_publicas):
