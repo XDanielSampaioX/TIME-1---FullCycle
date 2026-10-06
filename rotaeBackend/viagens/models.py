@@ -4,6 +4,12 @@ from django.db import models
 from django.db.models import Count, F, Q
 from django.utils import timezone
 
+from .validators import (
+    ChegadaAposPartidaValidator,
+    DestinoDiferenteOrigemValidator,
+    TrocaDeOnibusComAssentosOcupadosValidator,
+)
+
 
 class Cidade(models.Model):
     nome = models.CharField(max_length=100)
@@ -87,6 +93,12 @@ class Viagem(models.Model):
 
     objects = ViagemQuerySet.as_manager()
 
+    validators = (
+        DestinoDiferenteOrigemValidator(),
+        ChegadaAposPartidaValidator(),
+        TrocaDeOnibusComAssentosOcupadosValidator(),
+    )
+
     class Meta:
         verbose_name_plural = "Viagens"
         ordering = ("partida_em",)
@@ -104,12 +116,8 @@ class Viagem(models.Model):
 
     def clean(self):
         erros = {}
-        if self.origem_id and self.origem_id == self.destino_id:
-            erros["destino"] = "O destino deve ser diferente da origem."
-        if self.partida_em and self.chegada_em and self.chegada_em <= self.partida_em:
-            erros["chegada_em"] = "A chegada deve ocorrer depois da partida."
-        if self.pk and self._trocou_onibus_com_assentos_ocupados():
-            erros["onibus"] = "Não é possível trocar o ônibus de uma viagem com assentos segurados ou reservados."
+        for validator in self.validators:
+            validator.validar(self, erros)
         if erros:
             raise ValidationError(erros)
 
@@ -118,13 +126,6 @@ class Viagem(models.Model):
             minutos = (self.chegada_em - self.partida_em).total_seconds() // 60
             self.duracao = max(int(minutos), 0)
         super().save(*args, **kwargs)
-
-    def _trocou_onibus_com_assentos_ocupados(self):
-        onibus_atual = Viagem.objects.filter(pk=self.pk).values_list("onibus_id", flat=True).first()
-        if onibus_atual is None or onibus_atual == self.onibus_id:
-            return False
-        return self.viagem_assentos.exclude(status=ViagemAssento.Status.DISPONIVEL).exists()
-
 
 class ViagemAssento(models.Model):
     class Status(models.TextChoices):
