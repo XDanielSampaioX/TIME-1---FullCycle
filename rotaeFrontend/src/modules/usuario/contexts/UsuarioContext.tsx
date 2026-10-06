@@ -42,10 +42,10 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
     try {
       const novoUsuario = await criarUsuario(dados);
       setUsuarios((anteriores) => [...anteriores, novoUsuario]);
-    } catch {
+    } catch (causa) {
       setErro("Não foi possível realizar o cadastro.");
-      throw new Error("Falha no cadastro do usuário.");
-    } finally {
+      throw causa;
+    }finally {
       setCarregando(false);
     }
   }, []);
@@ -58,10 +58,10 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
       const lista = await listarUsuarios();
       setUsuarios(lista);
       return lista;
-    } catch {
+    } catch (causa) {
       setErro("Não foi possível listar os usuários.");
-      throw new Error("Falha ao listar os usuários.");
-    } finally {
+      throw causa;
+    }finally {
       setCarregando(false);
     }
   }, []);
@@ -72,10 +72,10 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
 
     try {
       return await buscarUsuario(id);
-    } catch {
-      setErro("Não foi possível buscar o usuário.");
-      throw new Error("Falha ao buscar o usuário.");
-    } finally {
+    } catch (causa) {
+      setErro("Não foi possível realizar o cadastro.");
+      throw causa;
+    }finally {
       setCarregando(false);
     }
   }, []);
@@ -93,10 +93,10 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
           ),
         );
         return atualizado;
-      } catch {
-        setErro("Não foi possível atualizar o usuário.");
-        throw new Error("Falha ao atualizar o usuário.");
-      } finally {
+    } catch (causa) {
+      setErro("Não foi possível realizar o cadastro.");
+      throw causa;
+    }finally {
         setCarregando(false);
       }
     },
@@ -112,10 +112,10 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
       setUsuarios((anteriores) =>
         anteriores.filter((usuario) => usuario.id !== id),
       );
-    } catch {
-      setErro("Não foi possível remover o usuário.");
-      throw new Error("Falha ao remover o usuário.");
-    } finally {
+    } catch (causa) {
+      setErro("Não foi possível realizar o cadastro.");
+      throw causa;
+    }finally {
       setCarregando(false);
     }
   }, []);
