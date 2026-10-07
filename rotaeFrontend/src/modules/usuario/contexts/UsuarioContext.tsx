@@ -29,6 +29,13 @@ type UsuarioContextValue = {
 };
 
 const UsuarioContext = createContext<UsuarioContextValue | undefined>(undefined);
+function mensagemDoErro(causa: unknown, mensagemPadrao: string): string {
+  if (causa instanceof Error && causa.message.trim()) {
+    return causa.message;
+  }
+
+  return mensagemPadrao;
+}
 
 export function UsuarioProvider({ children }: { children: ReactNode }) {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -43,7 +50,7 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
       const novoUsuario = await criarUsuario(dados);
       setUsuarios((anteriores) => [...anteriores, novoUsuario]);
     } catch (causa) {
-      setErro("Não foi possível realizar o cadastro.");
+      setErro(mensagemDoErro(causa, "Não foi possível realizar o cadastro."));
       throw causa;
     }finally {
       setCarregando(false);
@@ -59,7 +66,7 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
       setUsuarios(lista);
       return lista;
     } catch (causa) {
-      setErro("Não foi possível listar os usuários.");
+      setErro(mensagemDoErro(causa, "Não foi possível listar os usuários."));
       throw causa;
     }finally {
       setCarregando(false);
@@ -73,7 +80,7 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
     try {
       return await buscarUsuario(id);
     } catch (causa) {
-      setErro("Não foi possível realizar o cadastro.");
+      setErro(mensagemDoErro(causa, "Não foi possível buscar o usuário."));
       throw causa;
     }finally {
       setCarregando(false);
@@ -94,7 +101,7 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
         );
         return atualizado;
     } catch (causa) {
-      setErro("Não foi possível realizar o cadastro.");
+      setErro(mensagemDoErro(causa, "Não foi possível atualizar o usuário."));
       throw causa;
     }finally {
         setCarregando(false);
@@ -113,7 +120,7 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
         anteriores.filter((usuario) => usuario.id !== id),
       );
     } catch (causa) {
-      setErro("Não foi possível realizar o cadastro.");
+      setErro(mensagemDoErro(causa, "Não foi possível remover o usuário."));
       throw causa;
     }finally {
       setCarregando(false);
