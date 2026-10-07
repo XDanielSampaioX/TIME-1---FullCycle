@@ -1,4 +1,0 @@
-[
-  { "id": 1, "identificacao": "RT-001", "totalAssentos": 40, "modelo": "Marcopolo G8", "criadoEm": "2026-09-01T08:00:00-03:00", "atualizadoEm": "2026-09-01T08:00:00-03:00" },
-  { "id": 2, "identificacao": "RT-002", "totalAssentos": 32, "modelo": "Mercedes-Benz O-500", "criadoEm": "2026-09-01T08:00:00-03:00", "atualizadoEm": "2026-09-01T08:00:00-03:00" }
-]

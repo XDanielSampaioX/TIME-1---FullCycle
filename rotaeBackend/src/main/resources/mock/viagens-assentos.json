@@ -1,7 +1,0 @@
-[
-  { "id": 1, "viagemId": 1, "assentoId": 1, "status": "VENDIDO", "pedidoId": 1 },
-  { "id": 2, "viagemId": 1, "assentoId": 2, "status": "DISPONIVEL", "pedidoId": null },
-  { "id": 3, "viagemId": 1, "assentoId": 3, "status": "DISPONIVEL", "pedidoId": null },
-  { "id": 4, "viagemId": 2, "assentoId": 4, "status": "SEGURADO", "pedidoId": 2 },
-  { "id": 5, "viagemId": 2, "assentoId": 5, "status": "DISPONIVEL", "pedidoId": null }
-]
