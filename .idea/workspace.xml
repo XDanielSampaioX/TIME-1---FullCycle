@@ -5,21 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5a7dce8a-eb25-4f3b-b71b-6ff9a569a703" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/rotaeBackend/core/api/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rotaeBackend/core/api/permissions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rotaeBackend/core/tests/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rotaeBackend/core/tests/test_cors.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rotaeBackend/viagens/validators.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.skills" beforeDir="false" afterPath="$PROJECT_DIR$/.skills" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rotaeBackend/usuarios/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeBackend/usuarios/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rotaeBackend/usuarios/swagger/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeBackend/usuarios/swagger/auth.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rotaeBackend/usuarios/swagger/usuarios.py" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeBackend/usuarios/swagger/usuarios.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rotaeBackend/usuarios/tests/test_models.py" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeBackend/usuarios/tests/test_models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rotaeBackend/usuarios/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeBackend/usuarios/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rotaeBackend/viagens/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeBackend/viagens/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rotaeBackend/viagens/tests/test_acesso_frontend.py" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeBackend/viagens/tests/test_rotas_publicas.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rotaeBackend/viagens/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeBackend/viagens/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rotaeFrontend/src/lib/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/src/lib/api.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rotaeFrontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/components/ListaViagens.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/components/ListaViagens.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/hooks/useFiltrosViagem.ts" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/hooks/useFiltrosViagem.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/pages/viagens.css" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/pages/viagens.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rotaeNginx/nginx.conf" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeNginx/nginx.conf" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,7 +34,7 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "Merging refactor/viagens-26",
+    "git-widget-placeholder": "refactor/viagens-26",
     "last_opened_file_path": "C:/Projects/TIME 1 -- Full Cycle/rotaeBackend",
     "settings.editor.selected.configurable": "reference.settings.ide.settings.web.browsers"
   }
