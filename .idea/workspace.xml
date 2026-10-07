@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="5a7dce8a-eb25-4f3b-b71b-6ff9a569a703" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.skills" beforeDir="false" afterPath="$PROJECT_DIR$/.skills" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rotaeFrontend/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/next.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rotaeFrontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rotaeFrontend/src/lib/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/src/lib/api.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/components/ListaViagens.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/components/ListaViagens.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/hooks/useFiltrosViagem.ts" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/hooks/useFiltrosViagem.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/pages/viagens.css" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/pages/viagens.css" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="3KFTWweR1q7u47PcIsUx4J2RvTY" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;refactor/viagens-26&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Projects/TIME 1 -- Full Cycle/rotaeBackend&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.ide.settings.web.browsers&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Projects\TIME 1 -- Full Cycle\rotaeBackend" />
+    </key>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="5a7dce8a-eb25-4f3b-b71b-6ff9a569a703" name="Changes" comment="" />
+      <created>1791152354422</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1791152354422</updated>
+    </task>
+    <servers />
+  </component>
+</project>
