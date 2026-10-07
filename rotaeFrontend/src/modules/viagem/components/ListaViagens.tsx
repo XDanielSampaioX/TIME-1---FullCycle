@@ -1,6 +1,7 @@
 "use client";
 
 import { CardViagem } from "./CardViagem";
+import { CardViagemSkeleton } from "./CardViagemSkeleton";
 import { FiltrosViagem } from "./FiltrosViagem";
 import { OrdenacaoViagens } from "./OrdenacaoViagens";
 import { useViagem } from "../hooks/useViagem";
@@ -21,15 +22,21 @@ export function ListaViagens({ busca }: { busca: BuscaViagem }) {
       </div>
     );
   }
-  if (carregando || !cidadesCarregadas) return <p className="viagem-estado" role="status">Buscando viagens disponíveis…</p>;
+  const buscando = carregando || !cidadesCarregadas;
 
   return (
     <div className="viagem-conteudo">
       <FiltrosViagem controle={controle} />
       <section className="viagem-resultados" aria-label="Resultados da busca">
         <OrdenacaoViagens controle={controle} total={paginaViagens?.count ?? 0} />
-        <div className="viagem-lista">
-          {controle.resultados.map((resultado) => (
+        <div className="viagem-lista" aria-busy={buscando}>
+          {buscando && (
+            <>
+              <span className="sr-only" role="status">Buscando viagens disponíveis…</span>
+              {[0, 1, 2].map((indice) => <CardViagemSkeleton key={indice} />)}
+            </>
+          )}
+          {!buscando && controle.resultados.map((resultado) => (
             <CardViagem
               key={resultado.id}
               resultado={resultado}
@@ -37,7 +44,7 @@ export function ListaViagens({ busca }: { busca: BuscaViagem }) {
               recomendado={controle.ordenacaoId === "preco" && resultado === controle.resultados[0]}
             />
           ))}
-          {!controle.resultados.length && (
+          {!buscando && !controle.resultados.length && (
             <div className="viagem-vazia" role="status">
               <h2>Nenhuma viagem encontrada</h2>
               <p>Experimente outros horários, preços ou altere a origem, o destino e a data da busca.</p>
@@ -45,7 +52,7 @@ export function ListaViagens({ busca }: { busca: BuscaViagem }) {
             </div>
           )}
         </div>
-        {paginaViagens && (
+        {paginaViagens && !buscando && (
           <Paginacao
             resumo={`${paginaViagens.count} viagens no total`}
             anterior={paginaViagens.previous}

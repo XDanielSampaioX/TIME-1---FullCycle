@@ -10,6 +10,9 @@ import type { FiltrosViagem } from "../types/filtrosViagem";
 import type { ViagemDisponivel } from "../types/viagemDisponivel";
 import type { BuscaViagem } from "../types/buscaViagem";
 
+// Teto fixo (R$ 1.000,00): derivá-lo das viagens filtradas impedia subir o slider depois de baixá-lo.
+const LIMITE_PRECO_CENTAVOS = 100000;
+
 const ordenacoes: OrdenacaoViagem[] = [
   new OrdenacaoMenorPreco(),
   new OrdenacaoMenorDuracao(),
@@ -31,7 +34,6 @@ export function useFiltrosViagem(
   });
   const [ordenacaoId, setOrdenacaoId] = useState(ordenacoes[0].id);
   const ordenacao = ordenacoes.find((item) => item.id === ordenacaoId) ?? ordenacoes[0];
-  const limitePreco = Math.max(100, ...viagens.map((viagem) => viagem.precoCentavos));
   const resultados = viagens;
 
   useEffect(() => {
@@ -53,8 +55,10 @@ export function useFiltrosViagem(
     if (busca.destino) parametros.set("destino", cidadeId(busca.destino));
     if (busca.partida) parametros.set("data", busca.partida);
     if (busca.passageiros !== undefined) parametros.set("passageiros", String(busca.passageiros));
+
     filtros.classes.forEach((classe) => parametros.append("classe", classe));
     filtros.periodos.forEach((periodo) => parametros.append("periodo", String(periodo)));
+    
     if (filtros.precoMinimo > 0) parametros.set("precoMin", String(filtros.precoMinimo));
     if (Number.isFinite(filtros.precoMaximo)) parametros.set("precoMax", String(filtros.precoMaximo));
     parametros.set("ordering", ordenacao.parametroApi);
@@ -67,5 +71,5 @@ export function useFiltrosViagem(
     setFiltros({ periodos: [], classes: [], precoMinimo: 0, precoMaximo: Infinity });
   }
 
-  return { filtros, setFiltros, resultados, limitePreco, ordenacoes, ordenacaoId, setOrdenacaoId, limpar };
+  return { filtros, setFiltros, resultados, limitePreco: LIMITE_PRECO_CENTAVOS, ordenacoes, ordenacaoId, setOrdenacaoId, limpar };
 }

@@ -7,11 +7,12 @@
     <list default="true" id="5a7dce8a-eb25-4f3b-b71b-6ff9a569a703" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.skills" beforeDir="false" afterPath="$PROJECT_DIR$/.skills" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rotaeFrontend/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/next.config.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rotaeFrontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rotaeFrontend/src/lib/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/src/lib/api.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/components/ListaViagens.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/components/ListaViagens.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/hooks/useFiltrosViagem.ts" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/hooks/useFiltrosViagem.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/pages/viagens.css" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeFrontend/src/modules/viagem/pages/viagens.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rotaeNginx/nginx.conf" beforeDir="false" afterPath="$PROJECT_DIR$/rotaeNginx/nginx.conf" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,16 +30,16 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "refactor/viagens-26",
-    "last_opened_file_path": "C:/Projects/TIME 1 -- Full Cycle/rotaeBackend",
-    "settings.editor.selected.configurable": "reference.settings.ide.settings.web.browsers"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;refactor/viagens-26&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Projects/TIME 1 -- Full Cycle/rotaeBackend&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.ide.settings.web.browsers&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Projects\TIME 1 -- Full Cycle\rotaeBackend" />
