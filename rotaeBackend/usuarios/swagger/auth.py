@@ -1,5 +1,6 @@
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenBlacklistSerializer
 
 from usuarios.serializers import LoginSerializer, UsuarioSerializer
 
@@ -32,4 +33,19 @@ refresh_schema = extend_schema(
     summary="Renovar token",
     description="Troca um refresh token válido por um novo access token e um novo refresh token.",
     tags=["auth"],
+)
+
+logout_schema = extend_schema(
+    summary="Logout",
+    description=(
+        "Revoga o refresh token enviado, encerrando a sessão. O access token continua válido até "
+        "expirar, então o frontend deve descartar os dois tokens."
+    ),
+    tags=["auth"],
+    request=TokenBlacklistSerializer,
+    responses={
+        204: OpenApiResponse(description="Sessão encerrada."),
+        400: OpenApiResponse(description="Refresh token não enviado."),
+        401: OpenApiResponse(description="Refresh token inválido, expirado ou já revogado."),
+    },
 )
