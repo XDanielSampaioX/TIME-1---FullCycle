@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { ViagemDisponivel } from "../types/viagemDisponivel";
-import type { BuscaViagem } from "../types/buscaViagem";
+import { ViagemDisponivel } from "../types/viagem";
+import { BuscaViagem } from "../types/buscaViagem";
 
 export function CardViagem({ resultado, busca, recomendado }: {
   resultado: ViagemDisponivel;

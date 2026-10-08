@@ -1,7 +1,9 @@
-import type { ClasseViagem } from "./classeViagem";
-import type { StatusViagem } from "./statusViagem";
 import type { Cidade } from "@/modules/cidade/types/cidade";
 import type { Onibus } from "./Onibus";
+
+export type ClasseViagem = "CONVENCIONAL" | "EXECUTIVA";
+export type StatusViagem = "AGENDADA" | "COMPLETADA" | "CANCELADA";
+export type ViagemDisponivel = Viagem;
 
 export type Viagem = {
   id: number;

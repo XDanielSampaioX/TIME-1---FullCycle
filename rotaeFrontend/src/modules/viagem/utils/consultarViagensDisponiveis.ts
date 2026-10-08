@@ -1,6 +1,5 @@
 import type { BuscaViagem } from "../types/buscaViagem";
-import type { Viagem } from "../types/viagem";
-import type { ViagemDisponivel } from "../types/viagemDisponivel";
+import type { Viagem, ViagemDisponivel } from "../types/viagem";
 
 export function consultarViagensDisponiveis(
   viagens: Viagem[],

@@ -1,4 +1,4 @@
-import type { ClasseViagem } from "./classeViagem";
+import { ClasseViagem } from "./viagem";
 
 export type FiltrosViagem = {
   periodos: number[];

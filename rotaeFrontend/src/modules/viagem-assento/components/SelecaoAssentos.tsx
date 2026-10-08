@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { Button } from "@/shared/components/Button";
 import { listarViagensAssentos } from "../services/listarViagensAssentos";
 import type { ViagemAssento } from "../types/viagemAssento";
-import type { ViagemDisponivel } from "@/modules/viagem/types/viagemDisponivel";
 import { MapaAssentos } from "./MapaAssentos";
 import { ResumoSelecaoAssentos } from "./ResumoSelecaoAssentos";
 import { useSelecaoAssentos } from "../hooks/useSelecaoAssentos";
+import { ViagemDisponivel } from "@/modules/viagem/types/viagem";
 
 export function SelecaoAssentos({ viagem }: { viagem: ViagemDisponivel }) {
   const [versao, setVersao] = useState(0);

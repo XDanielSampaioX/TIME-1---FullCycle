@@ -7,8 +7,8 @@ import { OrdenacaoMenorDuracao } from "../classes/OrdenacaoMenorDuracao";
 import { OrdenacaoSaidaMaisCedo } from "../classes/OrdenacaoSaidaMaisCedo";
 import type { OrdenacaoViagem } from "../classes/OrdenacaoViagem";
 import type { FiltrosViagem } from "../types/filtrosViagem";
-import type { ViagemDisponivel } from "../types/viagemDisponivel";
 import type { BuscaViagem } from "../types/buscaViagem";
+import { ViagemDisponivel } from "../types/viagem";
 
 // Teto fixo (R$ 1.000,00): derivá-lo das viagens filtradas impedia subir o slider depois de baixá-lo.
 const LIMITE_PRECO_CENTAVOS = 100000;

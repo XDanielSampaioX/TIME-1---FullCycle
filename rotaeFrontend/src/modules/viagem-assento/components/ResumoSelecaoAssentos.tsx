@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/shared/components/Button";
-import type { ViagemDisponivel } from "@/modules/viagem/types/viagemDisponivel";
 import type { ViagemAssento } from "@/modules/viagem-assento/types/viagemAssento";
 import type { useSelecaoAssentos } from "../hooks/useSelecaoAssentos";
+import { ViagemDisponivel } from "@/modules/viagem/types/viagem";
 
 export function ResumoSelecaoAssentos({ resultado, assentos, selecao }: {
   resultado: ViagemDisponivel;
