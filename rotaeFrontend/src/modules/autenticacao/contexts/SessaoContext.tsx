@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { SessaoNaoConfigurada } from "@/modules/autenticacao/services/SessaoNaoConfigurada";
+import { SessaoHttp } from "@/modules/autenticacao/services/SessaoHttp";
 import type { ContratoSessao } from "@/modules/autenticacao/services/contratoSessao";
 import type { EstadoSessao } from "@/modules/autenticacao/types/estadoSessao";
 import type { LoginUsuarioPayload } from "@/modules/autenticacao/types/loginUsuarioPayload";
@@ -23,13 +23,11 @@ type SessaoContextValue = {
   erro: string | null;
   entrar: (dados: LoginUsuarioPayload) => Promise<void>;
   sair: () => Promise<void>;
-  invalidar: () => void;
-  atualizarUsuarioDaSessao: (usuario: Usuario) => void;
 };
 
 const SessaoContext = createContext<SessaoContextValue | undefined>(undefined);
 
-const sessaoPadrao: ContratoSessao = new SessaoNaoConfigurada();
+const sessaoPadrao: ContratoSessao = new SessaoHttp();
 
 export function SessaoProvider({
   children,
@@ -70,8 +68,8 @@ export function SessaoProvider({
       });
 
     return () => {
-  ativo = false;
-};
+      ativo = false;
+    };
   }, [servicoSessao]);
 
   const entrar = useCallback(
@@ -81,18 +79,20 @@ export function SessaoProvider({
       setErroAcao(null);
 
       try {
-        const resposta = await servicoSessao.entrar(dados);
+        const usuarioAutenticado = await servicoSessao.entrar(dados);
         if (versaoAtual === versaoDaSessao.current) {
           setEstadoSessao({
             status: "autenticado",
-            usuario: resposta.user,
+            usuario: usuarioAutenticado,
           });
         }
-      } catch {
-        setErroAcao("Não foi possível entrar. Verifique a disponibilidade do login.");
-        throw new Error("Falha no login do usuário.");
+      } catch (causa) {
+        if (versaoAtual === versaoDaSessao.current) {
+          setErroAcao(causa instanceof Error ? causa.message : "Não foi possível entrar.");
+        }
+        throw causa;
       } finally {
-        setCarregandoAcao(false);
+        if (versaoAtual === versaoDaSessao.current) setCarregandoAcao(false);
       }
     },
     [servicoSessao],
@@ -108,26 +108,15 @@ export function SessaoProvider({
       if (versaoAtual === versaoDaSessao.current) {
         setEstadoSessao({ status: "nao_autenticado" });
       }
-    } catch {
-      setErroAcao("Não foi possível encerrar a sessão.");
-      throw new Error("Falha ao sair da sessão.");
+    } catch (causa) {
+      if (versaoAtual === versaoDaSessao.current) {
+        setErroAcao(causa instanceof Error ? causa.message : "Não foi possível encerrar a sessão.");
+      }
+      throw causa;
     } finally {
-      setCarregandoAcao(false);
+      if (versaoAtual === versaoDaSessao.current) setCarregandoAcao(false);
     }
   }, [servicoSessao]);
-
-  const invalidar = useCallback(() => {
-    versaoDaSessao.current++;
-    setEstadoSessao({ status: "nao_autenticado" });
-  }, []);
-
-  const atualizarUsuarioDaSessao = useCallback((usuarioAtualizado: Usuario) => {
-    setEstadoSessao((estadoAnterior) =>
-      estadoAnterior.status === "autenticado"
-        ? { status: "autenticado", usuario: usuarioAtualizado }
-        : estadoAnterior,
-    );
-  }, []);
 
   const usuario =
     estadoSessao.status === "autenticado" ? estadoSessao.usuario : null;
@@ -143,8 +132,6 @@ export function SessaoProvider({
       erro,
       entrar,
       sair,
-      invalidar,
-      atualizarUsuarioDaSessao,
     }),
     [
       estadoSessao,
@@ -153,8 +140,6 @@ export function SessaoProvider({
       erro,
       entrar,
       sair,
-      invalidar,
-      atualizarUsuarioDaSessao,
     ],
   );
 

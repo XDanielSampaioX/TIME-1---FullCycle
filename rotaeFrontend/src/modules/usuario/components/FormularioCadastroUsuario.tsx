@@ -3,13 +3,11 @@
 import { type FormEvent, useState } from "react";
 import { useUsuario } from "@/modules/usuario/contexts/UsuarioContext";
 import { ErroCadastro } from "@/modules/usuario/types/ErroCadastro";
+import { CAMPOS_CADASTRO, type CadastroUsuarioPayload, type CampoCadastro } from "@/modules/usuario/types/cadastroUsuarioPayload";
+import type { ErrosCadastro } from "@/modules/usuario/validacao/errosCadastro";
 import { numeros, validacaoCadastro } from "@/modules/usuario/validacao/validacaoCadastro";
-import type { ValoresCadastro } from "@/modules/usuario/validacao/valoresCadastro";
 
-type Campo = keyof ValoresCadastro;
-type ErrosCadastro = Partial<Record<Campo, string>>;
 type CampoConfig = {
-  name: Campo;
   label: string;
   type?: string;
   autoComplete?: string;
@@ -19,11 +17,10 @@ type CampoConfig = {
   required?: boolean;
 };
 
-const campos: CampoConfig[] = [
-  { name: "nome", label: "Nome completo", autoComplete: "name", required: true },
-  { name: "email", label: "E-mail", type: "email", autoComplete: "email", required: true },
-  {
-    name: "celular",
+const configuracaoCampos: Record<CampoCadastro, CampoConfig> = {
+  nome: { label: "Nome completo", autoComplete: "name", required: true },
+  email: { label: "E-mail", type: "email", autoComplete: "email", required: true },
+  celular: {
     label: "Celular com DDD",
     type: "tel",
     autoComplete: "tel",
@@ -32,34 +29,40 @@ const campos: CampoConfig[] = [
     maxLength: 16,
     required: true,
   },
-  {
-    name: "dataNasc",
+  dataNasc: {
     label: "Data de nascimento",
     type: "date",
     autoComplete: "bday",
     required: true,
   },
-  {
-    name: "cpf",
+  cpf: {
     label: "CPF",
     inputMode: "numeric",
     placeholder: "000.000.000-00",
     maxLength: 14,
     required: true,
   },
-  { name: "senha", label: "Senha", type: "password", autoComplete: "new-password", required: true },
-];
+  senha: { label: "Senha", type: "password", autoComplete: "new-password", required: true },
+};
 
-const iniciais: ValoresCadastro = { nome: "", email: "", senha: "", celular: "", dataNasc: "", cpf: "" };
+const campos = CAMPOS_CADASTRO.map((name) => ({ name, ...configuracaoCampos[name] }));
+
+const iniciais = Object.fromEntries(CAMPOS_CADASTRO.map((campo) => [campo, ""])) as CadastroUsuarioPayload;
+
+function focarPrimeiroErro(erros: ErrosCadastro) {
+  const primeiro = campos.find((campo) => erros[campo.name]);
+  if (primeiro) document.getElementById(`cadastro-${primeiro.name}`)?.focus();
+  return Boolean(primeiro);
+}
 
 export function FormularioCadastroUsuario() {
-  const [valores, setValores] = useState<ValoresCadastro>(iniciais);
+  const [valores, setValores] = useState<CadastroUsuarioPayload>(iniciais);
   const [errosCampo, setErrosCampo] = useState<ErrosCadastro>({});
   const [sucesso, setSucesso] = useState("");
   const [falhaApi, setFalhaApi] = useState(false);
   const { cadastrar, carregando, erro } = useUsuario();
 
-  function alterar(campo: Campo, valor: string) {
+  function alterar(campo: CampoCadastro, valor: string) {
     setValores((anteriores) => ({ ...anteriores, [campo]: valor }));
     setErrosCampo((anteriores) => ({ ...anteriores, [campo]: undefined }));
     setSucesso("");
@@ -74,36 +77,27 @@ export function FormularioCadastroUsuario() {
 
     const erros = validacaoCadastro.validar(valores);
     setErrosCampo(erros);
-    const primeiroCampoComErro = campos.find((campo) => erros[campo.name]);
-    if (primeiroCampoComErro) {
-      document.getElementById(`cadastro-${primeiroCampoComErro.name}`)?.focus();
-      return;
-    }
+    if (focarPrimeiroErro(erros)) return;
 
     try {
       await cadastrar({
-  nome: valores.nome.trim(),
-  email: valores.email.trim(),
-  senha: valores.senha,
-  celular: numeros(valores.celular),
-  dataNasc: valores.dataNasc,
-  cpf: numeros(valores.cpf),
-});
+        ...valores,
+        nome: valores.nome.trim(),
+        email: valores.email.trim(),
+        celular: numeros(valores.celular),
+        cpf: numeros(valores.cpf),
+      });
       setValores(iniciais);
       setSucesso("Cadastro realizado com sucesso.");
     } catch (causa) {
-  // Mantém os valores para uma nova tentativa.
-  if (causa instanceof ErroCadastro) {
-    setErrosCampo(causa.campos);
-    const primeiro = campos.find((campo) => causa.campos[campo.name]);
-
-    if (primeiro) {
-      document.getElementById(`cadastro-${primeiro.name}`)?.focus();
+      // Mantém os valores para uma nova tentativa.
+      if (causa instanceof ErroCadastro) {
+        setErrosCampo(causa.campos);
+        focarPrimeiroErro(causa.campos);
+      } else {
+        setFalhaApi(true);
+      }
     }
-  } else {
-    setFalhaApi(true);
-  }
-}
   }
 
   return (

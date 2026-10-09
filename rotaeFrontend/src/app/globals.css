@@ -475,6 +475,9 @@ select:focus-visible {
 .usuario-feedback-success { background: var(--color-surface-subtle); color: var(--color-brand-950); }
 .usuario-submit { width: 100%; margin-top: 1.5rem; }
 .usuario-submit:disabled { opacity: 0.65; cursor: wait; }
+.usuario-login-senha { margin-top: 1rem; }
+.usuario-link { margin: 1.25rem 0 0; text-align: center; color: var(--color-text-secondary); }
+.usuario-link a { color: var(--color-brand-950); font-weight: 700; }
 
 @media (max-width: 560px) {
   .usuario-form-grid { grid-template-columns: 1fr; }

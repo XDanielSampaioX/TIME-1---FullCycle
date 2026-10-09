@@ -1,5 +1,6 @@
 import { FormularioCadastroUsuario } from "@/modules/usuario/components/FormularioCadastroUsuario";
 import { UsuarioProvider } from "@/modules/usuario/contexts/UsuarioContext";
+import Link from "next/link";
 
 export function CadastroUsuarioPage() {
   return (
@@ -12,6 +13,7 @@ export function CadastroUsuarioPage() {
             Cadastre-se para consultar viagens e reservar suas passagens.
           </p>
           <FormularioCadastroUsuario />
+          <p className="usuario-link">Já tem conta? <Link href="/login">Entre aqui</Link></p>
         </section>
       </main>
     </UsuarioProvider>

@@ -1,8 +1,6 @@
-export type CadastroUsuarioPayload = {
-  nome: string;
-  email: string;
-  senha: string;
-  celular: string;
-  dataNasc: string;
-  cpf: string;
-};
+export const CAMPOS_CADASTRO = [
+  "nome", "email", "celular", "dataNasc", "cpf", "senha",
+] as const;
+
+export type CampoCadastro = (typeof CAMPOS_CADASTRO)[number];
+export type CadastroUsuarioPayload = Record<CampoCadastro, string>;

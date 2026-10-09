@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Container } from "./Container";
+import { AccountMenu } from "./AccountMenu";
 
 type HeaderActionContext = { className?: string };
 
@@ -55,43 +56,6 @@ function Brand() {
       </span>
       <span>rotaê</span>
     </Link>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg className="size-4 fill-none stroke-current stroke-[1.8]" viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="8" r="3.25" />
-      <path d="M5.5 20c.7-3.2 2.8-5 6.5-5s5.8 1.8 6.5 5" />
-    </svg>
-  );
-}
-
-function AccountMenu() {
-  const menuActions = [
-    new HeaderLinkAction("Minhas viagens", "/reservas"),
-    new HeaderLinkAction("Entrar", "/login"),
-    new HeaderLinkAction("Criar conta", "/cadastro"),
-  ];
-
-  return (
-    <details className="relative h-16 flex items-center">
-      <summary className="flex h-10 p-4 cursor-pointer list-none items-center gap-2 rounded-full border border-white/25 px-1.5 [&::-webkit-details-marker]:hidden" aria-label="Menu da conta">
-        <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white/12" aria-hidden="true">
-          <UserIcon />
-        </span>
-        <svg className="size-3 shrink-0 fill-none stroke-current stroke-2" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="m6 9 6 6 6-6" />
-        </svg>
-      </summary>
-      <div className="absolute right-0 top-[calc(100%+0.6rem)] z-20 min-w-44 rounded-xl bg-white p-2 text-sm text-(--color-brand-950) shadow-xl">
-        {menuActions.map((action) => (
-          <span key={action.key} className="contents">
-            {action.render({ className: "block rounded-lg px-3 py-2 hover:bg-black/5" })}
-          </span>
-        ))}
-      </div>
-    </details>
   );
 }
 

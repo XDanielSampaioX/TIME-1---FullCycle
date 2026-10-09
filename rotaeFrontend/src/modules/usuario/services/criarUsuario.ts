@@ -1,23 +1,13 @@
-import { apiUrl } from "@/lib/api";
+import { exigirSucesso, requisitarApi } from "@/lib/requisicaoApi";
 import { ErroCadastro } from "@/modules/usuario/types/ErroCadastro";
-import type { CadastroUsuarioPayload } from "@/modules/usuario/types/cadastroUsuarioPayload";
+import { CAMPOS_CADASTRO, type CadastroUsuarioPayload, type CampoCadastro } from "@/modules/usuario/types/cadastroUsuarioPayload";
 import type { Usuario } from "@/modules/usuario/types/usuario";
-
-const nomesCampos: (keyof CadastroUsuarioPayload)[] = [
-  "nome",
-  "email",
-  "senha",
-  "celular",
-  "dataNasc",
-  "cpf",
-];
 
 export async function criarUsuario(
   dados: CadastroUsuarioPayload,
 ): Promise<Usuario> {
-  const resposta = await fetch(apiUrl("/api/v1/usuarios/"), {
+  const resposta = await requisitarApi("/api/v1/usuarios/", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(dados),
   });
 
@@ -27,11 +17,9 @@ export async function criarUsuario(
 
       if (corpo && typeof corpo === "object" && !Array.isArray(corpo)) {
         const mensagens = corpo as Record<string, unknown>;
-        const campos: Partial<
-          Record<keyof CadastroUsuarioPayload, string>
-        > = {};
+        const campos: Partial<Record<CampoCadastro, string>> = {};
 
-        for (const campo of nomesCampos) {
+        for (const campo of CAMPOS_CADASTRO) {
           const valor = mensagens[campo];
           const mensagem = Array.isArray(valor)
             ? valor.find((item) => typeof item === "string")
@@ -48,8 +36,8 @@ export async function criarUsuario(
       }
     }
 
-    throw new Error("Não foi possível criar o usuário.");
   }
 
+  exigirSucesso(resposta, "Não foi possível criar o usuário.");
   return resposta.json() as Promise<Usuario>;
 }

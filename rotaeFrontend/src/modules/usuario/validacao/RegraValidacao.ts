@@ -1,7 +1,7 @@
 import type { ErrosCadastro } from "./errosCadastro";
-import type { ValoresCadastro } from "./valoresCadastro";
+import type { CadastroUsuarioPayload } from "@/modules/usuario/types/cadastroUsuarioPayload";
 
 // O mesmo contrato serve para uma regra simples ou para um grupo de regras.
 export interface RegraValidacao {
-  validar(valores: ValoresCadastro): ErrosCadastro;
+  validar(valores: CadastroUsuarioPayload): ErrosCadastro;
 }

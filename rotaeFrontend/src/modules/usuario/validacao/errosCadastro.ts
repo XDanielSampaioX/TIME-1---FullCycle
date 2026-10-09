@@ -1,5 +1,3 @@
-import type { ValoresCadastro } from "./valoresCadastro";
+import type { CampoCadastro } from "@/modules/usuario/types/cadastroUsuarioPayload";
 
-export type ErrosCadastro = Partial<
-  Record<keyof ValoresCadastro, string>
->;
+export type ErrosCadastro = Partial<Record<CampoCadastro, string>>;
