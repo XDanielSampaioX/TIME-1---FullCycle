@@ -49,6 +49,7 @@ class ReservaSerializer(serializers.ModelSerializer):
             "viagem",
             "viagem_id",
             "status",
+            "expira_em",
             "assentos",
             "created_at",
             "updated_at",

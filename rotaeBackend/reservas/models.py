@@ -24,6 +24,11 @@ class Reserva(models.Model):
         choices=Status.choices,
         default=Status.PENDENTE,
     )
+    expira_em = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Expiração do bloqueio temporário (TTL). Após expirar, a reserva pode ser cancelada automaticamente e os assentos liberados.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -1,7 +1,14 @@
+from datetime import timedelta
+
 from django.db import connection, transaction
+from django.utils import timezone
 
 from viagens.models import Viagem, ViagemAssento
 from .models import Reserva, ReservaAssento
+
+
+# TTL padrão para bloqueio temporário (15 minutos)
+RESERVA_TTL_MINUTOS = 15
 
 
 class AssentoIndisponivelError(Exception):
@@ -94,10 +101,12 @@ def criar_reserva(*, usuario, viagem_id, assento_ids):
             raise AssentoIndisponivelError(sorted(indisponiveis))
 
         # --- Criar Reserva ---
+        expira_em = timezone.now() + timedelta(minutes=RESERVA_TTL_MINUTOS)
         reserva = Reserva.objects.create(
             usuario=usuario,
             viagem=viagem,
             status=Reserva.Status.PENDENTE,
+            expira_em=expira_em,
         )
 
         # --- Marcar assentos como SEGURADO ---
