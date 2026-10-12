@@ -1,7 +1,7 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
-import { useUsuario } from "@/modules/usuario/contexts/UsuarioContext";
+import { criarUsuario } from "@/modules/usuario/services/criarUsuario";
 import { ErroCadastro } from "@/modules/usuario/types/ErroCadastro";
 import { CAMPOS_CADASTRO, type CadastroUsuarioPayload, type CampoCadastro } from "@/modules/usuario/types/cadastroUsuarioPayload";
 import type { ErrosCadastro } from "@/modules/usuario/validacao/errosCadastro";
@@ -59,47 +59,67 @@ export function FormularioCadastroUsuario() {
   const [valores, setValores] = useState<CadastroUsuarioPayload>(iniciais);
   const [errosCampo, setErrosCampo] = useState<ErrosCadastro>({});
   const [sucesso, setSucesso] = useState("");
-  const [falhaApi, setFalhaApi] = useState(false);
-  const { cadastrar, carregando, erro } = useUsuario();
+  const [carregando, setCarregando] = useState(false);
+  const [erroApi, setErroApi] = useState<string | null>(null);
 
   function alterar(campo: CampoCadastro, valor: string) {
-    setValores((anteriores) => ({ ...anteriores, [campo]: valor }));
-    setErrosCampo((anteriores) => ({ ...anteriores, [campo]: undefined }));
+    setValores((anteriores) => ({
+      ...anteriores,
+      [campo]: valor,
+    }));
+
+    setErrosCampo((anteriores) => ({
+      ...anteriores,
+      [campo]: undefined,
+    }));
+
     setSucesso("");
-    setFalhaApi(false);
+    setErroApi(null);
   }
 
-  async function enviarFormulario(event: FormEvent<HTMLFormElement>) {
+  async function enviarFormulario(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
+
     if (carregando) return;
+
     setSucesso("");
-    setFalhaApi(false);
+    setErroApi(null);
 
     const erros = validacaoCadastro.validar(valores);
     setErrosCampo(erros);
+
     if (focarPrimeiroErro(erros)) return;
 
+    setCarregando(true);
+
     try {
-      await cadastrar({
+      await criarUsuario({
         ...valores,
         nome: valores.nome.trim(),
         email: valores.email.trim(),
         celular: numeros(valores.celular),
         cpf: numeros(valores.cpf),
       });
+
       setValores(iniciais);
       setSucesso("Cadastro realizado com sucesso.");
     } catch (causa) {
-      // Mantém os valores para uma nova tentativa.
       if (causa instanceof ErroCadastro) {
         setErrosCampo(causa.campos);
         focarPrimeiroErro(causa.campos);
       } else {
-        setFalhaApi(true);
+        setErroApi(
+          causa instanceof Error
+            ? causa.message
+            : "Não foi possível realizar o cadastro. Tente novamente."
+        );
       }
+    } finally {
+      setCarregando(false);
     }
   }
-
   return (
     <form className="usuario-form" onSubmit={enviarFormulario} noValidate>
       <p className="usuario-form-note">Os campos marcados com * são obrigatórios.</p>
@@ -123,9 +143,14 @@ export function FormularioCadastroUsuario() {
         })}
       </div>
 
-      {falhaApi && <p className="usuario-feedback usuario-feedback-error" role="alert">
-        {erro ?? "Não foi possível realizar o cadastro. Seus dados foram mantidos; tente novamente."}
-      </p>}
+      {erroApi && (
+  <p
+    className="usuario-feedback usuario-feedback-error"
+    role="alert"
+  >
+    {erroApi}
+  </p>
+)}
       {sucesso && <p className="usuario-feedback usuario-feedback-success" role="status">{sucesso}</p>}
       <button className="shared-button shared-button-primary usuario-submit" type="submit" disabled={carregando}>
         {carregando ? "Cadastrando..." : "Criar conta"}
