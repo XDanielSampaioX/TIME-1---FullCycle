@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "./Button";
-import type { PaginacaoProps } from "@/shared/types/paginacaoProps";
 import styles from "../styles/Paginacao.module.css";
+import { PaginacaoProps } from "../types/pagina";
 
 export function Paginacao({ resumo, anterior, proxima, carregando = false, onNavegar }: PaginacaoProps) {
   if (!anterior && !proxima) return null;

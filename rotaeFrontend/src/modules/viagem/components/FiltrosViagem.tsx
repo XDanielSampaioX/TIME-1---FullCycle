@@ -1,6 +1,6 @@
 import Image from "next/image";
-import type { ClasseViagem } from "../types/classeViagem";
 import type { useFiltrosViagem } from "../hooks/useFiltrosViagem";
+import { ClasseViagem } from "../types/viagem";
 
 const periodos = [
   { valor: 0, titulo: "Madrugada (00:00 - 06:00)" },

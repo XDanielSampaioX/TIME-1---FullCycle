@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { buscarViagem } from "@/modules/viagem/services/buscarViagem";
 import { consultarViagensDisponiveis } from "@/modules/viagem/utils/consultarViagensDisponiveis";
 import type { BuscaViagem } from "@/modules/viagem/types/buscaViagem";
-import type { ViagemDisponivel } from "@/modules/viagem/types/viagemDisponivel";
 import { Button } from "@/shared/components/Button";
 import { SelecaoAssentos } from "./SelecaoAssentos";
+import { ViagemDisponivel } from "@/modules/viagem/types/viagem";
 
 export function ConteudoSelecaoAssentos({ viagemId, busca }: { viagemId: number; busca: BuscaViagem }) {
   const [versao, setVersao] = useState(0);
