@@ -28,14 +28,14 @@ jobs:
       - name: Testes do backend
         run: docker compose exec -T backend python manage.py test
 
-      - name: Testes do frontend
-        run: docker compose exec -T frontend npm run build
-
-      - name: Testes do frontend
-        run: docker compose exec -T frontend npm test
-      
       - name: Lint do frontend
         run: docker compose exec -T frontend npm run lint
+        
+      - name: Testes do frontend
+        run: docker compose exec -T frontend npm test
+
+      - name: Build do frontend
+        run: docker compose exec -T frontend npm run build
 
       - name: Mostrar logs se algo falhou
         if: failure()
