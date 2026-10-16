@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.views import TokenBlacklistView, TokenRefreshView
 
 from core.api.permissions import RotaPublica
 
@@ -18,6 +18,7 @@ from .swagger import (
     alterar_senha_schema,
     cadastro_usuario_schema,
     login_schema,
+    logout_schema,
     me_schema,
     refresh_schema,
 )
@@ -51,6 +52,15 @@ class LoginView(RotaPublica, GenericAPIView):
 @refresh_schema
 class RefreshView(TokenRefreshView):
     pass
+
+
+@logout_schema
+class LogoutView(TokenBlacklistView):
+    """Revoga só o refresh token enviado; o access token segue válido até expirar."""
+
+    def post(self, request, *args, **kwargs):
+        super().post(request, *args, **kwargs)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @me_schema
