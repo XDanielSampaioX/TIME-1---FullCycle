@@ -29,7 +29,7 @@ jobs:
         run: docker compose exec -T backend python manage.py test
 
       - name: Testes do frontend
-        run: docker compose exec -T frontend npm build
+        run: docker compose exec -T frontend npm run build
 
       - name: Testes do frontend
         run: docker compose exec -T frontend npm test
