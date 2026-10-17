@@ -28,12 +28,12 @@ export function useAtualizacaoUsuario(usuario: Usuario) {
     setSalvo(false);
   }
 
-  async function enviar() {
+  async function enviar(): Promise<boolean> {
     const errosLocais = regrasAtualizacaoUsuario.validar(dados);
     setErros(errosLocais);
     setErroGeral(null);
     setSalvo(false);
-    if (Object.keys(errosLocais).length > 0) return;
+    if (Object.keys(errosLocais).length > 0) return false;
 
     setEnviando(true);
     try {
@@ -41,15 +41,17 @@ export function useAtualizacaoUsuario(usuario: Usuario) {
 
       if ("erros" in resultado) {
         setErros(resultado.erros);
-        return;
+        return false;
       }
 
       // Relê a sessão: o fetch autenticado pode ter renovado os tokens durante a requisição.
       const sessao = lerSessao();
       if (sessao) iniciarSessao({ ...sessao, user: resultado.usuario });
       setSalvo(true);
+      return true;
     } catch {
       setErroGeral("Não foi possível salvar as alterações. Tente novamente.");
+      return false;
     } finally {
       setEnviando(false);
     }

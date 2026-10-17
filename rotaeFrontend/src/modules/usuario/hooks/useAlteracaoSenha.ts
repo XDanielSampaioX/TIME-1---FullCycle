@@ -23,12 +23,12 @@ export function useAlteracaoSenha(usuario: Usuario) {
     setAlterada(false);
   }
 
-  async function enviar() {
+  async function enviar(): Promise<boolean> {
     const errosLocais = regrasAlteracaoSenha.validar(dados);
     setErros(errosLocais);
     setErroGeral(null);
     setAlterada(false);
-    if (Object.keys(errosLocais).length > 0) return;
+    if (Object.keys(errosLocais).length > 0) return false;
 
     setEnviando(true);
     try {
@@ -36,15 +36,17 @@ export function useAlteracaoSenha(usuario: Usuario) {
 
       if ("erros" in resultado) {
         setErros(resultado.erros);
-        return;
+        return false;
       }
 
       // Os tokens antigos deixam de valer assim que a senha muda: grava os novos de imediato.
       iniciarSessao({ ...resultado.tokens, user: usuario });
       setDados(camposVazios);
       setAlterada(true);
+      return true;
     } catch {
       setErroGeral("Não foi possível alterar a senha. Tente novamente.");
+      return false;
     } finally {
       setEnviando(false);
     }
