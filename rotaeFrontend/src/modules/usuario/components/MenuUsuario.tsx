@@ -25,7 +25,8 @@ const linksAutenticado = [
 ];
 
 const classeItem = "block w-full rounded-lg px-3 py-2 text-left no-underline hover:bg-black/5";
-const classeBotaoMenu = "flex h-10 items-center gap-2 rounded-full border border-white/25 px-1.5";
+// Avatar redondo com borda dourada, como no protótipo.
+const classeAvatar = "relative grid size-9 shrink-0 place-items-center rounded-full border-2 border-(--color-accent-500) bg-(--color-brand-800) text-white";
 
 function IconeUsuario() {
   return (
@@ -43,7 +44,7 @@ export function MenuUsuario({ estado, usuario, sessaoIndisponivel, aoSair }: Men
   if (estado === "carregando") {
     return (
       <div className="flex h-16 items-center" role="status" aria-busy="true">
-        <span className={`${classeBotaoMenu} w-16 animate-pulse bg-white/10`} aria-hidden="true" />
+        <span className={`${classeAvatar} animate-pulse opacity-60`} aria-hidden="true" />
         <span className="sr-only">Carregando sessão...</span>
       </div>
     );
@@ -59,10 +60,10 @@ export function MenuUsuario({ estado, usuario, sessaoIndisponivel, aoSair }: Men
   return (
     <details className="relative flex h-16 items-center" ref={menu}>
       <summary
-        className={`${classeBotaoMenu} cursor-pointer list-none p-4 [&::-webkit-details-marker]:hidden`}
+        className="flex cursor-pointer list-none items-center gap-1.5 [&::-webkit-details-marker]:hidden"
         aria-label={sessaoIndisponivel ? "Menu da conta (sessão indisponível)" : "Menu da conta"}
       >
-        <span className="relative grid size-7 shrink-0 place-items-center rounded-full bg-white/12" aria-hidden="true">
+        <span className={classeAvatar} aria-hidden="true">
           <IconeUsuario />
           {sessaoIndisponivel && (
             <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full border border-(--color-brand-950) bg-amber-400" />
