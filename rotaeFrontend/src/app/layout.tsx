@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AutenticacaoProvider } from "@/modules/autenticacao/contexts/AutenticacaoContext";
 import { Footer } from "@/shared/components/Footer";
 import { Header } from "@/shared/components/Header";
 
@@ -22,7 +23,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} lang="pt-BR">
-      <body className="min-h-full flex flex-col"><Header />{children}<Footer /></body>
+      <body className="min-h-full flex flex-col">
+        <AutenticacaoProvider>
+          <Header />
+          {children}
+          <Footer />
+        </AutenticacaoProvider>
+      </body>
     </html>
   );
 }

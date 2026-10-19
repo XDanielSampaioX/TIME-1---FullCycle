@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { useAutenticacao } from "@/modules/autenticacao/hooks/useAutenticacao";
 import { Container } from "./Container";
 
 type HeaderActionContext = { className?: string };
@@ -23,6 +26,28 @@ class HeaderLinkAction extends HeaderAction {
       <Link className={`no-underline ${className}`.trim()} href={this.href}>
         {this.label}
       </Link>
+    );
+  }
+}
+
+class HeaderButtonAction extends HeaderAction {
+  constructor(private readonly label: string, private readonly onClick: () => void) {
+    super();
+  }
+
+  get key() {
+    return this.label;
+  }
+
+  render({ className = "" }: HeaderActionContext = {}) {
+    return (
+      <button
+        className={`w-full cursor-pointer border-0 bg-transparent text-left ${className}`.trim()}
+        type="button"
+        onClick={this.onClick}
+      >
+        {this.label}
+      </button>
     );
   }
 }
@@ -68,11 +93,16 @@ function UserIcon() {
 }
 
 function AccountMenu() {
-  const menuActions = [
-    new HeaderLinkAction("Minhas viagens", "/reservas"),
-    new HeaderLinkAction("Entrar", "/login"),
-    new HeaderLinkAction("Criar conta", "/cadastro"),
-  ];
+  const { usuario, sair } = useAutenticacao();
+  const menuActions = usuario
+    ? [
+      new HeaderLinkAction("Minhas viagens", "/reservas"),
+      new HeaderButtonAction("Sair", sair),
+    ]
+    : [
+      new HeaderLinkAction("Entrar", "/login"),
+      new HeaderLinkAction("Criar conta", "/cadastro"),
+    ];
 
   return (
     <details className="relative h-16 flex items-center">
@@ -85,6 +115,11 @@ function AccountMenu() {
         </svg>
       </summary>
       <div className="absolute right-0 top-[calc(100%+0.6rem)] z-20 min-w-44 rounded-xl bg-white p-2 text-sm text-(--color-brand-950) shadow-xl">
+        {usuario && (
+          <p className="m-0 px-3 py-2 font-bold">
+            Olá, {usuario.nome}
+          </p>
+        )}
         {menuActions.map((action) => (
           <span key={action.key} className="contents">
             {action.render({ className: "block rounded-lg px-3 py-2 hover:bg-black/5" })}
