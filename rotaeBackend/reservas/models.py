@@ -1,68 +1,45 @@
 from django.conf import settings
 from django.db import models
-from viagens.models import Viagem, Assento, ViagemAssento
+
+from viagens.models import Viagem
 
 
 class Reserva(models.Model):
     class Status(models.TextChoices):
-        PENDENTE = "PENDENTE", "Pendente"
-        CONFIRMADA = "CONFIRMADA", "Confirmada"
-        CANCELADA = "CANCELADA", "Cancelada"
+        PAGAMENTO_PENDENTE = "PAGAMENTO_PENDENTE", "Pagamento Pendente"
+        PAGO = "PAGO", "Pago"
+        EXPIRADO = "EXPIRADO", "Expirado"
+        FALHA = "FALHA", "Falha"
+        CANCELADO = "CANCELADO", "Cancelado"
 
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="reservas",
     )
     viagem = models.ForeignKey(
         Viagem,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="reservas",
     )
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
-        default=Status.PENDENTE,
+        default=Status.PAGAMENTO_PENDENTE,
+    )
+    valor_total = models.PositiveIntegerField(
+        help_text="Valor total da reserva em centavos.",
     )
     expira_em = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="Expiração do bloqueio temporário (TTL). Após expirar, a reserva pode ser cancelada automaticamente e os assentos liberados.",
+        help_text="Data e hora em que a reserva expira se não for paga.",
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-created_at"]
         verbose_name = "Reserva"
         verbose_name_plural = "Reservas"
+        ordering = ("-criado_em",)
 
     def __str__(self):
         return f"Reserva #{self.pk} - {self.usuario} - {self.viagem} ({self.status})"
-
-
-class ReservaAssento(models.Model):
-    reserva = models.ForeignKey(
-        Reserva,
-        on_delete=models.CASCADE,
-        related_name="assentos",
-    )
-    assento = models.ForeignKey(
-        Assento,
-        on_delete=models.CASCADE,
-        related_name="reservas",
-    )
-    preco_centavos = models.PositiveIntegerField()
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["reserva", "assento"],
-                name="unique_reserva_assento",
-            ),
-        ]
-        verbose_name = "Assento da Reserva"
-        verbose_name_plural = "Assentos da Reserva"
-
-    def __str__(self):
-        return f"ReservaAssento #{self.pk} - Reserva {self.reserva_id} - Assento {self.assento_id}"

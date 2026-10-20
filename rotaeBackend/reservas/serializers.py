@@ -1,57 +1,63 @@
 from rest_framework import serializers
 
-from .models import Reserva, ReservaAssento
-from .services import (
-    AssentoIndisponivelError,
-    ViagemNaoEncontradaError,
-    criar_reserva,
-)
+from viagens.models import ViagemAssento
+from .models import Reserva
 
 
 class ReservaCriarSerializer(serializers.Serializer):
     viagem_id = serializers.IntegerField()
+    viagem_assento_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        min_length=1,
+        max_length=10,
+        required=False,
+    )
     assento_ids = serializers.ListField(
         child=serializers.IntegerField(min_value=1),
         min_length=1,
+        max_length=10,
+        required=False,
     )
 
-    def validate_assento_ids(self, value):
-        duplicados = len(value) != len(set(value))
-        if duplicados:
+    def validate(self, attrs):
+        ids = attrs.get("viagem_assento_ids") or attrs.get("assento_ids")
+        if not ids:
+            raise serializers.ValidationError({"viagem_assento_ids": "Informe ao menos um assento para reservar."})
+
+        if len(ids) != len(set(ids)):
             raise serializers.ValidationError("A lista contém assentos duplicados.")
-        return value
 
-    def create(self, validated_data):
-        return criar_reserva(
-            usuario=self.context["request"].user,
-            viagem_id=validated_data["viagem_id"],
-            assento_ids=validated_data["assento_ids"],
-        )
+        attrs["viagem_assento_ids"] = ids
+        attrs.pop("assento_ids", None)
+        return attrs
 
 
-class ReservaAssentoSerializer(serializers.ModelSerializer):
+class ReservaViagemAssentoSerializer(serializers.ModelSerializer):
+    assento_id = serializers.IntegerField(read_only=True)
     numero = serializers.IntegerField(source="assento.numero", read_only=True)
 
     class Meta:
-        model = ReservaAssento
-        fields = ["id", "assento", "numero", "preco_centavos"]
+        model = ViagemAssento
+        fields = ("id", "assento_id", "numero", "status")
+        read_only_fields = fields
 
 
 class ReservaSerializer(serializers.ModelSerializer):
-    assentos = ReservaAssentoSerializer(many=True, read_only=True)
     viagem_id = serializers.IntegerField(source="viagem.id", read_only=True)
+    assentos = ReservaViagemAssentoSerializer(source="viagem_assentos", many=True, read_only=True)
+    total_assentos = serializers.IntegerField(source="viagem_assentos.count", read_only=True)
 
     class Meta:
         model = Reserva
-        fields = [
+        fields = (
             "id",
-            "usuario",
-            "viagem",
             "viagem_id",
             "status",
+            "valor_total",
             "expira_em",
             "assentos",
-            "created_at",
-            "updated_at",
-        ]
+            "total_assentos",
+            "criado_em",
+            "atualizado_em",
+        )
         read_only_fields = fields

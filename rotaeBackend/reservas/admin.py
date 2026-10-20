@@ -1,13 +1,15 @@
 from django.contrib import admin
 
-from .models import Reserva, ReservaAssento
+from viagens.models import ViagemAssento
+from .models import Reserva
+from .services import cancelar_reserva, ReservaInvalidaError
 
 
-class ReservaAssentoInline(admin.TabularInline):
-    model = ReservaAssento
+class ViagemAssentoInline(admin.TabularInline):
+    model = ViagemAssento
     extra = 0
-    fields = ("assento", "preco_centavos")
-    readonly_fields = ("assento", "preco_centavos")
+    fields = ("assento", "status")
+    readonly_fields = ("assento", "status")
     can_delete = False
 
     def has_add_permission(self, request, obj=None):
@@ -16,14 +18,49 @@ class ReservaAssentoInline(admin.TabularInline):
 
 @admin.register(Reserva)
 class ReservaAdmin(admin.ModelAdmin):
-    list_display = ("id", "usuario", "viagem", "status", "created_at", "updated_at")
-    list_filter = ("status", "created_at")
-    search_fields = ("usuario__email", "usuario__nome", "viagem__origem__nome", "viagem__destino__nome")
-    readonly_fields = ("created_at", "updated_at")
-    inlines = (ReservaAssentoInline,)
+    list_display = (
+        "id",
+        "usuario",
+        "viagem",
+        "status",
+        "valor_total",
+        "expira_em",
+        "criado_em",
+        "atualizado_em",
+    )
+    list_filter = ("status", "criado_em")
+    search_fields = (
+        "usuario__email",
+        "usuario__nome",
+        "viagem__origem__nome",
+        "viagem__destino__nome",
+    )
+    list_select_related = ("usuario", "viagem")
+    readonly_fields = (
+        "status",
+        "valor_total",
+        "expira_em",
+        "criado_em",
+        "atualizado_em",
+    )
+    inlines = (ViagemAssentoInline,)
+    actions = ("cancelar_reservas",)
 
-
-@admin.register(ReservaAssento)
-class ReservaAssentoAdmin(admin.ModelAdmin):
-    list_display = ("id", "reserva", "assento", "preco_centavos")
-    search_fields = ("reserva__id", "assento__numero")
+    @admin.action(description="Cancelar reservas selecionadas")
+    def cancelar_reservas(self, request, queryset):
+        canceladas = 0
+        erros = 0
+        for reserva in queryset:
+            try:
+                cancelar_reserva(reserva_id=reserva.id, usuario=reserva.usuario)
+                canceladas += 1
+            except ReservaInvalidaError:
+                erros += 1
+        if canceladas:
+            self.message_user(request, f"{canceladas} reserva(s) cancelada(s) com sucesso.")
+        if erros:
+            self.message_user(
+                request,
+                f"{erros} reserva(s) não puderam ser canceladas (status inválido).",
+                level="WARNING",
+            )
