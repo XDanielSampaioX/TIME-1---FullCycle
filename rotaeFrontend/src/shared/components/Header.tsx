@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { MenuUsuarioConectado } from "@/modules/usuario/components/MenuUsuarioConectado";

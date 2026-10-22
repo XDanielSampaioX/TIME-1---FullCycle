@@ -28,12 +28,23 @@ export function useAtualizacaoUsuario(usuario: Usuario) {
     setSalvo(false);
   }
 
-  async function enviar(): Promise<boolean> {
+  // Só conta como alteração o que difere do usuário atual.
+  const alterado =
+    dados.nome !== usuario.nome ||
+    dados.email !== usuario.email ||
+    dados.celular !== (usuario.celular ?? "") ||
+    dados.dataNasc !== (usuario.dataNasc ?? "");
+
+  function validar(): boolean {
     const errosLocais = regrasAtualizacaoUsuario.validar(dados);
     setErros(errosLocais);
+    return Object.keys(errosLocais).length === 0;
+  }
+
+  async function enviar(): Promise<boolean> {
     setErroGeral(null);
     setSalvo(false);
-    if (Object.keys(errosLocais).length > 0) return false;
+    if (!validar()) return false;
 
     setEnviando(true);
     try {
@@ -57,5 +68,9 @@ export function useAtualizacaoUsuario(usuario: Usuario) {
     }
   }
 
-  return { dados, erros, erroGeral, enviando, salvo, alterarCampo, enviar };
+  function limparMensagem() {
+    setSalvo(false);
+  }
+
+  return { dados, erros, erroGeral, enviando, salvo, alterado, alterarCampo, validar, limparMensagem, enviar };
 }

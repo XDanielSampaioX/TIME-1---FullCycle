@@ -35,11 +35,11 @@ describe("MenuUsuario", () => {
     expect(screen.queryByRole("button", { name: "Sair" })).not.toBeInTheDocument();
   });
 
-  it("oferece minhas viagens, editar perfil e sair no estado autenticado", () => {
+  it("oferece editar perfil e sair no estado autenticado, sem link para rota inexistente", () => {
     const aoSair = jest.fn();
     render(<MenuUsuario estado="autenticado" usuario={usuario} sessaoIndisponivel={false} aoSair={aoSair} />);
 
-    expect(screen.getByRole("link", { name: "Minhas viagens" })).toHaveAttribute("href", "/reservas");
+    expect(screen.queryByRole("link", { name: "Minhas viagens" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Editar perfil" })).toHaveAttribute("href", "/editar-perfil");
     expect(screen.queryByRole("link", { name: "Entrar" })).not.toBeInTheDocument();
 
@@ -61,6 +61,7 @@ describe("MenuUsuario", () => {
 
     fireEvent.keyDown(document, { key: "Escape" });
     expect(menu.open).toBe(false);
+    expect(document.querySelector("summary")).toHaveFocus();
 
     menu.open = true;
     fireEvent.pointerDown(document.body);

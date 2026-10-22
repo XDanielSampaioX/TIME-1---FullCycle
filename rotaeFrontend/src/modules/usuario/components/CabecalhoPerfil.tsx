@@ -1,4 +1,5 @@
 import type { Usuario } from "../types/usuario";
+import { IconeUsuario } from "./IconeUsuario";
 
 export function CabecalhoPerfil({ usuario }: { usuario: Usuario }) {
   return (
@@ -10,14 +11,15 @@ export function CabecalhoPerfil({ usuario }: { usuario: Usuario }) {
         `}
         aria-hidden="true"
       >
-        <svg className="size-6 fill-none stroke-current stroke-[1.8]" viewBox="0 0 24 24">
-          <circle cx="12" cy="8" r="3.25" />
-          <path d="M5.5 20c.7-3.2 2.8-5 6.5-5s5.8 1.8 6.5 5" />
-        </svg>
+        <IconeUsuario className="size-6" />
       </span>
       <div className="grid min-w-0 gap-0.5">
-        <p className="m-0 truncate font-extrabold">{usuario.nome}</p>
-        <p className="m-0 truncate text-xs text-(--color-text-secondary)">{usuario.email}</p>
+        <p className="m-0 truncate font-extrabold" title={usuario.nome}>
+          {usuario.nome}
+        </p>
+        <p className="m-0 truncate text-xs text-(--color-text-secondary)" title={usuario.email}>
+          {usuario.email}
+        </p>
       </div>
     </div>
   );

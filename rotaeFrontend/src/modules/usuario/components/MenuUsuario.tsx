@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { useFecharMenuSuspenso } from "../hooks/useFecharMenuSuspenso";
 import type { EstadoMenuUsuario } from "../types/estadoMenuUsuario";
 import type { Usuario } from "../types/usuario";
+import { IconeUsuario } from "./IconeUsuario";
 
 type MenuUsuarioProps = {
   estado: EstadoMenuUsuario;
@@ -18,24 +19,12 @@ const linksAnonimo = [
   { titulo: "Criar conta", href: "/cadastro" },
 ];
 
-// Mesma ordem do protótipo: Minhas viagens, Editar perfil e, separado, Sair.
-const linksAutenticado = [
-  { titulo: "Minhas viagens", href: "/reservas" },
-  { titulo: "Editar perfil", href: "/editar-perfil" },
-];
+// "Minhas viagens" (protótipo) entra aqui quando a tela existir; hoje não há rota para ela.
+const linksAutenticado = [{ titulo: "Editar perfil", href: "/editar-perfil" }];
 
 const classeItem = "block w-full rounded-lg px-3 py-2 text-left no-underline hover:bg-black/5";
 // Avatar redondo com borda dourada, como no protótipo.
 const classeAvatar = "relative grid size-9 shrink-0 place-items-center rounded-full border-2 border-(--color-accent-500) bg-(--color-brand-800) text-white";
-
-function IconeUsuario() {
-  return (
-    <svg className="size-4 fill-none stroke-current stroke-[1.8]" viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="8" r="3.25" />
-      <path d="M5.5 20c.7-3.2 2.8-5 6.5-5s5.8 1.8 6.5 5" />
-    </svg>
-  );
-}
 
 export function MenuUsuario({ estado, usuario, sessaoIndisponivel, aoSair }: MenuUsuarioProps) {
   const menu = useRef<HTMLDetailsElement>(null);
@@ -64,7 +53,7 @@ export function MenuUsuario({ estado, usuario, sessaoIndisponivel, aoSair }: Men
         aria-label={sessaoIndisponivel ? "Menu da conta (sessão indisponível)" : "Menu da conta"}
       >
         <span className={classeAvatar} aria-hidden="true">
-          <IconeUsuario />
+          <IconeUsuario className="size-4" />
           {sessaoIndisponivel && (
             <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full border border-(--color-brand-950) bg-amber-400" />
           )}
