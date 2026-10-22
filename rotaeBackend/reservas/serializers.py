@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from viagens.models import ViagemAssento
+from viagens.serializers import ViagemSerializer
 from .models import Reserva
 
 
@@ -10,25 +11,16 @@ class ReservaCriarSerializer(serializers.Serializer):
         child=serializers.IntegerField(min_value=1),
         min_length=1,
         max_length=10,
-        required=False,
-    )
-    assento_ids = serializers.ListField(
-        child=serializers.IntegerField(min_value=1),
-        min_length=1,
-        max_length=10,
-        required=False,
     )
 
     def validate(self, attrs):
-        ids = attrs.get("viagem_assento_ids") or attrs.get("assento_ids")
+        ids = attrs.get("viagem_assento_ids")
         if not ids:
             raise serializers.ValidationError({"viagem_assento_ids": "Informe ao menos um assento para reservar."})
 
         if len(ids) != len(set(ids)):
             raise serializers.ValidationError("A lista contém assentos duplicados.")
 
-        attrs["viagem_assento_ids"] = ids
-        attrs.pop("assento_ids", None)
         return attrs
 
 
@@ -43,15 +35,15 @@ class ReservaViagemAssentoSerializer(serializers.ModelSerializer):
 
 
 class ReservaSerializer(serializers.ModelSerializer):
-    viagem_id = serializers.IntegerField(source="viagem.id", read_only=True)
+    viagem = ViagemSerializer(read_only=True)
     assentos = ReservaViagemAssentoSerializer(source="viagem_assentos", many=True, read_only=True)
-    total_assentos = serializers.IntegerField(source="viagem_assentos.count", read_only=True)
+    total_assentos = serializers.SerializerMethodField()
 
     class Meta:
         model = Reserva
         fields = (
             "id",
-            "viagem_id",
+            "viagem",
             "status",
             "valor_total",
             "expira_em",
@@ -61,3 +53,6 @@ class ReservaSerializer(serializers.ModelSerializer):
             "atualizado_em",
         )
         read_only_fields = fields
+
+    def get_total_assentos(self, obj):
+        return len(obj.viagem_assentos.all())

@@ -1,39 +1,32 @@
-from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from .models import Reserva
 from .serializers import ReservaCriarSerializer, ReservaSerializer
 from .services import (
     AssentoIndisponivelError,
+    AssentoOutraViagemError,
     ReservaInvalidaError,
     ReservaNaoEncontradaError,
     ViagemNaoEncontradaError,
     cancelar_reserva,
     criar_reserva,
 )
+from .swagger.reservas import (
+    reserva_criar_schema,
+    reserva_detalhe_schema,
+    reserva_cancelar_schema,
+    reserva_minhas_reservas_schema,
+)
 
 
 class ReservaCriarView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(
-        request=ReservaCriarSerializer,
-        responses={
-            201: ReservaSerializer,
-            400: None,
-            401: None,
-            409: None,
-        },
-        summary="Criar reserva com bloqueio temporário",
-        description=(
-            "Cria uma reserva para a viagem e assentos informados. "
-            "Os assentos são bloqueados via select_for_update() no banco de dados. "
-            "Se qualquer assento não estiver disponível, retorna 409."
-        ),
-    )
+    @reserva_criar_schema
     def post(self, request):
         serializer = ReservaCriarSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -46,8 +39,19 @@ class ReservaCriarView(APIView):
             )
         except AssentoIndisponivelError as e:
             return Response(
-                {"detail": str(e) or "Um ou mais assentos já estão reservados."},
+                {
+                    "detail": str(e) or "Um ou mais assentos já estão reservados.",
+                    "assentos_indisponiveis": e.assentos_indisponiveis,
+                },
                 status=status.HTTP_409_CONFLICT,
+            )
+        except AssentoOutraViagemError as e:
+            return Response(
+                {
+                    "detail": str(e) or "Um ou mais assentos informados não pertencem à viagem.",
+                    "assentos_indisponiveis": e.assentos_indisponiveis,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
         except ViagemNaoEncontradaError as e:
             return Response(
@@ -59,52 +63,27 @@ class ReservaCriarView(APIView):
         return Response(output.data, status=status.HTTP_201_CREATED)
 
 
-class ReservaDetalheView(APIView):
+class ReservaDetalheView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = ReservaSerializer
 
-    @extend_schema(
-        responses={
-            200: ReservaSerializer,
-            401: None,
-            404: None,
-        },
-        summary="Obter detalhes de uma reserva",
-        description="Retorna os detalhes completos de uma reserva pertencente ao usuário autenticado.",
-    )
-    def get(self, request, pk):
-        try:
-            reserva = (
-                Reserva.objects
-                .select_related("viagem")
-                .prefetch_related("viagem_assentos__assento")
-                .get(pk=pk, usuario=request.user)
-            )
-        except Reserva.DoesNotExist:
-            return Response(
-                {"detail": "Reserva não encontrada."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+    @reserva_detalhe_schema
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
-        output = ReservaSerializer(reserva, context={"request": request})
-        return Response(output.data)
+    def get_queryset(self):
+        return (
+            Reserva.objects
+            .filter(usuario=self.request.user)
+            .select_related("viagem__origem", "viagem__destino")
+            .prefetch_related("viagem_assentos__assento")
+        )
 
 
 class ReservaCancelarView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(
-        responses={
-            200: ReservaSerializer,
-            400: None,
-            401: None,
-            404: None,
-        },
-        summary="Cancelar reserva",
-        description=(
-            "Cancela uma reserva com status PAGAMENTO_PENDENTE do usuário autenticado "
-            "e libera os assentos associados de volta para DISPONIVEL."
-        ),
-    )
+    @reserva_cancelar_schema
     def post(self, request, pk):
         try:
             reserva = cancelar_reserva(reserva_id=pk, usuario=request.user)
@@ -123,24 +102,19 @@ class ReservaCancelarView(APIView):
         return Response(output.data)
 
 
-class ReservaMinhasReservasView(APIView):
+class ReservaMinhasReservasView(ListAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = ReservaSerializer
 
-    @extend_schema(
-        responses={
-            200: ReservaSerializer(many=True),
-            401: None,
-        },
-        summary="Listar reservas do usuário autenticado",
-        description="Retorna todas as reservas realizadas pelo usuário autenticado, ordenadas pela mais recente.",
-    )
-    def get(self, request):
-        reservas = (
+    @reserva_minhas_reservas_schema
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return (
             Reserva.objects
-            .filter(usuario=request.user)
-            .select_related("viagem")
+            .filter(usuario=self.request.user)
+            .select_related("viagem__origem", "viagem__destino")
             .prefetch_related("viagem_assentos__assento")
             .order_by("-criado_em")
         )
-        output = ReservaSerializer(reservas, many=True, context={"request": request})
-        return Response(output.data)

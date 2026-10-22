@@ -106,7 +106,7 @@ def test_criar_reserva_sucesso(api_client, autenticar, viagem):
     assert resposta.status_code == 201
     data = resposta.json()
     assert data["status"] == "PAGAMENTO_PENDENTE"
-    assert data["viagemId"] == viagem.id
+    assert data["viagem"]["id"] == viagem.id
     assert data["valorTotal"] == 8990 * 2
     assert len(data["assentos"]) == 2
 
@@ -126,21 +126,30 @@ def test_criar_reserva_sucesso(api_client, autenticar, viagem):
         assert a.reserva_id == reserva.id
 
 
-def test_criar_reserva_aceita_campo_assento_ids(api_client, autenticar, viagem):
-    """Garante compatibilidade caso o payload envie assento_ids."""
+def test_criar_reserva_assento_indisponivel_retorna_lista_assentos(api_client, autenticar, viagem):
+    """Testa que o erro 409 retorna a lista de assentos indisponíveis."""
     autenticar()
-    assentos_ids = ids_viagem_assentos(viagem, [3])
+    assentos_ids = ids_viagem_assentos(viagem, [1])
 
-    resposta = api_client.post(
+    # Primeiro bloqueio com sucesso
+    resp1 = api_client.post(
         URL_CRIAR_RESERVA,
-        {"viagem_id": viagem.id, "assento_ids": assentos_ids},
+        {"viagem_id": viagem.id, "viagem_assento_ids": assentos_ids},
         format="json",
     )
+    assert resp1.status_code == 201
 
-    assert resposta.status_code == 201
-    data = resposta.json()
-    assert len(data["assentos"]) == 1
-    assert data["valorTotal"] == 8990
+    # Segunda tentativa no mesmo assento deve retornar 409 com lista de assentos
+    resp2 = api_client.post(
+        URL_CRIAR_RESERVA,
+        {"viagem_id": viagem.id, "viagem_assento_ids": assentos_ids},
+        format="json",
+    )
+    assert resp2.status_code == 409
+    data = resp2.json()
+    assert "assentosIndisponiveis" in data
+    assert len(data["assentosIndisponiveis"]) == 1
+    assert data["assentosIndisponiveis"][0]["id"] == assentos_ids[0]
 
 
 def test_criar_reserva_assento_ja_segurado_retorna_409(api_client, autenticar, viagem):
@@ -257,7 +266,7 @@ def test_criar_reserva_viagem_passada_rejeita_400(api_client, autenticar, viagem
     assert resposta.status_code == 400
 
 
-def test_criar_reserva_assento_de_outra_viagem_retorna_409(api_client, autenticar, viagem, outra_viagem):
+def test_criar_reserva_assento_de_outra_viagem_retorna_400(api_client, autenticar, viagem, outra_viagem):
     autenticar()
     assento_outra_viagem = ids_viagem_assentos(outra_viagem, [1])[0]
 
@@ -266,7 +275,11 @@ def test_criar_reserva_assento_de_outra_viagem_retorna_409(api_client, autentica
         {"viagem_id": viagem.id, "viagem_assento_ids": [assento_outra_viagem]},
         format="json",
     )
-    assert resposta.status_code == 409
+    assert resposta.status_code == 400
+    data = resposta.json()
+    assert "assentosIndisponiveis" in data
+    assert len(data["assentosIndisponiveis"]) == 1
+    assert data["assentosIndisponiveis"][0]["id"] == assento_outra_viagem
 
 
 def test_criar_reserva_assentos_duplicados_retorna_400(api_client, autenticar, viagem):
@@ -301,6 +314,11 @@ def test_detalhe_reserva_sucesso(api_client, autenticar, viagem):
     assert data["status"] == "PAGAMENTO_PENDENTE"
     assert data["valorTotal"] == 8990
     assert len(data["assentos"]) == 1
+    # Verifica que viagem é um objeto completo
+    assert "viagem" in data
+    assert data["viagem"]["id"] == viagem.id
+    assert "origem" in data["viagem"]
+    assert "destino" in data["viagem"]
 
 
 def test_detalhe_reserva_outro_usuario_retorna_404(api_client, autenticar, autenticar_outro, viagem):
@@ -406,7 +424,9 @@ def test_minhas_reservas_retorna_apenas_do_usuario_autenticado(api_client, auten
     resposta = api_client.get(URL_MINHAS_RESERVAS)
     assert resposta.status_code == 200
     data = resposta.json()
-    assert len(data) == 2
+    # Com paginação, o resultado vem em data["results"]
+    results = data.get("results", data)
+    assert len(results) == 2
 
 
 def test_minhas_reservas_sem_autenticacao_retorna_401(api_client):
