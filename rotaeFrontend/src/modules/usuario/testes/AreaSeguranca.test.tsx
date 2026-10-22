@@ -31,6 +31,33 @@ describe("AreaSeguranca", () => {
     expect(excluirConta).not.toHaveBeenCalled();
   });
 
+  it("explica que a conta é desativada e o histórico de viagens é mantido", () => {
+    render(<AreaSeguranca />);
+
+    expect(screen.getByText(/Sua conta será desativada/)).toHaveTextContent("O registro das viagens já feitas é mantido.");
+  });
+
+  it("leva o foco para Voltar ao confirmar e de volta para Excluir ao cancelar", () => {
+    render(<AreaSeguranca />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Excluir minha conta" }));
+    expect(screen.getByRole("button", { name: "Voltar" })).toHaveFocus();
+
+    fireEvent.click(screen.getByRole("button", { name: "Voltar" }));
+    expect(screen.getByRole("button", { name: "Excluir minha conta" })).toHaveFocus();
+  });
+
+  it("cancela a confirmação com Esc e devolve o foco", () => {
+    render(<AreaSeguranca />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Excluir minha conta" }));
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    expect(screen.queryByText(/Tem certeza\?/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Excluir minha conta" })).toHaveFocus();
+    expect(excluirConta).not.toHaveBeenCalled();
+  });
+
   it("exclui, encerra a sessão e leva para a página inicial", async () => {
     jest.mocked(excluirConta).mockResolvedValue(undefined);
     render(<AreaSeguranca />);

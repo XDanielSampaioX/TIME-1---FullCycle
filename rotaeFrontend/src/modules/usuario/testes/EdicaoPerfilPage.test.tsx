@@ -40,7 +40,7 @@ describe("EdicaoPerfilPage", () => {
   it("Cancelar descarta o que foi digitado e volta aos dados salvos", () => {
     useAutenticacao.mockReturnValue({ usuario, iniciarSessao: jest.fn(), sair: jest.fn() });
     render(<EdicaoPerfilPage />);
-    const nome = () => document.querySelector<HTMLInputElement>('input[name="nome"]')!;
+    const nome = () => screen.getByLabelText<HTMLInputElement>("Nome completo");
 
     fireEvent.change(nome(), { target: { value: "Outro nome" } });
     expect(nome()).toHaveValue("Outro nome");

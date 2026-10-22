@@ -26,12 +26,13 @@ type FormularioEdicaoPerfilProps = {
 };
 
 export function FormularioEdicaoPerfil({ usuario, aoCancelar }: FormularioEdicaoPerfilProps) {
-  const { dados, senha, enviando, salvar } = useEdicaoPerfil(usuario);
+  const { dados, senha, enviando, alterado, querTrocarSenha, semAlteracaoParaSalvar, salvar } = useEdicaoPerfil(usuario);
   const formulario = useRef<HTMLFormElement>(null);
   useFocoPrimeiroErro(formulario, dados.erros);
   useFocoPrimeiroErro(formulario, senha.erros);
 
   const erroGeral = dados.erroGeral ?? senha.erroGeral;
+  const semAlteracao = semAlteracaoParaSalvar && !alterado && !querTrocarSenha;
 
   return (
     <form
@@ -84,6 +85,7 @@ export function FormularioEdicaoPerfil({ usuario, aoCancelar }: FormularioEdicao
             titulo="CPF"
             type="text"
             value={usuario.cpf}
+            ajuda="O CPF não pode ser alterado."
             disabled
             icone={<IconeCadeado />}
           />
@@ -140,6 +142,11 @@ export function FormularioEdicaoPerfil({ usuario, aoCancelar }: FormularioEdicao
       {erroGeral && (
         <p className="m-0 text-sm text-red-700" role="alert">
           {erroGeral}
+        </p>
+      )}
+      {semAlteracao && (
+        <p className="m-0 text-sm" role="status">
+          Nenhuma alteração para salvar.
         </p>
       )}
       {senha.alterada && (

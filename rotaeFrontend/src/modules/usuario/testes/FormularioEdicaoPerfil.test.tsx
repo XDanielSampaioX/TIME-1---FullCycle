@@ -24,8 +24,20 @@ const usuario: Usuario = {
 
 const senhaValida = { senhaAtual: "senha-antiga-1", novaSenha: "senha-nova-123", confirmacaoNovaSenha: "senha-nova-123" };
 
+const rotulos: Record<string, string> = {
+  nome: "Nome completo",
+  email: "E-mail",
+  celular: "Celular",
+  cpf: "CPF",
+  dataNasc: "Data de nascimento",
+  senhaAtual: "Senha atual",
+  novaSenha: "Nova senha",
+  confirmacaoNovaSenha: "Confirmar nova senha",
+};
+
+// Busca pelo nome acessível (o rótulo), o que também garante que o campo está rotulado.
 function campo(nome: string) {
-  return document.querySelector<HTMLInputElement>(`input[name="${nome}"]`)!;
+  return screen.getByLabelText<HTMLInputElement>(rotulos[nome]);
 }
 
 function preencher(valores: Record<string, string>) {
@@ -54,11 +66,12 @@ describe("FormularioEdicaoPerfil", () => {
     expect(campo("dataNasc")).toHaveValue("1995-04-20");
   });
 
-  it("mostra o CPF bloqueado para edição", () => {
+  it("mostra o CPF bloqueado para edição, com o motivo", () => {
     render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
 
     expect(campo("cpf")).toHaveValue("529.982.247-25");
     expect(campo("cpf")).toBeDisabled();
+    expect(campo("cpf")).toHaveAccessibleDescription("O CPF não pode ser alterado.");
   });
 
   it("salva só os dados quando a senha não foi preenchida", async () => {
@@ -83,7 +96,7 @@ describe("FormularioEdicaoPerfil", () => {
     expect(atualizarUsuario).not.toHaveBeenCalled();
   });
 
-  it("troca a senha e depois salva os dados quando os campos de senha são preenchidos", async () => {
+  it("troca só a senha, sem enviar dados que não mudaram", async () => {
     jest.mocked(alterarSenha).mockResolvedValue({ tokens: { access: "novo-a", refresh: "novo-r" } });
     render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
 
@@ -91,9 +104,55 @@ describe("FormularioEdicaoPerfil", () => {
     salvar();
 
     expect(await screen.findByText("Senha alterada com sucesso.")).toBeInTheDocument();
-    await waitFor(() => expect(atualizarUsuario).toHaveBeenCalledTimes(1));
     expect(alterarSenha).toHaveBeenCalledTimes(1);
+    expect(atualizarUsuario).not.toHaveBeenCalled();
+    expect(screen.queryByText("Dados atualizados com sucesso.")).not.toBeInTheDocument();
     expect(campo("senhaAtual")).toHaveValue("");
+  });
+
+  it("troca a senha e salva os dados alterados na mesma ação", async () => {
+    jest.mocked(alterarSenha).mockResolvedValue({ tokens: { access: "novo-a", refresh: "novo-r" } });
+    render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+    preencher({ ...senhaValida, nome: "João Souza" });
+    salvar();
+
+    expect(await screen.findByText("Senha alterada com sucesso.")).toBeInTheDocument();
+    expect(await screen.findByText("Dados atualizados com sucesso.")).toBeInTheDocument();
+    expect(alterarSenha).toHaveBeenCalledTimes(1);
+    expect(atualizarUsuario).toHaveBeenCalledTimes(1);
+  });
+
+  it("não chama nenhum serviço se os dados forem inválidos e a senha estiver preenchida", async () => {
+    render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+    preencher({ ...senhaValida, email: "email-invalido" });
+    salvar();
+
+    await waitFor(() => expect(campo("email")).toHaveAttribute("aria-invalid", "true"));
+    expect(alterarSenha).not.toHaveBeenCalled();
+    expect(atualizarUsuario).not.toHaveBeenCalled();
+  });
+
+  it("ignora a senha atual preenchida sozinha (ex.: pelo navegador) e salva só os dados", async () => {
+    render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+    preencher({ senhaAtual: "senha-salva-no-navegador", nome: "João Souza" });
+    salvar();
+
+    expect(await screen.findByText("Dados atualizados com sucesso.")).toBeInTheDocument();
+    expect(alterarSenha).not.toHaveBeenCalled();
+    expect(screen.queryByText(/nova senha/i, { selector: "span.text-red-700" })).not.toBeInTheDocument();
+  });
+
+  it("avisa que não há nada para salvar quando nada mudou", () => {
+    render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+    salvar();
+
+    expect(screen.getByRole("status")).toHaveTextContent("Nenhuma alteração para salvar.");
+    expect(atualizarUsuario).not.toHaveBeenCalled();
+    expect(alterarSenha).not.toHaveBeenCalled();
   });
 
   it("não salva os dados se a troca de senha for recusada", async () => {
@@ -123,6 +182,7 @@ describe("FormularioEdicaoPerfil", () => {
     jest.mocked(atualizarUsuario).mockResolvedValue({ erros: { email: "Já existe um usuário com este e-mail." } });
     render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
 
+    preencher({ email: "outro@email.com" });
     salvar();
 
     expect(await screen.findByText("Já existe um usuário com este e-mail.")).toBeInTheDocument();
@@ -133,6 +193,7 @@ describe("FormularioEdicaoPerfil", () => {
     jest.mocked(atualizarUsuario).mockRejectedValue(new Error("falha"));
     render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
 
+    preencher({ nome: "João Souza" });
     salvar();
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Não foi possível salvar as alterações.");

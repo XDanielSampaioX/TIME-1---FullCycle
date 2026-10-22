@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { useExclusaoConta } from "../hooks/useExclusaoConta";
 
 function IconeLixeira() {
@@ -12,6 +13,32 @@ function IconeLixeira() {
 
 export function AreaSeguranca() {
   const { confirmando, excluindo, erro, pedirConfirmacao, cancelar, confirmar } = useExclusaoConta();
+  const botaoExcluir = useRef<HTMLButtonElement>(null);
+  const botaoVoltar = useRef<HTMLButtonElement>(null);
+  const jaPediuConfirmacao = useRef(false);
+
+  // O foco acompanha a troca de botões: vai para "Voltar" ao abrir a confirmação e volta
+  // para "Excluir minha conta" ao cancelar, em vez de se perder junto com o botão que sumiu.
+  useEffect(() => {
+    if (confirmando) {
+      jaPediuConfirmacao.current = true;
+      botaoVoltar.current?.focus();
+    } else if (jaPediuConfirmacao.current) {
+      botaoExcluir.current?.focus();
+    }
+  }, [confirmando]);
+
+  // Esc cancela a confirmação (exceto enquanto a exclusão está em andamento).
+  useEffect(() => {
+    if (!confirmando || excluindo) return;
+
+    function aoPressionarTecla(evento: KeyboardEvent) {
+      if (evento.key === "Escape") cancelar();
+    }
+
+    document.addEventListener("keydown", aoPressionarTecla);
+    return () => document.removeEventListener("keydown", aoPressionarTecla);
+  }, [confirmando, excluindo, cancelar]);
 
   return (
     <section
@@ -22,11 +49,11 @@ export function AreaSeguranca() {
         Área de segurança
       </h2>
       <p className="m-0 text-xs text-(--color-text-secondary)">
-        Ao excluir sua conta, todo o seu histórico de viagens e preferências serão apagados permanentemente.
+        Sua conta será desativada e você não poderá mais entrar com ela. O registro das viagens já feitas é mantido.
       </p>
       {confirmando ? (
         <div className="grid gap-3" role="group" aria-label="Confirmar exclusão da conta">
-          <p className="m-0 font-bold text-red-700">Tem certeza? Sua conta será excluída e você será desconectado.</p>
+          <p className="m-0 font-bold text-red-700">Tem certeza? Sua conta será desativada e você será desconectado.</p>
           <div className="flex flex-wrap gap-3">
             <button
               className="cursor-pointer rounded-(--radius-sm) border-0 bg-red-700 px-3 py-2 font-bold text-white disabled:opacity-60"
@@ -39,6 +66,7 @@ export function AreaSeguranca() {
             <button
               className="cursor-pointer rounded-(--radius-sm) border border-(--color-brand-950) bg-transparent px-3 py-2 font-bold"
               type="button"
+              ref={botaoVoltar}
               disabled={excluindo}
               onClick={cancelar}
             >
@@ -50,6 +78,7 @@ export function AreaSeguranca() {
         <button
           className="inline-flex w-fit cursor-pointer items-center gap-2 border-0 bg-transparent p-0 font-bold text-red-700 underline"
           type="button"
+          ref={botaoExcluir}
           onClick={pedirConfirmacao}
         >
           <IconeLixeira />
