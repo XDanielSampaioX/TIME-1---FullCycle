@@ -63,19 +63,16 @@ class ReservaCriarView(APIView):
         return Response(output.data, status=status.HTTP_201_CREATED)
 
 
+@reserva_detalhe_schema
 class ReservaDetalheView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ReservaSerializer
-
-    @reserva_detalhe_schema
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
         return (
             Reserva.objects
             .filter(usuario=self.request.user)
-            .select_related("viagem__origem", "viagem__destino")
+            .select_related("viagem__origem", "viagem__destino", "viagem__onibus")
             .prefetch_related("viagem_assentos__assento")
         )
 
@@ -102,19 +99,16 @@ class ReservaCancelarView(APIView):
         return Response(output.data)
 
 
+@reserva_minhas_reservas_schema
 class ReservaMinhasReservasView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ReservaSerializer
-
-    @reserva_minhas_reservas_schema
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
         return (
             Reserva.objects
             .filter(usuario=self.request.user)
-            .select_related("viagem__origem", "viagem__destino")
+            .select_related("viagem__origem", "viagem__destino", "viagem__onibus")
             .prefetch_related("viagem_assentos__assento")
             .order_by("-criado_em")
         )

@@ -13,15 +13,10 @@ class ReservaCriarSerializer(serializers.Serializer):
         max_length=10,
     )
 
-    def validate(self, attrs):
-        ids = attrs.get("viagem_assento_ids")
-        if not ids:
-            raise serializers.ValidationError({"viagem_assento_ids": "Informe ao menos um assento para reservar."})
-
-        if len(ids) != len(set(ids)):
+    def validate_viagem_assento_ids(self, value):
+        if len(value) != len(set(value)):
             raise serializers.ValidationError("A lista contém assentos duplicados.")
-
-        return attrs
+        return value
 
 
 class ReservaViagemAssentoSerializer(serializers.ModelSerializer):

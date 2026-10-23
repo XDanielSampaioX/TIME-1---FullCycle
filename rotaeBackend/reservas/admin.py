@@ -15,6 +15,9 @@ class ViagemAssentoInline(admin.TabularInline):
     def has_add_permission(self, request, obj=None):
         return False
 
+    def has_change_permission(self, request, obj=None):
+        return False
+
 
 @admin.register(Reserva)
 class ReservaAdmin(admin.ModelAdmin):
@@ -36,13 +39,6 @@ class ReservaAdmin(admin.ModelAdmin):
         "viagem__destino__nome",
     )
     list_select_related = ("usuario", "viagem")
-    readonly_fields = (
-        "status",
-        "valor_total",
-        "expira_em",
-        "criado_em",
-        "atualizado_em",
-    )
     inlines = (ViagemAssentoInline,)
     actions = ("cancelar_reservas",)
 
@@ -50,6 +46,9 @@ class ReservaAdmin(admin.ModelAdmin):
         return False
 
     def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
         return False
 
     @admin.action(description="Cancelar reservas selecionadas")

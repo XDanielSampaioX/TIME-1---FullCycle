@@ -35,6 +35,7 @@ class ReservaInvalidaError(ReservaError):
     pass
 
 
+@transaction.atomic
 def criar_reserva(*, usuario, viagem_id, viagem_assento_ids):
     """
     Cria uma reserva dentro de uma transação atômica.
@@ -49,66 +50,67 @@ def criar_reserva(*, usuario, viagem_id, viagem_assento_ids):
 
     ids_unicos = list(dict.fromkeys(viagem_assento_ids))
 
-    with transaction.atomic():
-        # A ordem por pk evita deadlock entre requisições concorrentes
-        assentos = list(
+    # A ordem por pk evita deadlock entre requisições concorrentes
+    # select_related("assento") evita lazy loading durante o lock
+    # select_for_update(of=("self",)) faz lock apenas na tabela ViagemAssento
+    assentos = list(
+        ViagemAssento.objects
+        .select_related("assento")
+        .select_for_update(of=("self",))
+        .filter(pk__in=ids_unicos, viagem_id=viagem.pk)
+        .order_by("pk")
+    )
+
+    if len(assentos) != len(ids_unicos):
+        # IDs que não pertencem à viagem - buscar detalhes para o erro
+        ids_encontrados = {a.pk for a in assentos}
+        ids_nao_encontrados = [id_ for id_ in ids_unicos if id_ not in ids_encontrados]
+        assentos_outra_viagem = list(
             ViagemAssento.objects
-            .select_for_update()
-            .filter(pk__in=ids_unicos, viagem_id=viagem.pk)
-            .order_by("pk")
+            .filter(pk__in=ids_nao_encontrados)
+            .select_related("assento")
+            .values("pk", "assento__numero", "status")
+        )
+        assentos_indisponiveis = [
+            {"id": a["pk"], "numero": a["assento__numero"], "status": a["status"]}
+            for a in assentos_outra_viagem
+        ]
+        raise AssentoOutraViagemError(
+            "Um ou mais assentos informados não pertencem à viagem.",
+            assentos_indisponiveis=assentos_indisponiveis
         )
 
-        if len(assentos) != len(ids_unicos):
-            # Encontrar quais IDs não pertencem à viagem
-            ids_encontrados = {a.pk for a in assentos}
-            ids_nao_encontrados = [id_ for id_ in ids_unicos if id_ not in ids_encontrados]
-            # Buscar detalhes dos assentos que não pertencem à viagem
-            assentos_outra_viagem = list(
-                ViagemAssento.objects
-                .filter(pk__in=ids_nao_encontrados)
-                .select_related("assento")
-                .values("pk", "assento__numero", "status")
-            )
-            assentos_indisponiveis = [
-                {"id": a["pk"], "numero": a["assento__numero"], "status": a["status"]}
-                for a in assentos_outra_viagem
-            ]
-            raise AssentoOutraViagemError(
-                "Um ou mais assentos informados não pertencem à viagem.",
-                assentos_indisponiveis=assentos_indisponiveis
-            )
+    assentos_indisponiveis = []
+    for assento in assentos:
+        if assento.status != ViagemAssento.Status.DISPONIVEL or assento.reserva_id is not None:
+            assentos_indisponiveis.append({
+                "id": assento.pk,
+                "numero": assento.assento.numero,
+                "status": assento.status,
+            })
 
-        assentos_indisponiveis = []
-        for assento in assentos:
-            if assento.status != ViagemAssento.Status.DISPONIVEL or assento.reserva_id is not None:
-                assentos_indisponiveis.append({
-                    "id": assento.pk,
-                    "numero": assento.assento.numero,
-                    "status": assento.status,
-                })
-
-        if assentos_indisponiveis:
-            raise AssentoIndisponivelError(
-                "Um ou mais assentos já estão reservados.",
-                assentos_indisponiveis=assentos_indisponiveis
-            )
-
-        valor_total = viagem.preco_centavos * len(assentos)
-        expira_em = timezone.now() + timedelta(hours=24)
-
-        reserva = Reserva.objects.create(
-            usuario=usuario,
-            viagem=viagem,
-            status=Reserva.Status.PAGAMENTO_PENDENTE,
-            valor_total=valor_total,
-            expira_em=expira_em,
+    if assentos_indisponiveis:
+        raise AssentoIndisponivelError(
+            "Um ou mais assentos já estão reservados.",
+            assentos_indisponiveis=assentos_indisponiveis
         )
 
-        for assento in assentos:
-            assento.status = ViagemAssento.Status.SEGURADO
-            assento.reserva = reserva
+    valor_total = viagem.preco_centavos * len(assentos)
+    expira_em = timezone.now() + timedelta(hours=24)
 
-        ViagemAssento.objects.bulk_update(assentos, ["status", "reserva"])
+    reserva = Reserva.objects.create(
+        usuario=usuario,
+        viagem=viagem,
+        status=Reserva.Status.PAGAMENTO_PENDENTE,
+        valor_total=valor_total,
+        expira_em=expira_em,
+    )
+
+    for assento in assentos:
+        assento.status = ViagemAssento.Status.SEGURADO
+        assento.reserva = reserva
+
+    ViagemAssento.objects.bulk_update(assentos, ["status", "reserva"])
 
     return reserva
 
