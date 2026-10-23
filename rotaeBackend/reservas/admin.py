@@ -9,7 +9,6 @@ class ViagemAssentoInline(admin.TabularInline):
     model = ViagemAssento
     extra = 0
     fields = ("assento", "status")
-    readonly_fields = ("assento", "status")
     can_delete = False
 
     def has_add_permission(self, request, obj=None):

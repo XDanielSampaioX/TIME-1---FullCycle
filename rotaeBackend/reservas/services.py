@@ -62,22 +62,12 @@ def criar_reserva(*, usuario, viagem_id, viagem_assento_ids):
     )
 
     if len(assentos) != len(ids_unicos):
-        # IDs que não pertencem à viagem - buscar detalhes para o erro
+        # IDs que não pertencem à viagem - retorna apenas os IDs inválidos
         ids_encontrados = {a.pk for a in assentos}
-        ids_nao_encontrados = [id_ for id_ in ids_unicos if id_ not in ids_encontrados]
-        assentos_outra_viagem = list(
-            ViagemAssento.objects
-            .filter(pk__in=ids_nao_encontrados)
-            .select_related("assento")
-            .values("pk", "assento__numero", "status")
-        )
-        assentos_indisponiveis = [
-            {"id": a["pk"], "numero": a["assento__numero"], "status": a["status"]}
-            for a in assentos_outra_viagem
-        ]
+        ids_invalidos = [i for i in ids_unicos if i not in ids_encontrados]
         raise AssentoOutraViagemError(
             "Um ou mais assentos informados não pertencem à viagem.",
-            assentos_indisponiveis=assentos_indisponiveis
+            assentos_indisponiveis=ids_invalidos,
         )
 
     assentos_indisponiveis = []

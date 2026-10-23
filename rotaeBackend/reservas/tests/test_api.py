@@ -278,8 +278,7 @@ def test_criar_reserva_assento_de_outra_viagem_retorna_400(api_client, autentica
     assert resposta.status_code == 400
     data = resposta.json()
     assert "assentosIndisponiveis" in data
-    assert len(data["assentosIndisponiveis"]) == 1
-    assert data["assentosIndisponiveis"][0]["id"] == assento_outra_viagem
+    assert data["assentosIndisponiveis"] == [assento_outra_viagem]
 
 
 def test_criar_reserva_assentos_duplicados_retorna_400(api_client, autenticar, viagem):
