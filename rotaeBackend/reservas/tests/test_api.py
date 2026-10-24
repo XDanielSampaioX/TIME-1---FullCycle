@@ -147,9 +147,9 @@ def test_criar_reserva_assento_indisponivel_retorna_lista_assentos(api_client, a
     )
     assert resp2.status_code == 409
     data = resp2.json()
-    assert "assentosIndisponiveis" in data
-    assert len(data["assentosIndisponiveis"]) == 1
-    assert data["assentosIndisponiveis"][0]["id"] == assentos_ids[0]
+    assert "assentos" in data
+    assert len(data["assentos"]) == 1
+    assert data["assentos"][0] == assentos_ids[0]
 
 
 def test_criar_reserva_assento_ja_segurado_retorna_409(api_client, autenticar, viagem):
@@ -277,8 +277,8 @@ def test_criar_reserva_assento_de_outra_viagem_retorna_400(api_client, autentica
     )
     assert resposta.status_code == 400
     data = resposta.json()
-    assert "assentosIndisponiveis" in data
-    assert data["assentosIndisponiveis"] == [assento_outra_viagem]
+    assert "assentos" in data
+    assert data["assentos"] == [assento_outra_viagem]
 
 
 def test_criar_reserva_assentos_duplicados_retorna_400(api_client, autenticar, viagem):

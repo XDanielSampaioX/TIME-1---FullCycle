@@ -6,8 +6,8 @@ from reservas.serializers import ReservaCriarSerializer, ReservaSerializer
 
 class AssentoIndisponivelResponseSerializer(serializers.Serializer):
     detail = serializers.CharField()
-    assentos_indisponiveis = serializers.ListField(
-        child=serializers.DictField(),
+    assentos = serializers.ListField(
+        child=serializers.IntegerField(),
         required=False,
     )
 

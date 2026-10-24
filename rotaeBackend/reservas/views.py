@@ -41,7 +41,7 @@ class ReservaCriarView(APIView):
             return Response(
                 {
                     "detail": str(e) or "Um ou mais assentos já estão reservados.",
-                    "assentos_indisponiveis": e.assentos_indisponiveis,
+                    "assentos": e.assentos_indisponiveis,
                 },
                 status=status.HTTP_409_CONFLICT,
             )
@@ -49,7 +49,7 @@ class ReservaCriarView(APIView):
             return Response(
                 {
                     "detail": str(e) or "Um ou mais assentos informados não pertencem à viagem.",
-                    "assentos_indisponiveis": e.assentos_indisponiveis,
+                    "assentos": e.assentos_indisponiveis,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )

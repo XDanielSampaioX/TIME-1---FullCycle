@@ -73,11 +73,7 @@ def criar_reserva(*, usuario, viagem_id, viagem_assento_ids):
     assentos_indisponiveis = []
     for assento in assentos:
         if assento.status != ViagemAssento.Status.DISPONIVEL or assento.reserva_id is not None:
-            assentos_indisponiveis.append({
-                "id": assento.pk,
-                "numero": assento.assento.numero,
-                "status": assento.status,
-            })
+            assentos_indisponiveis.append(assento.pk)
 
     if assentos_indisponiveis:
         raise AssentoIndisponivelError(
