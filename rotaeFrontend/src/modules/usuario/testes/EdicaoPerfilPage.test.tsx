@@ -4,7 +4,7 @@ import type { Usuario } from "../types/usuario";
 
 const useAutenticacao = jest.fn();
 
-jest.mock("next/navigation", () => ({ useRouter: () => ({ push: jest.fn() }) }));
+jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn() }) }));
 jest.mock("@/modules/autenticacao/hooks/useAutenticacao", () => ({ useAutenticacao: () => useAutenticacao() }));
 
 const usuario: Usuario = {

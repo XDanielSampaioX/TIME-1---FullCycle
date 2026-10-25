@@ -72,6 +72,25 @@ describe("MenuUsuario", () => {
     expect(menu.open).toBe(false);
   });
 
+  it("fecha quando o foco sai do menu pelo teclado, mas não enquanto fica dentro dele", () => {
+    render(<MenuUsuario estado="anonimo" usuario={null} sessaoIndisponivel={false} aoSair={jest.fn()} />);
+    const menu = menuAberto();
+    const entrar = screen.getByRole("link", { name: "Entrar" });
+    const criarConta = screen.getByRole("link", { name: "Criar conta" });
+    const fora = document.createElement("button");
+    document.body.appendChild(fora);
+
+    fireEvent.focusOut(entrar, { relatedTarget: criarConta });
+    expect(menu.open).toBe(true);
+
+    fireEvent.focusOut(criarConta, { relatedTarget: null });
+    expect(menu.open).toBe(true);
+
+    fireEvent.focusOut(criarConta, { relatedTarget: fora });
+    expect(menu.open).toBe(false);
+    fora.remove();
+  });
+
   it("não fecha ao clicar dentro do menu", () => {
     render(<MenuUsuario estado="anonimo" usuario={null} sessaoIndisponivel={false} aoSair={jest.fn()} />);
     const menu = menuAberto();

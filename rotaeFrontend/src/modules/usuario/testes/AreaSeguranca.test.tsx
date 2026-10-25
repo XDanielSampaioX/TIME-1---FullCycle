@@ -3,9 +3,9 @@ import { AreaSeguranca } from "../components/AreaSeguranca";
 import { excluirConta } from "../services/excluirConta";
 
 const sair = jest.fn();
-const push = jest.fn();
+const replace = jest.fn();
 
-jest.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+jest.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
 jest.mock("@/modules/autenticacao/hooks/useAutenticacao", () => ({ useAutenticacao: () => ({ sair }) }));
 jest.mock("../services/excluirConta");
 
@@ -65,8 +65,10 @@ describe("AreaSeguranca", () => {
     fireEvent.click(screen.getByRole("button", { name: "Excluir minha conta" }));
     fireEvent.click(screen.getByRole("button", { name: "Sim, excluir minha conta" }));
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
     expect(sair).toHaveBeenCalledTimes(1);
+    // Navega primeiro e só depois encerra a sessão.
+    expect(replace.mock.invocationCallOrder[0]).toBeLessThan(sair.mock.invocationCallOrder[0]);
   });
 
   it("mantém a sessão e avisa quando a exclusão falha", async () => {
@@ -78,6 +80,6 @@ describe("AreaSeguranca", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Não foi possível excluir a conta.");
     expect(sair).not.toHaveBeenCalled();
-    expect(push).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
   });
 });

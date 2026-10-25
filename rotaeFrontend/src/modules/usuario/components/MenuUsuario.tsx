@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRef } from "react";
-import { useFecharMenuSuspenso } from "../hooks/useFecharMenuSuspenso";
+import { useFecharMenuSuspenso } from "@/shared/hooks/useFecharMenuSuspenso";
 import type { EstadoMenuUsuario } from "../types/estadoMenuUsuario";
 import type { Usuario } from "../types/usuario";
 import { IconeUsuario } from "./IconeUsuario";

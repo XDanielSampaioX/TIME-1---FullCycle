@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useAutenticacao } from "@/modules/autenticacao/hooks/useAutenticacao";
 import { buscarUsuarioAutenticado } from "@/modules/autenticacao/services/buscarUsuarioAutenticado";
+import { useClienteMontado } from "@/shared/hooks/useClienteMontado";
 import type { EstadoMenuUsuario } from "../types/estadoMenuUsuario";
-import { useClienteMontado } from "./useClienteMontado";
 
 export function useEstadoMenuUsuario() {
   const { usuario, sair } = useAutenticacao();

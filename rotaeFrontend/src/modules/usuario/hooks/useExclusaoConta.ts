@@ -26,8 +26,10 @@ export function useExclusaoConta() {
     setExcluindo(true);
     try {
       await excluirConta();
+      // Navega antes de encerrar a sessão: assim a tela de perfil não pisca "Entre na sua conta"
+      // e o "voltar" do navegador não leva de novo ao perfil.
+      router.replace("/");
       sair();
-      router.push("/");
     } catch {
       setErro("Não foi possível excluir a conta. Tente novamente.");
     } finally {

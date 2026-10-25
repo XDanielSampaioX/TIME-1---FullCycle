@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAutenticacao } from "@/modules/autenticacao/hooks/useAutenticacao";
 import { Container } from "@/shared/components/Container";
+import { useClienteMontado } from "@/shared/hooks/useClienteMontado";
 import { AreaSeguranca } from "../components/AreaSeguranca";
 import { FormularioEdicaoPerfil } from "../components/FormularioEdicaoPerfil";
-import { useClienteMontado } from "../hooks/useClienteMontado";
 
 const classeCartao = "rounded-(--radius-lg) bg-(--color-surface-card) p-6 shadow-(--shadow-card)";
 
