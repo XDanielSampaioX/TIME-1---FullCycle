@@ -1,12 +1,10 @@
-import { renderHook, waitFor } from "@testing-library/react";
-import { buscarUsuarioAutenticado } from "@/modules/autenticacao/services/buscarUsuarioAutenticado";
+import { renderHook } from "@testing-library/react";
 import { useEstadoMenuUsuario } from "../hooks/useEstadoMenuUsuario";
 import type { Usuario } from "../types/usuario";
 
 const useAutenticacao = jest.fn();
 
 jest.mock("@/modules/autenticacao/hooks/useAutenticacao", () => ({ useAutenticacao: () => useAutenticacao() }));
-jest.mock("@/modules/autenticacao/services/buscarUsuarioAutenticado");
 
 const usuario: Usuario = {
   id: 1,
@@ -22,32 +20,28 @@ const usuario: Usuario = {
 describe("useEstadoMenuUsuario", () => {
   beforeEach(() => jest.resetAllMocks());
 
-  it("é anônimo e não consulta o servidor quando não há sessão", () => {
-    useAutenticacao.mockReturnValue({ usuario: null, sair: jest.fn() });
+  it("é anônimo quando não há sessão", () => {
+    useAutenticacao.mockReturnValue({ usuario: null, sessaoIndisponivel: false, sair: jest.fn() });
     const { result } = renderHook(() => useEstadoMenuUsuario());
 
     expect(result.current.estado).toBe("anonimo");
     expect(result.current.sessaoIndisponivel).toBe(false);
-    expect(buscarUsuarioAutenticado).not.toHaveBeenCalled();
   });
 
-  it("é autenticado quando o servidor confirma a sessão", async () => {
-    useAutenticacao.mockReturnValue({ usuario, sair: jest.fn() });
-    jest.mocked(buscarUsuarioAutenticado).mockResolvedValue(usuario);
+  it("é autenticado quando há usuário na sessão", () => {
+    useAutenticacao.mockReturnValue({ usuario, sessaoIndisponivel: false, sair: jest.fn() });
     const { result } = renderHook(() => useEstadoMenuUsuario());
 
-    await waitFor(() => expect(buscarUsuarioAutenticado).toHaveBeenCalledTimes(1));
     expect(result.current.estado).toBe("autenticado");
+    expect(result.current.usuario).toBe(usuario);
     expect(result.current.sessaoIndisponivel).toBe(false);
   });
 
-  it("marca a sessão como indisponível quando o servidor não responde, mantendo o usuário", async () => {
-    useAutenticacao.mockReturnValue({ usuario, sair: jest.fn() });
-    jest.mocked(buscarUsuarioAutenticado).mockRejectedValue(new Error("sem rede"));
+  it("repassa o aviso de sessão indisponível do contexto, mantendo o usuário", () => {
+    useAutenticacao.mockReturnValue({ usuario, sessaoIndisponivel: true, sair: jest.fn() });
     const { result } = renderHook(() => useEstadoMenuUsuario());
 
-    await waitFor(() => expect(result.current.sessaoIndisponivel).toBe(true));
     expect(result.current.estado).toBe("autenticado");
-    expect(result.current.usuario).toBe(usuario);
+    expect(result.current.sessaoIndisponivel).toBe(true);
   });
 });
