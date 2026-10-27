@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { AutenticacaoProvider } from "../contexts/AutenticacaoContext";
 import { useAutenticacao } from "../hooks/useAutenticacao";
 import { buscarUsuarioAutenticado } from "../services/buscarUsuarioAutenticado";
@@ -19,12 +19,20 @@ const usuario = {
 const sessao: Sessao = { access: "a", refresh: "r", user: usuario };
 
 function Estado() {
-  const { usuario: logado, sessaoIndisponivel } = useAutenticacao();
+  const { usuario: logado, sessaoIndisponivel, iniciarSessao, sair } = useAutenticacao();
 
   return (
-    <p>
-      {logado ? logado.nome : "anônimo"} | {sessaoIndisponivel ? "indisponível" : "ok"}
-    </p>
+    <>
+      <p>
+        {logado ? logado.nome : "anônimo"} | {sessaoIndisponivel ? "indisponível" : "ok"}
+      </p>
+      <button onClick={sair} type="button">
+        sair
+      </button>
+      <button onClick={() => iniciarSessao(sessao)} type="button">
+        entrar
+      </button>
+    </>
   );
 }
 
@@ -72,5 +80,18 @@ describe("AutenticacaoProvider", () => {
     renderizar();
 
     expect(await screen.findByText("Snow | indisponível")).toBeInTheDocument();
+  });
+
+  it("zera o aviso de indisponibilidade ao sair e ao entrar de novo", async () => {
+    localStorage.setItem("rotae.sessao", JSON.stringify(sessao));
+    jest.mocked(buscarUsuarioAutenticado).mockRejectedValue(new Error("sem rede"));
+    renderizar();
+    expect(await screen.findByText("Snow | indisponível")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "sair" }));
+    expect(screen.getByText("anônimo | ok")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "entrar" }));
+    expect(screen.getByText("Snow | ok")).toBeInTheDocument();
   });
 });
