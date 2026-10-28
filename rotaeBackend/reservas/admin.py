@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from viagens.models import ViagemAssento
 from .exceptions import ReservaInvalidaError
-from .models import Reserva
+from .models import Passageiro, Reserva
 from .services import cancelar_reserva
 
 
@@ -19,6 +19,35 @@ class ViagemAssentoInline(admin.TabularInline):
         return False
 
     def has_change_permission(self, request, obj=None):
+        return False
+
+
+class PassageiroInline(admin.TabularInline):
+    model = Passageiro
+    extra = 0
+    fields = ("nome", "cpf", "data_nasc", "email", "celular", "usuario")
+    can_delete = False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(Passageiro)
+class PassageiroAdmin(admin.ModelAdmin):
+    list_display = ("id", "nome", "cpf", "email", "reserva", "usuario", "criado_em")
+    list_filter = ("reserva__status", "criado_em")
+    search_fields = ("nome", "cpf", "email", "reserva__id", "usuario__email")
+    list_select_related = ("reserva__usuario", "reserva__viagem__origem", "reserva__viagem__destino", "usuario")
+    raw_id_fields = ("reserva", "usuario")
+
+    # Passageiros só nascem pelo cadastro na reserva; o admin serve para busca e auditoria.
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
         return False
 
 
@@ -42,7 +71,7 @@ class ReservaAdmin(admin.ModelAdmin):
         "viagem__destino__nome",
     )
     list_select_related = ("usuario", "viagem__origem", "viagem__destino")
-    inlines = (ViagemAssentoInline,)
+    inlines = (ViagemAssentoInline, PassageiroInline)
     actions = ("cancelar_reservas",)
 
     def has_add_permission(self, request):

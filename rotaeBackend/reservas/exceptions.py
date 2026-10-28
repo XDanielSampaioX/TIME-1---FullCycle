@@ -25,3 +25,7 @@ class ReservaNaoEncontradaError(ReservaError):
 class ReservaInvalidaError(ReservaError):
     pass
 
+
+class QuantidadePassageirosError(ReservaError):
+    pass
+

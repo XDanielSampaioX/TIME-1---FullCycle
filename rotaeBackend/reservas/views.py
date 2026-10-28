@@ -7,14 +7,21 @@ from rest_framework.views import APIView
 from .exceptions import (
     AssentoIndisponivelError,
     AssentoOutraViagemError,
+    QuantidadePassageirosError,
     ReservaInvalidaError,
     ReservaNaoEncontradaError,
     ViagemNaoEncontradaError,
 )
 from .models import Reserva
-from .serializers import ReservaCriarSerializer, ReservaSerializer
-from .services import cancelar_reserva, criar_reserva
+from .serializers import (
+    PassageiroCriarSerializer,
+    PassageiroSerializer,
+    ReservaCriarSerializer,
+    ReservaSerializer,
+)
+from .services import cadastrar_passageiros, cancelar_reserva, criar_reserva
 from .swagger import (
+    passageiros_cadastrar_schema,
     reserva_cancelar_schema,
     reserva_criar_schema,
     reserva_detalhe_schema,
@@ -72,7 +79,7 @@ class ReservaDetalheView(RetrieveAPIView):
             Reserva.objects
             .filter(usuario=self.request.user)
             .select_related("viagem__origem", "viagem__destino", "viagem__onibus")
-            .prefetch_related("viagem_assentos__assento")
+            .prefetch_related("viagem_assentos__assento", "passageiros")
         )
 
 
@@ -98,6 +105,40 @@ class ReservaCancelarView(APIView):
         return Response(output.data)
 
 
+@passageiros_cadastrar_schema
+class PassageirosCadastrarView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        serializer = PassageiroCriarSerializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            passageiros = cadastrar_passageiros(
+                reserva_id=pk,
+                usuario=request.user,
+                passageiros=serializer.validated_data,
+            )
+        except ReservaNaoEncontradaError:
+            return Response(
+                {"detail": "Reserva não encontrada."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except ReservaInvalidaError as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_409_CONFLICT,
+            )
+        except QuantidadePassageirosError as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        output = PassageiroSerializer(passageiros, many=True)
+        return Response(output.data, status=status.HTTP_201_CREATED)
+
+
 @reserva_minhas_reservas_schema
 class ReservaMinhasReservasView(ListAPIView):
     permission_classes = [IsAuthenticated]
@@ -108,6 +149,6 @@ class ReservaMinhasReservasView(ListAPIView):
             Reserva.objects
             .filter(usuario=self.request.user)
             .select_related("viagem__origem", "viagem__destino", "viagem__onibus")
-            .prefetch_related("viagem_assentos__assento")
+            .prefetch_related("viagem_assentos__assento", "passageiros")
             .order_by("-criado_em")
         )
