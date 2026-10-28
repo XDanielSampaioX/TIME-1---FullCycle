@@ -1,32 +1,31 @@
 from rest_framework import status
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView, RetrieveAPIView
 
-from .models import Reserva
-from .serializers import ReservaCriarSerializer, ReservaSerializer
-from .services import (
+from .exceptions import (
     AssentoIndisponivelError,
     AssentoOutraViagemError,
     ReservaInvalidaError,
     ReservaNaoEncontradaError,
     ViagemNaoEncontradaError,
-    cancelar_reserva,
-    criar_reserva,
 )
-from .swagger.reservas import (
+from .models import Reserva
+from .serializers import ReservaCriarSerializer, ReservaSerializer
+from .services import cancelar_reserva, criar_reserva
+from .swagger import (
+    reserva_cancelar_schema,
     reserva_criar_schema,
     reserva_detalhe_schema,
-    reserva_cancelar_schema,
     reserva_minhas_reservas_schema,
 )
 
 
+@reserva_criar_schema
 class ReservaCriarView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @reserva_criar_schema
     def post(self, request):
         serializer = ReservaCriarSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -40,7 +39,7 @@ class ReservaCriarView(APIView):
         except AssentoIndisponivelError as e:
             return Response(
                 {
-                    "detail": str(e) or "Um ou mais assentos já estão reservados.",
+                    "detail": str(e),
                     "assentos": e.assentos_indisponiveis,
                 },
                 status=status.HTTP_409_CONFLICT,
@@ -48,14 +47,14 @@ class ReservaCriarView(APIView):
         except AssentoOutraViagemError as e:
             return Response(
                 {
-                    "detail": str(e) or "Um ou mais assentos informados não pertencem à viagem.",
+                    "detail": str(e),
                     "assentos": e.assentos_indisponiveis,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except ViagemNaoEncontradaError as e:
             return Response(
-                {"detail": str(e) or "Viagem não encontrada."},
+                {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -77,10 +76,10 @@ class ReservaDetalheView(RetrieveAPIView):
         )
 
 
+@reserva_cancelar_schema
 class ReservaCancelarView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @reserva_cancelar_schema
     def post(self, request, pk):
         try:
             reserva = cancelar_reserva(reserva_id=pk, usuario=request.user)

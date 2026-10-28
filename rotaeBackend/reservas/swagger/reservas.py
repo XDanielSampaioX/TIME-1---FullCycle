@@ -27,12 +27,7 @@ reserva_criar_schema = extend_schema(
         ),
     },
     summary="Criar reserva com bloqueio temporário",
-    description=(
-        "Cria uma reserva para a viagem e assentos informados. "
-        "Os assentos são bloqueados via select_for_update() no banco de dados. "
-        "Se qualquer assento não estiver disponível, retorna 409 com a lista de assentos indisponíveis. "
-        "Se o assento não pertencer à viagem, retorna 400."
-    ),
+    description="Cria uma reserva para a viagem e assentos informados.",
     tags=["reservas"],
 )
 

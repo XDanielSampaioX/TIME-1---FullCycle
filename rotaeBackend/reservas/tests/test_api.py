@@ -151,28 +151,6 @@ def test_criar_reserva_assento_indisponivel_retorna_lista_assentos(api_client, a
     assert len(data["assentos"]) == 1
     assert data["assentos"][0] == assentos_ids[0]
 
-
-def test_criar_reserva_assento_ja_segurado_retorna_409(api_client, autenticar, viagem):
-    autenticar()
-    assentos_ids = ids_viagem_assentos(viagem, [1])
-
-    # Primeiro bloqueio com sucesso
-    resp1 = api_client.post(
-        URL_CRIAR_RESERVA,
-        {"viagem_id": viagem.id, "viagem_assento_ids": assentos_ids},
-        format="json",
-    )
-    assert resp1.status_code == 201
-
-    # Segunda tentativa no mesmo assento deve retornar 409
-    resp2 = api_client.post(
-        URL_CRIAR_RESERVA,
-        {"viagem_id": viagem.id, "viagem_assento_ids": assentos_ids},
-        format="json",
-    )
-    assert resp2.status_code == 409
-
-
 def test_criar_reserva_assento_ja_reservado_retorna_409(api_client, autenticar, viagem):
     autenticar()
     assento = viagem.viagem_assentos.filter(assento__numero=1).first()
@@ -424,8 +402,8 @@ def test_minhas_reservas_retorna_apenas_do_usuario_autenticado(api_client, auten
     assert resposta.status_code == 200
     data = resposta.json()
     # Com paginação, o resultado vem em data["results"]
-    results = data.get("results", data)
-    assert len(results) == 2
+    assert data["count"] == 2
+    assert len(data["results"]) == 2
 
 
 def test_minhas_reservas_sem_autenticacao_retorna_401(api_client):

@@ -1,8 +1,9 @@
 from django.contrib import admin
 
 from viagens.models import ViagemAssento
+from .exceptions import ReservaInvalidaError
 from .models import Reserva
-from .services import cancelar_reserva, ReservaInvalidaError
+from .services import cancelar_reserva
 
 
 class ViagemAssentoInline(admin.TabularInline):
@@ -10,6 +11,9 @@ class ViagemAssentoInline(admin.TabularInline):
     extra = 0
     fields = ("assento", "status")
     can_delete = False
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("assento__onibus")
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -37,7 +41,7 @@ class ReservaAdmin(admin.ModelAdmin):
         "viagem__origem__nome",
         "viagem__destino__nome",
     )
-    list_select_related = ("usuario", "viagem")
+    list_select_related = ("usuario", "viagem__origem", "viagem__destino")
     inlines = (ViagemAssentoInline,)
     actions = ("cancelar_reservas",)
 
@@ -61,7 +65,9 @@ class ReservaAdmin(admin.ModelAdmin):
             except ReservaInvalidaError:
                 erros += 1
         if canceladas:
-            self.message_user(request, f"{canceladas} reserva(s) cancelada(s) com sucesso.")
+            self.message_user(
+                request, f"{canceladas} reserva(s) cancelada(s) com sucesso."
+            )
         if erros:
             self.message_user(
                 request,

@@ -1,38 +1,18 @@
 from datetime import timedelta
 
 from django.db import transaction
+from django.db.models import prefetch_related_objects
 from django.utils import timezone
 
 from viagens.models import Viagem, ViagemAssento
+from .exceptions import (
+    AssentoIndisponivelError,
+    AssentoOutraViagemError,
+    ReservaInvalidaError,
+    ReservaNaoEncontradaError,
+    ViagemNaoEncontradaError,
+)
 from .models import Reserva
-
-
-class ReservaError(Exception):
-    pass
-
-
-class AssentoIndisponivelError(ReservaError):
-    def __init__(self, message, assentos_indisponiveis=None):
-        super().__init__(message)
-        self.assentos_indisponiveis = assentos_indisponiveis or []
-
-
-class AssentoOutraViagemError(ReservaError):
-    def __init__(self, message, assentos_indisponiveis=None):
-        super().__init__(message)
-        self.assentos_indisponiveis = assentos_indisponiveis or []
-
-
-class ViagemNaoEncontradaError(ReservaError):
-    pass
-
-
-class ReservaNaoEncontradaError(ReservaError):
-    pass
-
-
-class ReservaInvalidaError(ReservaError):
-    pass
 
 
 @transaction.atomic
@@ -44,19 +24,21 @@ def criar_reserva(*, usuario, viagem_id, viagem_assento_ids):
     faz rollback total e levanta AssentoIndisponivelError ou AssentoOutraViagemError.
     """
     try:
-        viagem = Viagem.objects.disponiveis_para_venda().get(pk=viagem_id)
+        viagem = (
+            Viagem.objects
+            .disponiveis_para_venda()
+            .select_related("origem", "destino", "onibus")
+            .get(pk=viagem_id)
+        )
     except Viagem.DoesNotExist:
         raise ViagemNaoEncontradaError(f"Viagem com id={viagem_id} não encontrada ou não disponível para venda.")
 
     ids_unicos = list(dict.fromkeys(viagem_assento_ids))
 
     # A ordem por pk evita deadlock entre requisições concorrentes
-    # select_related("assento") evita lazy loading durante o lock
-    # select_for_update(of=("self",)) faz lock apenas na tabela ViagemAssento
     assentos = list(
         ViagemAssento.objects
-        .select_related("assento")
-        .select_for_update(of=("self",))
+        .select_for_update()
         .filter(pk__in=ids_unicos, viagem_id=viagem.pk)
         .order_by("pk")
     )
@@ -97,6 +79,7 @@ def criar_reserva(*, usuario, viagem_id, viagem_assento_ids):
         assento.reserva = reserva
 
     ViagemAssento.objects.bulk_update(assentos, ["status", "reserva"])
+    prefetch_related_objects([reserva], "viagem_assentos__assento")
 
     return reserva
 
@@ -111,7 +94,8 @@ def cancelar_reserva(*, reserva_id, usuario):
         try:
             reserva = (
                 Reserva.objects
-                .select_for_update()
+                .select_related("viagem__origem", "viagem__destino", "viagem__onibus")
+                .select_for_update(of=("self",))
                 .get(pk=reserva_id, usuario=usuario)
             )
         except Reserva.DoesNotExist:
