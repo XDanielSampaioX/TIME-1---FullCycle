@@ -321,6 +321,54 @@ describe("FormularioEdicaoPerfil", () => {
     });
   });
 
+  describe("cenários pedidos na revisão", () => {
+    it("e-mail inválido que volta ao original: trocar só a senha não deixa erro de e-mail na tela", async () => {
+      jest.mocked(alterarSenha).mockResolvedValue({ tokens: { access: "novo-a", refresh: "novo-r" } });
+      render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+      preencher({ email: "email-invalido" });
+      salvar();
+      await waitFor(() => expect(campo("email")).toHaveAttribute("aria-invalid", "true"));
+
+      preencher({ email: usuario.email, ...senhaValida });
+      salvar();
+
+      expect(await screen.findByText("Senha alterada com sucesso.")).toBeInTheDocument();
+      expect(campo("email")).toHaveAttribute("aria-invalid", "false");
+      expect(atualizarUsuario).not.toHaveBeenCalled();
+    });
+
+    it("erro na confirmação da senha: apagar a senha e salvar só os dados não deixa erro de senha na tela", async () => {
+      render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+      preencher({ ...senhaValida, confirmacaoNovaSenha: "outra-senha-123" });
+      salvar();
+      await waitFor(() => expect(campo("confirmacaoNovaSenha")).toHaveAttribute("aria-invalid", "true"));
+
+      preencher({ senhaAtual: "", novaSenha: "", confirmacaoNovaSenha: "", nome: "João Souza" });
+      salvar();
+
+      expect(await screen.findByText("Dados atualizados com sucesso.")).toBeInTheDocument();
+      expect(campo("senhaAtual")).toHaveAttribute("aria-invalid", "false");
+      expect(campo("novaSenha")).toHaveAttribute("aria-invalid", "false");
+      expect(campo("confirmacaoNovaSenha")).toHaveAttribute("aria-invalid", "false");
+      expect(alterarSenha).not.toHaveBeenCalled();
+    });
+
+    it("\"Nenhuma alteração para salvar\" some ao editar e não volta quando a edição é desfeita", () => {
+      render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+      salvar();
+      expect(screen.getByText("Nenhuma alteração para salvar.")).toBeInTheDocument();
+
+      preencher({ nome: "João Souza" });
+      expect(screen.queryByText("Nenhuma alteração para salvar.")).not.toBeInTheDocument();
+
+      preencher({ nome: usuario.nome });
+      expect(screen.queryByText("Nenhuma alteração para salvar.")).not.toBeInTheDocument();
+    });
+  });
+
   it("chama aoCancelar ao clicar em Cancelar, sem salvar nada", () => {
     const aoCancelar = jest.fn();
     render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={aoCancelar} />);
