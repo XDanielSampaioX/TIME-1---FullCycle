@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Criar arquivos .env
+        run: |
+          cp rotaeBackend/.env.example rotaeBackend/.env
+          cp rotaeFrontend/.env.example rotaeFrontend/.env
+
+      - name: Subir os containers
+        run: docker compose up --build -d --wait
+
+      - name: Aplicar migrações
+        run: docker compose exec -T backend python manage.py migrate
+
+      - name: Testes do backend
+        run: docker compose exec -T backend python manage.py test
+
+      - name: Lint do frontend
+        run: docker compose exec -T frontend npm run lint
+        
+      - name: Testes do frontend
+        run: docker compose exec -T frontend npm test
+
+      - name: Build do frontend
+        run: docker compose exec -T frontend npm run build
+
+      - name: Mostrar logs se algo falhou
+        if: failure()
+        run: docker compose logs
+
+      - name: Derrubar os containers
+        if: always()
+        run: docker compose down -v

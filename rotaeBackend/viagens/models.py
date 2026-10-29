@@ -135,6 +135,13 @@ class ViagemAssento(models.Model):
 
     viagem = models.ForeignKey(Viagem, on_delete=models.CASCADE, related_name="viagem_assentos")
     assento = models.ForeignKey(Assento, on_delete=models.PROTECT, related_name="viagem_assentos")
+    reserva = models.ForeignKey(
+        "reservas.Reserva",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="viagem_assentos",
+    )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DISPONIVEL)
 
     class Meta:

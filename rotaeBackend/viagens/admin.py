@@ -63,8 +63,8 @@ class ViagemAdmin(admin.ModelAdmin):
 
 @admin.register(ViagemAssento)
 class ViagemAssentoAdmin(admin.ModelAdmin):
-    list_display = ("viagem", "assento", "status")
+    list_display = ("viagem", "assento", "status", "reserva")
     list_filter = ("status",)
-    search_fields = ("viagem__origem__nome", "viagem__destino__nome")
-    list_select_related = ("viagem__origem", "viagem__destino", "assento__onibus")
-    readonly_fields = ("viagem", "assento")
+    search_fields = ("viagem__origem__nome", "viagem__destino__nome", "reserva__id")
+    list_select_related = ("viagem__origem", "viagem__destino", "assento__onibus", "reserva")
+    readonly_fields = ("viagem", "assento", "reserva")
