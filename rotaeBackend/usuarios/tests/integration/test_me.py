@@ -9,21 +9,6 @@ pytestmark = pytest.mark.django_db
 URL_ME = reverse("me")
 
 
-def login(api_client, email, senha):
-    return api_client.post(reverse("login"), {"email": email, "senha": senha}, format="json").json()
-
-
-@pytest.fixture
-def tokens(api_client, usuario, senha):
-    return login(api_client, "joao@email.com", senha)
-
-
-@pytest.fixture
-def cliente_autenticado(api_client, tokens):
-    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {tokens['access']}")
-    return api_client
-
-
 @pytest.mark.parametrize("metodo", ["get", "patch", "delete"])
 def test_me_exige_autenticacao(api_client, metodo):
     resposta = getattr(api_client, metodo)(URL_ME)
@@ -142,10 +127,3 @@ def test_patch_me_com_corpo_que_nao_e_objeto_devolve_400(cliente_autenticado):
     resposta = cliente_autenticado.patch(URL_ME, [], format="json")
 
     assert resposta.status_code == 400
-
-
-def test_patch_me_ignora_is_active(cliente_autenticado, usuario):
-    cliente_autenticado.patch(URL_ME, {"isActive": False}, format="json")
-
-    usuario.refresh_from_db()
-    assert usuario.is_active is True

@@ -30,7 +30,7 @@ def test_editar_usuario_no_admin_abre_o_formulario(admin_client, usuario):
     assert resposta.status_code == 200
 
 
-def test_editar_no_admin_normaliza_email_e_barra_duplicado_por_caixa(admin_client, usuario):
+def test_editar_no_admin_normaliza_email_e_barra_duplicado_por_caixa(usuario):
     from usuarios.forms import UsuarioChangeForm
 
     outro = Usuario.objects.create_user(email="outro@email.com", password="x", nome="Outro")

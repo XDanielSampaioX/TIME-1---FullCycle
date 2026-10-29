@@ -1,12 +1,12 @@
 # TIME-1 - FullCycle: Rotaê
 ## Sumário
-- [Objetivo](#-objetivo)
-- [Arquitetura e Tecnologias](#-arquitetura-e-tecnologias)
-- [Pré-requisitos](#-pré-requisitos)
-- [Como Executar o Projeto (Docker)](#-como-executar-o-projeto-docker)
-- [Acessando a Aplicação](#-acessando-a-aplicação)
-- [Comandos Úteis](#-comandos-úteis)
-- [Colaboradores](#-colaboradores)
+- [Objetivo](#objetivo)
+- [Arquitetura e Tecnologias](#arquitetura-e-tecnologias)
+- [Pré-requisitos](#pré-requisitos)
+- [Como Executar o Projeto (Docker)](#como-executar-o-projeto-docker)
+- [Acessando a Aplicação](#acessando-a-aplicação)
+- [Comandos Úteis](#comandos-úteis)
+- [Colaboradores](#colaboradores)
 
 ---
 

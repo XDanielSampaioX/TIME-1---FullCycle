@@ -36,12 +36,11 @@ def ids_viagem_assentos(viagem, numeros):
 # --- Testes de Criação de Reserva ---
 
 
-def test_criar_reserva_sucesso(api_client, autenticar, viagem):
-    autenticar()
+def test_criar_reserva_sucesso(cliente_autenticado, viagem):
     assentos_ids = ids_viagem_assentos(viagem, [1, 2])
 
     antes = timezone.now()
-    resposta = api_client.post(
+    resposta = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": viagem.id, "viagem_assento_ids": assentos_ids},
         format="json",
@@ -71,13 +70,12 @@ def test_criar_reserva_sucesso(api_client, autenticar, viagem):
         assert a.reserva_id == reserva.id
 
 
-def test_criar_reserva_assento_indisponivel_retorna_lista_assentos(api_client, autenticar, viagem):
+def test_criar_reserva_assento_indisponivel_retorna_lista_assentos(cliente_autenticado, viagem):
     """Testa que o erro 409 retorna a lista de assentos indisponíveis."""
-    autenticar()
     assentos_ids = ids_viagem_assentos(viagem, [1])
 
     # Primeiro bloqueio com sucesso
-    resp1 = api_client.post(
+    resp1 = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": viagem.id, "viagem_assento_ids": assentos_ids},
         format="json",
@@ -85,7 +83,7 @@ def test_criar_reserva_assento_indisponivel_retorna_lista_assentos(api_client, a
     assert resp1.status_code == 201
 
     # Segunda tentativa no mesmo assento deve retornar 409 com lista de assentos
-    resp2 = api_client.post(
+    resp2 = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": viagem.id, "viagem_assento_ids": assentos_ids},
         format="json",
@@ -96,13 +94,13 @@ def test_criar_reserva_assento_indisponivel_retorna_lista_assentos(api_client, a
     assert len(data["assentos"]) == 1
     assert data["assentos"][0] == assentos_ids[0]
 
-def test_criar_reserva_assento_ja_reservado_retorna_409(api_client, autenticar, viagem):
-    autenticar()
+
+def test_criar_reserva_assento_ja_reservado_retorna_409(cliente_autenticado, viagem):
     assento = viagem.viagem_assentos.filter(assento__numero=1).first()
     assento.status = ViagemAssento.Status.RESERVADO
     assento.save()
 
-    resposta = api_client.post(
+    resposta = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": viagem.id, "viagem_assento_ids": [assento.id]},
         format="json",
@@ -110,12 +108,11 @@ def test_criar_reserva_assento_ja_reservado_retorna_409(api_client, autenticar, 
     assert resposta.status_code == 409
 
 
-def test_criar_reserva_rollback_quando_um_dos_assentos_indisponivel(api_client, autenticar, viagem):
+def test_criar_reserva_rollback_quando_um_dos_assentos_indisponivel(cliente_autenticado, viagem):
     """
     Se pedir 1 assento livre e 1 ocupado, deve falhar com 409 e nada deve ser alterado
     (rollback total: nem reserva criada, nem o assento livre segurado).
     """
-    autenticar()
     livre_id = ids_viagem_assentos(viagem, [1])[0]
     ocupado_id = ids_viagem_assentos(viagem, [2])[0]
 
@@ -125,7 +122,7 @@ def test_criar_reserva_rollback_quando_um_dos_assentos_indisponivel(api_client, 
 
     total_reservas_antes = Reserva.objects.count()
 
-    resposta = api_client.post(
+    resposta = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": viagem.id, "viagem_assento_ids": [livre_id, ocupado_id]},
         format="json",
@@ -150,9 +147,8 @@ def test_criar_reserva_sem_autenticacao_retorna_401(api_client, viagem):
     assert resposta.status_code == 401
 
 
-def test_criar_reserva_viagem_inexistente_retorna_400(api_client, autenticar):
-    autenticar()
-    resposta = api_client.post(
+def test_criar_reserva_viagem_inexistente_retorna_400(cliente_autenticado):
+    resposta = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": 999999, "viagem_assento_ids": [1]},
         format="json",
@@ -160,13 +156,12 @@ def test_criar_reserva_viagem_inexistente_retorna_400(api_client, autenticar):
     assert resposta.status_code == 400
 
 
-def test_criar_reserva_viagem_cancelada_rejeita_400(api_client, autenticar, viagem):
-    autenticar()
+def test_criar_reserva_viagem_cancelada_rejeita_400(cliente_autenticado, viagem):
     viagem.status = Viagem.Status.CANCELADA
     viagem.save()
 
     assentos_ids = ids_viagem_assentos(viagem, [1])
-    resposta = api_client.post(
+    resposta = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": viagem.id, "viagem_assento_ids": assentos_ids},
         format="json",
@@ -174,14 +169,13 @@ def test_criar_reserva_viagem_cancelada_rejeita_400(api_client, autenticar, viag
     assert resposta.status_code == 400
 
 
-def test_criar_reserva_viagem_passada_rejeita_400(api_client, autenticar, viagem):
-    autenticar()
+def test_criar_reserva_viagem_passada_rejeita_400(cliente_autenticado, viagem):
     viagem.partida_em = timezone.now() - timedelta(hours=2)
     viagem.chegada_em = timezone.now() - timedelta(hours=1)
     viagem.save()
 
     assentos_ids = ids_viagem_assentos(viagem, [1])
-    resposta = api_client.post(
+    resposta = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": viagem.id, "viagem_assento_ids": assentos_ids},
         format="json",
@@ -189,11 +183,10 @@ def test_criar_reserva_viagem_passada_rejeita_400(api_client, autenticar, viagem
     assert resposta.status_code == 400
 
 
-def test_criar_reserva_assento_de_outra_viagem_retorna_400(api_client, autenticar, viagem, outra_viagem):
-    autenticar()
+def test_criar_reserva_assento_de_outra_viagem_retorna_400(cliente_autenticado, viagem, outra_viagem):
     assento_outra_viagem = ids_viagem_assentos(outra_viagem, [1])[0]
 
-    resposta = api_client.post(
+    resposta = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": viagem.id, "viagem_assento_ids": [assento_outra_viagem]},
         format="json",
@@ -204,11 +197,10 @@ def test_criar_reserva_assento_de_outra_viagem_retorna_400(api_client, autentica
     assert data["assentos"] == [assento_outra_viagem]
 
 
-def test_criar_reserva_assentos_duplicados_retorna_400(api_client, autenticar, viagem):
-    autenticar()
+def test_criar_reserva_assentos_duplicados_retorna_400(cliente_autenticado, viagem):
     assento_id = ids_viagem_assentos(viagem, [1])[0]
 
-    resposta = api_client.post(
+    resposta = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": viagem.id, "viagem_assento_ids": [assento_id, assento_id]},
         format="json",
@@ -219,17 +211,16 @@ def test_criar_reserva_assentos_duplicados_retorna_400(api_client, autenticar, v
 # --- Testes de Consulta de Reserva (GET /reservas/{id}/) ---
 
 
-def test_detalhe_reserva_sucesso(api_client, autenticar, viagem):
-    autenticar()
+def test_detalhe_reserva_sucesso(cliente_autenticado, viagem):
     assentos_ids = ids_viagem_assentos(viagem, [1])
-    post_resp = api_client.post(
+    post_resp = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": viagem.id, "viagem_assento_ids": assentos_ids},
         format="json",
     )
     reserva_id = post_resp.json()["id"]
 
-    resposta = api_client.get(url_detalhe_reserva(reserva_id))
+    resposta = cliente_autenticado.get(url_detalhe_reserva(reserva_id))
     assert resposta.status_code == 200
     data = resposta.json()
     assert data["id"] == reserva_id
@@ -243,10 +234,9 @@ def test_detalhe_reserva_sucesso(api_client, autenticar, viagem):
     assert "destino" in data["viagem"]
 
 
-def test_detalhe_reserva_outro_usuario_retorna_404(api_client, autenticar, autenticar_outro, viagem):
-    autenticar()
+def test_detalhe_reserva_outro_usuario_retorna_404(cliente_autenticado, outro_cliente, viagem):
     assentos_ids = ids_viagem_assentos(viagem, [1])
-    post_resp = api_client.post(
+    post_resp = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": viagem.id, "viagem_assento_ids": assentos_ids},
         format="json",
@@ -254,31 +244,28 @@ def test_detalhe_reserva_outro_usuario_retorna_404(api_client, autenticar, auten
     reserva_id = post_resp.json()["id"]
 
     # Usuário B tenta consultar a reserva do Usuário A
-    autenticar_outro()
-    resposta = api_client.get(url_detalhe_reserva(reserva_id))
+    resposta = outro_cliente.get(url_detalhe_reserva(reserva_id))
     assert resposta.status_code == 404
 
 
-def test_detalhe_reserva_inexistente_retorna_404(api_client, autenticar):
-    autenticar()
-    resposta = api_client.get(url_detalhe_reserva(99999))
+def test_detalhe_reserva_inexistente_retorna_404(cliente_autenticado):
+    resposta = cliente_autenticado.get(url_detalhe_reserva(99999))
     assert resposta.status_code == 404
 
 
 # --- Testes de Cancelamento (POST /reservas/{id}/cancelar/) ---
 
 
-def test_cancelar_reserva_pendente_sucesso(api_client, autenticar, viagem):
-    autenticar()
+def test_cancelar_reserva_pendente_sucesso(cliente_autenticado, viagem):
     assentos_ids = ids_viagem_assentos(viagem, [1, 2])
-    post_resp = api_client.post(
+    post_resp = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": viagem.id, "viagem_assento_ids": assentos_ids},
         format="json",
     )
     reserva_id = post_resp.json()["id"]
 
-    resposta = api_client.post(url_cancelar_reserva(reserva_id))
+    resposta = cliente_autenticado.post(url_cancelar_reserva(reserva_id))
     assert resposta.status_code == 200
     data = resposta.json()
     assert data["status"] == "CANCELADO"
@@ -293,57 +280,51 @@ def test_cancelar_reserva_pendente_sucesso(api_client, autenticar, viagem):
         assert a.reserva is None
 
 
-def test_cancelar_reserva_outro_usuario_retorna_404(api_client, autenticar, autenticar_outro, viagem):
-    autenticar()
+def test_cancelar_reserva_outro_usuario_retorna_404(cliente_autenticado, outro_cliente, viagem):
     assentos_ids = ids_viagem_assentos(viagem, [1])
-    post_resp = api_client.post(
+    post_resp = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": viagem.id, "viagem_assento_ids": assentos_ids},
         format="json",
     )
     reserva_id = post_resp.json()["id"]
 
-    autenticar_outro()
-    resposta = api_client.post(url_cancelar_reserva(reserva_id))
+    resposta = outro_cliente.post(url_cancelar_reserva(reserva_id))
     assert resposta.status_code == 404
 
 
-def test_cancelar_reserva_ja_cancelada_retorna_400(api_client, autenticar, viagem):
-    autenticar()
+def test_cancelar_reserva_ja_cancelada_retorna_400(cliente_autenticado, viagem):
     assentos_ids = ids_viagem_assentos(viagem, [1])
-    post_resp = api_client.post(
+    post_resp = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
         {"viagem_id": viagem.id, "viagem_assento_ids": assentos_ids},
         format="json",
     )
     reserva_id = post_resp.json()["id"]
 
-    resp1 = api_client.post(url_cancelar_reserva(reserva_id))
+    resp1 = cliente_autenticado.post(url_cancelar_reserva(reserva_id))
     assert resp1.status_code == 200
 
-    resp2 = api_client.post(url_cancelar_reserva(reserva_id))
+    resp2 = cliente_autenticado.post(url_cancelar_reserva(reserva_id))
     assert resp2.status_code == 400
 
 
 # --- Testes de Listagem (/me/reservas/) ---
 
 
-def test_minhas_reservas_retorna_apenas_do_usuario_autenticado(api_client, autenticar, autenticar_outro, viagem, outra_viagem):
+def test_minhas_reservas_retorna_apenas_do_usuario_autenticado(cliente_autenticado, outro_cliente, viagem, outra_viagem):
     # Usuário A cria 2 reservas
-    autenticar()
     a1 = ids_viagem_assentos(viagem, [1])
     a2 = ids_viagem_assentos(viagem, [2])
-    api_client.post(URL_CRIAR_RESERVA, {"viagem_id": viagem.id, "viagem_assento_ids": a1}, format="json")
-    api_client.post(URL_CRIAR_RESERVA, {"viagem_id": viagem.id, "viagem_assento_ids": a2}, format="json")
+    cliente_autenticado.post(URL_CRIAR_RESERVA, {"viagem_id": viagem.id, "viagem_assento_ids": a1}, format="json")
+    cliente_autenticado.post(URL_CRIAR_RESERVA, {"viagem_id": viagem.id, "viagem_assento_ids": a2}, format="json")
 
     # Usuário B cria 1 reserva
-    autenticar_outro()
     b1 = ids_viagem_assentos(outra_viagem, [1])
-    api_client.post(URL_CRIAR_RESERVA, {"viagem_id": outra_viagem.id, "viagem_assento_ids": b1}, format="json")
+    outro_cliente.post(URL_CRIAR_RESERVA, {"viagem_id": outra_viagem.id, "viagem_assento_ids": b1}, format="json")
 
     # Usuário A busca suas reservas
-    autenticar()
-    resposta = api_client.get(URL_MINHAS_RESERVAS)
+    resposta = cliente_autenticado.get(URL_MINHAS_RESERVAS)
     assert resposta.status_code == 200
     data = resposta.json()
     # Com paginação, o resultado vem em data["results"]

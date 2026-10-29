@@ -11,13 +11,6 @@ def login(api_client, email, senha):
     return api_client.post(reverse("login"), {"email": email, "senha": senha}, format="json")
 
 
-@pytest.fixture
-def cliente_autenticado(api_client, usuario, senha):
-    access = login(api_client, "joao@email.com", senha).json()["access"]
-    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
-    return api_client
-
-
 def trocar_senha(cliente, senha_atual):
     return cliente.post(URL, {
         "senhaAtual": senha_atual, "novaSenha": NOVA, "confirmacaoNovaSenha": NOVA,

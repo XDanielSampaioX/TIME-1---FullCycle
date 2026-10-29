@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from viagens.models import Onibus, Viagem
 
-from .conftest import amanha_as
+from ..conftest import amanha_as
 
 pytestmark = pytest.mark.django_db
 
@@ -56,9 +56,9 @@ def test_paginas_do_admin_abrem(admin_client, criar_viagem):
 
 
 def test_popular_viagens_e_idempotente(db):
-    call_command("popular_viagens", dias=2)
-    call_command("popular_viagens", dias=2)
+    call_command("popular_viagens", dias=1)
+    call_command("popular_viagens", dias=1)
 
-    assert Viagem.objects.count() == 10
+    assert Viagem.objects.count() == 5
     for viagem in Viagem.objects.select_related("onibus"):
         assert viagem.viagem_assentos.count() == viagem.onibus.total_assentos

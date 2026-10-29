@@ -8,11 +8,6 @@ URL_LOGOUT = reverse("logout")
 URL_REFRESH = reverse("refresh_token")
 
 
-@pytest.fixture
-def tokens(api_client, usuario, senha):
-    return api_client.post(reverse("login"), {"email": "joao@email.com", "senha": senha}, format="json").json()
-
-
 def test_logout_devolve_204_sem_corpo(api_client, tokens):
     resposta = api_client.post(URL_LOGOUT, {"refresh": tokens["refresh"]}, format="json")
 
