@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { MenuUsuarioConectado } from "@/modules/usuario/components/MenuUsuarioConectado";
+import { MenuUsuario } from "@/modules/usuario/components/MenuUsuario";
 import { Container } from "./Container";
 
 type HeaderActionContext = { className?: string };
@@ -34,7 +34,7 @@ class AccountMenuAction extends HeaderAction {
   }
 
   render() {
-    return <MenuUsuarioConectado />;
+    return <MenuUsuario />;
   }
 }
 

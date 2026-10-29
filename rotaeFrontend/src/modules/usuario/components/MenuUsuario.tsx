@@ -2,17 +2,9 @@
 
 import Link from "next/link";
 import { useRef } from "react";
+import { useAutenticacao } from "@/modules/autenticacao/hooks/useAutenticacao";
 import { useFecharMenuSuspenso } from "@/shared/hooks/useFecharMenuSuspenso";
-import type { EstadoMenuUsuario } from "../types/estadoMenuUsuario";
-import type { Usuario } from "../types/usuario";
-import { IconeUsuario } from "./IconeUsuario";
-
-type MenuUsuarioProps = {
-  estado: EstadoMenuUsuario;
-  usuario: Usuario | null;
-  sessaoIndisponivel: boolean;
-  aoSair: () => void;
-};
+import { AvatarUsuario } from "./AvatarUsuario";
 
 const linksAnonimo = [
   { titulo: "Entrar", href: "/login" },
@@ -23,23 +15,22 @@ const linksAnonimo = [
 const linksAutenticado = [{ titulo: "Editar perfil", href: "/editar-perfil" }];
 
 const classeItem = "block w-full rounded-lg px-3 py-2 text-left no-underline hover:bg-black/5";
-// Avatar redondo com borda dourada, como no protótipo.
-const classeAvatar = "relative grid size-9 shrink-0 place-items-center rounded-full border-2 border-(--color-accent-500) bg-(--color-brand-800) text-white";
 
-export function MenuUsuario({ estado, usuario, sessaoIndisponivel, aoSair }: MenuUsuarioProps) {
+export function MenuUsuario() {
+  const { estado, sessaoIndisponivel, sair } = useAutenticacao();
   const menu = useRef<HTMLDetailsElement>(null);
   useFecharMenuSuspenso(menu);
 
   if (estado === "carregando") {
     return (
       <div className="flex h-16 items-center" role="status" aria-busy="true">
-        <span className={`${classeAvatar} animate-pulse opacity-60`} aria-hidden="true" />
+        <AvatarUsuario className="size-9 animate-pulse opacity-60" />
         <span className="sr-only">Carregando sessão...</span>
       </div>
     );
   }
 
-  const autenticado = estado === "autenticado" && usuario !== null;
+  const autenticado = estado === "autenticado";
   const links = autenticado ? linksAutenticado : linksAnonimo;
 
   function fechar() {
@@ -52,12 +43,11 @@ export function MenuUsuario({ estado, usuario, sessaoIndisponivel, aoSair }: Men
         className="flex cursor-pointer list-none items-center gap-1.5 [&::-webkit-details-marker]:hidden"
         aria-label={sessaoIndisponivel ? "Menu da conta (sessão indisponível)" : "Menu da conta"}
       >
-        <span className={classeAvatar} aria-hidden="true">
-          <IconeUsuario className="size-4" />
+        <AvatarUsuario className="size-9">
           {sessaoIndisponivel && (
             <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full border border-(--color-brand-950) bg-amber-400" />
           )}
-        </span>
+        </AvatarUsuario>
         <svg className="size-3 shrink-0 fill-none stroke-current stroke-2" viewBox="0 0 24 24" aria-hidden="true">
           <path d="m6 9 6 6 6-6" />
         </svg>
@@ -87,7 +77,7 @@ export function MenuUsuario({ estado, usuario, sessaoIndisponivel, aoSair }: Men
               type="button"
               onClick={() => {
                 fechar();
-                aoSair();
+                sair();
               }}
             >
               Sair

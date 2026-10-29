@@ -2,25 +2,13 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { FormularioEdicaoPerfil } from "../components/FormularioEdicaoPerfil";
 import { alterarSenha } from "../services/alterarSenha";
 import { atualizarUsuario } from "../services/atualizarUsuario";
-import type { Usuario } from "../types/usuario";
+import { usuario } from "./fixtures/usuario";
 
-const iniciarSessao = jest.fn();
+const atualizarSessao = jest.fn();
 
-jest.mock("@/modules/autenticacao/hooks/useAutenticacao", () => ({ useAutenticacao: () => ({ iniciarSessao }) }));
-jest.mock("@/modules/autenticacao/utils/sessaoSalva", () => ({ lerSessao: () => ({ access: "a", refresh: "r" }) }));
+jest.mock("@/modules/autenticacao/hooks/useAutenticacao", () => ({ useAutenticacao: () => ({ atualizarSessao }) }));
 jest.mock("../services/atualizarUsuario");
 jest.mock("../services/alterarSenha");
-
-const usuario: Usuario = {
-  id: 1,
-  nome: "João Silva",
-  email: "joao@email.com",
-  celular: "(85) 99999-0000",
-  dataNasc: "1995-04-20",
-  cpf: "529.982.247-25",
-  criadoEm: "2026-10-01T10:00:00Z",
-  atualizadoEm: "2026-10-01T10:00:00Z",
-};
 
 const senhaValida = { senhaAtual: "senha-antiga-1", novaSenha: "senha-nova-123", confirmacaoNovaSenha: "senha-nova-123" };
 
@@ -197,6 +185,140 @@ describe("FormularioEdicaoPerfil", () => {
     salvar();
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Não foi possível salvar as alterações.");
+  });
+
+  it("grava na sessão o usuário devolvido pelo servidor", async () => {
+    const atualizado = { ...usuario, nome: "João Souza" };
+    jest.mocked(atualizarUsuario).mockResolvedValue({ usuario: atualizado });
+    render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+    preencher({ nome: "João Souza" });
+    salvar();
+
+    await screen.findByText("Dados atualizados com sucesso.");
+    expect(atualizarSessao).toHaveBeenCalledWith({ user: atualizado });
+  });
+
+  it("grava na sessão os tokens novos depois de trocar a senha e limpa os campos de senha", async () => {
+    const tokens = { access: "novo-a", refresh: "novo-r" };
+    jest.mocked(alterarSenha).mockResolvedValue({ tokens });
+    render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+    preencher(senhaValida);
+    salvar();
+
+    await screen.findByText("Senha alterada com sucesso.");
+    expect(atualizarSessao).toHaveBeenCalledWith(tokens);
+    expect(campo("senhaAtual")).toHaveValue("");
+    expect(campo("novaSenha")).toHaveValue("");
+    expect(campo("confirmacaoNovaSenha")).toHaveValue("");
+  });
+
+  it("mostra o campo vazio para quem não tem data de nascimento e pede o preenchimento ao salvar", async () => {
+    render(<FormularioEdicaoPerfil usuario={{ ...usuario, dataNasc: null }} aoCancelar={jest.fn()} />);
+
+    expect(campo("dataNasc")).toHaveValue("");
+    preencher({ nome: "João Souza" });
+    salvar();
+
+    expect(await screen.findByText("Informe sua data de nascimento.")).toBeInTheDocument();
+    expect(atualizarUsuario).not.toHaveBeenCalled();
+
+    preencher({ dataNasc: "1995-04-20" });
+    salvar();
+
+    expect(await screen.findByText("Dados atualizados com sucesso.")).toBeInTheDocument();
+  });
+
+  it("não mexe na sessão quando o servidor recusa os dados", async () => {
+    jest.mocked(atualizarUsuario).mockResolvedValue({ erros: { email: "Já existe um usuário com este e-mail." } });
+    render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+    preencher({ email: "outro@email.com" });
+    salvar();
+
+    await screen.findByText("Já existe um usuário com este e-mail.");
+    expect(atualizarSessao).not.toHaveBeenCalled();
+  });
+
+  it("mantém o que foi digitado quando a rede falha na troca de senha", async () => {
+    jest.mocked(alterarSenha).mockRejectedValue(new Error("falha"));
+    render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+    preencher(senhaValida);
+    salvar();
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Não foi possível alterar a senha. Tente novamente.");
+    expect(campo("senhaAtual")).toHaveValue(senhaValida.senhaAtual);
+    expect(campo("novaSenha")).toHaveValue(senhaValida.novaSenha);
+  });
+
+  it("mantém o que foi digitado quando a rede falha ao salvar os dados", async () => {
+    jest.mocked(atualizarUsuario).mockRejectedValue(new Error("falha"));
+    render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+    preencher({ nome: "João Souza" });
+    salvar();
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Não foi possível salvar as alterações. Tente novamente.");
+    expect(campo("nome")).toHaveValue("João Souza");
+  });
+
+  it("esconde a mensagem de sucesso assim que o usuário volta a editar", async () => {
+    render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+    preencher({ nome: "João Souza" });
+    salvar();
+    await screen.findByText("Dados atualizados com sucesso.");
+
+    preencher({ nome: "João Souza Lima" });
+    expect(screen.queryByText("Dados atualizados com sucesso.")).not.toBeInTheDocument();
+  });
+
+  describe("erros antigos não ficam na tela", () => {
+    it("o erro da senha some quando o usuário salva de novo só os dados", async () => {
+      jest.mocked(alterarSenha).mockResolvedValue({ erros: { senhaAtual: "Senha atual incorreta." } });
+      render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+      preencher(senhaValida);
+      salvar();
+      await screen.findByText("Senha atual incorreta.");
+
+      preencher({ senhaAtual: "", novaSenha: "", confirmacaoNovaSenha: "", nome: "João Souza" });
+      salvar();
+
+      expect(await screen.findByText("Dados atualizados com sucesso.")).toBeInTheDocument();
+      expect(screen.queryByText("Senha atual incorreta.")).not.toBeInTheDocument();
+    });
+
+    it("o erro dos dados some quando o usuário corrige e salva de novo", async () => {
+      jest.mocked(atualizarUsuario).mockResolvedValueOnce({ erros: { email: "Já existe um usuário com este e-mail." } });
+      render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+      preencher({ email: "outro@email.com" });
+      salvar();
+      await screen.findByText("Já existe um usuário com este e-mail.");
+
+      preencher({ email: "livre@email.com" });
+      salvar();
+
+      expect(await screen.findByText("Dados atualizados com sucesso.")).toBeInTheDocument();
+      expect(screen.queryByText("Já existe um usuário com este e-mail.")).not.toBeInTheDocument();
+    });
+
+    it("o aviso de falha de rede some quando o salvamento seguinte dá certo", async () => {
+      jest.mocked(atualizarUsuario).mockRejectedValueOnce(new Error("falha"));
+      render(<FormularioEdicaoPerfil usuario={usuario} aoCancelar={jest.fn()} />);
+
+      preencher({ nome: "João Souza" });
+      salvar();
+      await screen.findByRole("alert");
+
+      salvar();
+
+      expect(await screen.findByText("Dados atualizados com sucesso.")).toBeInTheDocument();
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
   });
 
   it("chama aoCancelar ao clicar em Cancelar, sem salvar nada", () => {

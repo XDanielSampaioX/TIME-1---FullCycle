@@ -1,26 +1,29 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { EdicaoPerfilPage } from "../pages/EdicaoPerfilPage";
-import type { Usuario } from "../types/usuario";
+import { excluirConta } from "../services/excluirConta";
+import { usuario } from "./fixtures/usuario";
 
 const useAutenticacao = jest.fn();
 
 jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn() }) }));
 jest.mock("@/modules/autenticacao/hooks/useAutenticacao", () => ({ useAutenticacao: () => useAutenticacao() }));
+jest.mock("../services/excluirConta");
 
-const usuario: Usuario = {
-  id: 1,
-  nome: "João Silva",
-  email: "joao@email.com",
-  celular: "(85) 99999-0000",
-  dataNasc: "1995-04-20",
-  cpf: "529.982.247-25",
-  criadoEm: "2026-10-01T10:00:00Z",
-  atualizadoEm: "2026-10-01T10:00:00Z",
-};
+const funcoes = { iniciarSessao: jest.fn(), atualizarSessao: jest.fn(), sair: jest.fn() };
 
 describe("EdicaoPerfilPage", () => {
+  beforeEach(() => jest.resetAllMocks());
+
+  it("não mostra nada enquanto a sessão está sendo lida", () => {
+    useAutenticacao.mockReturnValue({ usuario: null, estado: "carregando", sessaoIndisponivel: false, ...funcoes });
+    render(<EdicaoPerfilPage />);
+
+    expect(screen.queryByRole("link", { name: "Entrar" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Salvar alterações" })).not.toBeInTheDocument();
+  });
+
   it("convida a entrar quando não há sessão", () => {
-    useAutenticacao.mockReturnValue({ usuario: null, iniciarSessao: jest.fn(), sair: jest.fn() });
+    useAutenticacao.mockReturnValue({ usuario: null, estado: "anonimo", sessaoIndisponivel: false, ...funcoes });
     render(<EdicaoPerfilPage />);
 
     expect(screen.getByRole("link", { name: "Entrar" })).toHaveAttribute("href", "/login");
@@ -28,7 +31,7 @@ describe("EdicaoPerfilPage", () => {
   });
 
   it("mostra título, formulário e área de segurança para quem está logado", () => {
-    useAutenticacao.mockReturnValue({ usuario, iniciarSessao: jest.fn(), sair: jest.fn() });
+    useAutenticacao.mockReturnValue({ usuario, estado: "autenticado", sessaoIndisponivel: false, ...funcoes });
     render(<EdicaoPerfilPage />);
 
     expect(screen.getByRole("heading", { name: "Meu perfil" })).toBeInTheDocument();
@@ -38,7 +41,7 @@ describe("EdicaoPerfilPage", () => {
   });
 
   it("Cancelar descarta o que foi digitado e volta aos dados salvos", () => {
-    useAutenticacao.mockReturnValue({ usuario, iniciarSessao: jest.fn(), sair: jest.fn() });
+    useAutenticacao.mockReturnValue({ usuario, estado: "autenticado", sessaoIndisponivel: false, ...funcoes });
     render(<EdicaoPerfilPage />);
     const nome = () => screen.getByLabelText<HTMLInputElement>("Nome completo");
 
@@ -47,5 +50,21 @@ describe("EdicaoPerfilPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
     expect(nome()).toHaveValue("João Silva");
+  });
+
+  it("não mostra a tela de visitante enquanto a conta excluída sai da página", async () => {
+    const anonimo = { usuario: null, estado: "anonimo", sessaoIndisponivel: false };
+    // Como no app: sair() encerra a sessão na hora, antes de a rota mudar.
+    const sair: jest.Mock = jest.fn(() => useAutenticacao.mockReturnValue({ ...anonimo, ...funcoes, sair }));
+    useAutenticacao.mockReturnValue({ usuario, estado: "autenticado", sessaoIndisponivel: false, ...funcoes, sair });
+    jest.mocked(excluirConta).mockResolvedValue(undefined);
+    render(<EdicaoPerfilPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Excluir minha conta" }));
+    fireEvent.click(screen.getByRole("button", { name: "Sim, excluir minha conta" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("Conta desativada");
+    expect(sair).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText(/Entre na sua conta/)).not.toBeInTheDocument();
   });
 });

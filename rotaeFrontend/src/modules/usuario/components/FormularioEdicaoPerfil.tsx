@@ -26,13 +26,9 @@ type FormularioEdicaoPerfilProps = {
 };
 
 export function FormularioEdicaoPerfil({ usuario, aoCancelar }: FormularioEdicaoPerfilProps) {
-  const { dados, senha, enviando, alterado, querTrocarSenha, semAlteracaoParaSalvar, salvar } = useEdicaoPerfil(usuario);
+  const { campos, erros, status, enviando, alterarCampo, salvar } = useEdicaoPerfil(usuario);
   const formulario = useRef<HTMLFormElement>(null);
-  useFocoPrimeiroErro(formulario, dados.erros);
-  useFocoPrimeiroErro(formulario, senha.erros);
-
-  const erroGeral = dados.erroGeral ?? senha.erroGeral;
-  const semAlteracao = semAlteracaoParaSalvar && !alterado && !querTrocarSenha;
+  useFocoPrimeiroErro(formulario, erros);
 
   return (
     <form
@@ -54,9 +50,9 @@ export function FormularioEdicaoPerfil({ usuario, aoCancelar }: FormularioEdicao
           titulo="Nome completo"
           type="text"
           autoComplete="name"
-          value={dados.dados.nome}
-          erro={dados.erros.nome}
-          onChange={(event) => dados.alterarCampo("nome", event.target.value)}
+          value={campos.nome}
+          erro={erros.nome}
+          onChange={(event) => alterarCampo("nome", event.target.value)}
         />
         <div className={linha}>
           <CampoFormulario
@@ -64,9 +60,9 @@ export function FormularioEdicaoPerfil({ usuario, aoCancelar }: FormularioEdicao
             titulo="E-mail"
             type="email"
             autoComplete="email"
-            value={dados.dados.email}
-            erro={dados.erros.email}
-            onChange={(event) => dados.alterarCampo("email", event.target.value)}
+            value={campos.email}
+            erro={erros.email}
+            onChange={(event) => alterarCampo("email", event.target.value)}
           />
           <CampoFormulario
             nome="celular"
@@ -74,9 +70,9 @@ export function FormularioEdicaoPerfil({ usuario, aoCancelar }: FormularioEdicao
             type="tel"
             autoComplete="tel-national"
             placeholder="(85) 99999-0000"
-            value={dados.dados.celular}
-            erro={dados.erros.celular}
-            onChange={(event) => dados.alterarCampo("celular", event.target.value)}
+            value={campos.celular}
+            erro={erros.celular}
+            onChange={(event) => alterarCampo("celular", event.target.value)}
           />
         </div>
         <div className={linha}>
@@ -94,9 +90,9 @@ export function FormularioEdicaoPerfil({ usuario, aoCancelar }: FormularioEdicao
             titulo="Data de nascimento"
             type="date"
             autoComplete="bday"
-            value={dados.dados.dataNasc}
-            erro={dados.erros.dataNasc}
-            onChange={(event) => dados.alterarCampo("dataNasc", event.target.value)}
+            value={campos.dataNasc}
+            erro={erros.dataNasc}
+            onChange={(event) => alterarCampo("dataNasc", event.target.value)}
           />
         </div>
       </div>
@@ -111,9 +107,9 @@ export function FormularioEdicaoPerfil({ usuario, aoCancelar }: FormularioEdicao
             type="password"
             autoComplete="current-password"
             placeholder="Sua senha atual"
-            value={senha.dados.senhaAtual}
-            erro={senha.erros.senhaAtual}
-            onChange={(event) => senha.alterarCampo("senhaAtual", event.target.value)}
+            value={campos.senhaAtual}
+            erro={erros.senhaAtual}
+            onChange={(event) => alterarCampo("senhaAtual", event.target.value)}
           />
           <CampoFormulario
             nome="novaSenha"
@@ -121,9 +117,9 @@ export function FormularioEdicaoPerfil({ usuario, aoCancelar }: FormularioEdicao
             type="password"
             autoComplete="new-password"
             placeholder="Nova senha"
-            value={senha.dados.novaSenha}
-            erro={senha.erros.novaSenha}
-            onChange={(event) => senha.alterarCampo("novaSenha", event.target.value)}
+            value={campos.novaSenha}
+            erro={erros.novaSenha}
+            onChange={(event) => alterarCampo("novaSenha", event.target.value)}
           />
           <CampoFormulario
             nome="confirmacaoNovaSenha"
@@ -131,30 +127,30 @@ export function FormularioEdicaoPerfil({ usuario, aoCancelar }: FormularioEdicao
             type="password"
             autoComplete="new-password"
             placeholder="Repita a nova senha"
-            value={senha.dados.confirmacaoNovaSenha}
-            erro={senha.erros.confirmacaoNovaSenha}
-            onChange={(event) => senha.alterarCampo("confirmacaoNovaSenha", event.target.value)}
+            value={campos.confirmacaoNovaSenha}
+            erro={erros.confirmacaoNovaSenha}
+            onChange={(event) => alterarCampo("confirmacaoNovaSenha", event.target.value)}
           />
         </div>
       </fieldset>
       <hr className={divisoria} />
 
-      {erroGeral && (
+      {status.tipo === "erro" && (
         <p className="m-0 text-sm text-red-700" role="alert">
-          {erroGeral}
+          {status.mensagem}
         </p>
       )}
-      {semAlteracao && (
+      {status.tipo === "semAlteracao" && (
         <p className="m-0 text-sm" role="status">
           Nenhuma alteração para salvar.
         </p>
       )}
-      {senha.alterada && (
+      {status.tipo === "salvo" && status.senha && (
         <p className="m-0 text-sm font-bold" role="status">
           Senha alterada com sucesso.
         </p>
       )}
-      {dados.salvo && (
+      {status.tipo === "salvo" && status.dados && (
         <p className="m-0 text-sm font-bold" role="status">
           Dados atualizados com sucesso.
         </p>

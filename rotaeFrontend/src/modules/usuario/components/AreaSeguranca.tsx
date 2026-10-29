@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useExclusaoConta } from "../hooks/useExclusaoConta";
+import type { useExclusaoConta } from "../hooks/useExclusaoConta";
 
 function IconeLixeira() {
   return (
@@ -11,8 +11,10 @@ function IconeLixeira() {
   );
 }
 
-export function AreaSeguranca() {
-  const { confirmando, excluindo, erro, pedirConfirmacao, cancelar, confirmar } = useExclusaoConta();
+type AreaSegurancaProps = { exclusao: ReturnType<typeof useExclusaoConta> };
+
+export function AreaSeguranca({ exclusao }: AreaSegurancaProps) {
+  const { confirmando, excluindo, erro, pedirConfirmacao, cancelar, confirmar } = exclusao;
   const botaoExcluir = useRef<HTMLButtonElement>(null);
   const botaoVoltar = useRef<HTMLButtonElement>(null);
   const jaPediuConfirmacao = useRef(false);

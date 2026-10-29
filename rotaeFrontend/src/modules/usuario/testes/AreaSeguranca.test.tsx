@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { AreaSeguranca } from "../components/AreaSeguranca";
+import { useExclusaoConta } from "../hooks/useExclusaoConta";
 import { excluirConta } from "../services/excluirConta";
 
 const sair = jest.fn();
@@ -9,11 +10,18 @@ jest.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
 jest.mock("@/modules/autenticacao/hooks/useAutenticacao", () => ({ useAutenticacao: () => ({ sair }) }));
 jest.mock("../services/excluirConta");
 
+// A página cria o estado da exclusão e o repassa para a área de segurança.
+function Area() {
+  const exclusao = useExclusaoConta();
+
+  return <AreaSeguranca exclusao={exclusao} />;
+}
+
 describe("AreaSeguranca", () => {
   beforeEach(() => jest.resetAllMocks());
 
   it("pede confirmação antes de excluir a conta", () => {
-    render(<AreaSeguranca />);
+    render(<Area />);
 
     fireEvent.click(screen.getByRole("button", { name: "Excluir minha conta" }));
 
@@ -22,7 +30,7 @@ describe("AreaSeguranca", () => {
   });
 
   it("volta ao estado inicial ao desistir", () => {
-    render(<AreaSeguranca />);
+    render(<Area />);
 
     fireEvent.click(screen.getByRole("button", { name: "Excluir minha conta" }));
     fireEvent.click(screen.getByRole("button", { name: "Voltar" }));
@@ -32,13 +40,13 @@ describe("AreaSeguranca", () => {
   });
 
   it("explica que a conta é desativada e o histórico de viagens é mantido", () => {
-    render(<AreaSeguranca />);
+    render(<Area />);
 
     expect(screen.getByText(/Sua conta será desativada/)).toHaveTextContent("O registro das viagens já feitas é mantido.");
   });
 
   it("leva o foco para Voltar ao confirmar e de volta para Excluir ao cancelar", () => {
-    render(<AreaSeguranca />);
+    render(<Area />);
 
     fireEvent.click(screen.getByRole("button", { name: "Excluir minha conta" }));
     expect(screen.getByRole("button", { name: "Voltar" })).toHaveFocus();
@@ -48,7 +56,7 @@ describe("AreaSeguranca", () => {
   });
 
   it("cancela a confirmação com Esc e devolve o foco", () => {
-    render(<AreaSeguranca />);
+    render(<Area />);
 
     fireEvent.click(screen.getByRole("button", { name: "Excluir minha conta" }));
     fireEvent.keyDown(document, { key: "Escape" });
@@ -60,7 +68,7 @@ describe("AreaSeguranca", () => {
 
   it("exclui, encerra a sessão e leva para a página inicial", async () => {
     jest.mocked(excluirConta).mockResolvedValue(undefined);
-    render(<AreaSeguranca />);
+    render(<Area />);
 
     fireEvent.click(screen.getByRole("button", { name: "Excluir minha conta" }));
     fireEvent.click(screen.getByRole("button", { name: "Sim, excluir minha conta" }));
@@ -73,7 +81,7 @@ describe("AreaSeguranca", () => {
 
   it("mantém a sessão e avisa quando a exclusão falha", async () => {
     jest.mocked(excluirConta).mockRejectedValue(new Error("falha"));
-    render(<AreaSeguranca />);
+    render(<Area />);
 
     fireEvent.click(screen.getByRole("button", { name: "Excluir minha conta" }));
     fireEvent.click(screen.getByRole("button", { name: "Sim, excluir minha conta" }));

@@ -4,19 +4,33 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAutenticacao } from "@/modules/autenticacao/hooks/useAutenticacao";
 import { Container } from "@/shared/components/Container";
-import { useClienteMontado } from "@/shared/hooks/useClienteMontado";
 import { AreaSeguranca } from "../components/AreaSeguranca";
 import { FormularioEdicaoPerfil } from "../components/FormularioEdicaoPerfil";
+import { useExclusaoConta } from "../hooks/useExclusaoConta";
 
 const classeCartao = "rounded-(--radius-lg) bg-(--color-surface-card) p-6 shadow-(--shadow-card)";
 
 export function EdicaoPerfilPage() {
-  const { usuario } = useAutenticacao();
-  const montado = useClienteMontado();
+  const { usuario, estado } = useAutenticacao();
+  const exclusao = useExclusaoConta();
   // Trocar a chave recria o formulário, e "Cancelar" volta tudo ao que está salvo.
   const [versaoFormulario, setVersaoFormulario] = useState(0);
 
-  if (!montado) return <main className="flex-1 py-12" />;
+  if (estado === "carregando") return <main className="flex-1 py-12" />;
+
+  // Logo depois da exclusão a sessão já acabou, mas a rota ainda não mudou: sem este aviso,
+  // a tela de visitante ("Entre na sua conta") apareceria por um instante.
+  if (exclusao.excluida) {
+    return (
+      <main className="flex-1 py-12">
+        <Container className="max-w-md">
+          <p className="m-0 text-center" role="status">
+            Conta desativada. Levando você para a página inicial...
+          </p>
+        </Container>
+      </main>
+    );
+  }
 
   if (!usuario) {
     return (
@@ -48,7 +62,7 @@ export function EdicaoPerfilPage() {
             aoCancelar={() => setVersaoFormulario(versaoFormulario + 1)}
           />
         </div>
-        <AreaSeguranca />
+        <AreaSeguranca exclusao={exclusao} />
       </Container>
     </main>
   );

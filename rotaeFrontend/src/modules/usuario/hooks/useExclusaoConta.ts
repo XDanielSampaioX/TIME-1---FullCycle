@@ -10,6 +10,8 @@ export function useExclusaoConta() {
   const router = useRouter();
   const [confirmando, setConfirmando] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
+  // A conta já foi desativada e a tela está saindo dela: a página não deve mostrar o estado de visitante.
+  const [excluida, setExcluida] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
   function pedirConfirmacao() {
@@ -26,6 +28,7 @@ export function useExclusaoConta() {
     setExcluindo(true);
     try {
       await excluirConta();
+      setExcluida(true);
       // Navega antes de encerrar a sessão: assim a tela de perfil não pisca "Entre na sua conta"
       // e o "voltar" do navegador não leva de novo ao perfil.
       router.replace("/");
@@ -37,5 +40,5 @@ export function useExclusaoConta() {
     }
   }
 
-  return { confirmando, excluindo, erro, pedirConfirmacao, cancelar, confirmar };
+  return { confirmando, excluindo, excluida, erro, pedirConfirmacao, cancelar, confirmar };
 }

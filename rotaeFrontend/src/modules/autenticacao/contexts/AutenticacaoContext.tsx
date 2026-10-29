@@ -1,16 +1,26 @@
 "use client";
 
 import { createContext, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useClienteMontado } from "@/shared/hooks/useClienteMontado";
 import { buscarUsuarioAutenticado } from "../services/buscarUsuarioAutenticado";
 import type { AutenticacaoContextValue } from "../types/autenticacaoContextValue";
+import type { EstadoSessao } from "../types/estadoSessao";
 import type { Sessao } from "../types/sessao";
-import { acompanharSessao, lerSessao, lerSessaoSalva, removerSessao, salvarSessao } from "../utils/sessaoSalva";
+import {
+  acompanharSessao,
+  atualizarSessao,
+  lerSessao,
+  lerSessaoSalva,
+  removerSessao,
+  salvarSessao,
+} from "../utils/sessaoSalva";
 
 export const AutenticacaoContext = createContext<AutenticacaoContextValue | undefined>(undefined);
 
 export function AutenticacaoProvider({ children }: { children: ReactNode }) {
   const sessaoSalva = useSyncExternalStore(acompanharSessao, lerSessaoSalva, () => null);
   const sessao = sessaoSalva ? JSON.parse(sessaoSalva) as Sessao : null;
+  const montado = useClienteMontado();
   // O localStorage guarda a sessão, mas não guarda se o servidor respondeu: essa informação só existe
   // em memória e precisa fazer a tela se atualizar quando muda, por isso é um state.
   const [servidorSemResposta, setServidorSemResposta] = useState(false);
@@ -21,10 +31,8 @@ export function AutenticacaoProvider({ children }: { children: ReactNode }) {
 
     buscarUsuarioAutenticado()
       .then((usuario) => {
-        const sessaoAtual = lerSessao();
-
         if (!usuario) removerSessao();
-        else if (sessaoAtual) salvarSessao({ ...sessaoAtual, user: usuario });
+        else atualizarSessao({ user: usuario });
       })
       .catch(() => {
         // Sem resposta do servidor não dá para saber se a sessão é válida; ela é mantida
@@ -44,12 +52,16 @@ export function AutenticacaoProvider({ children }: { children: ReactNode }) {
     removerSessao();
   }
 
+  const estado: EstadoSessao = !montado ? "carregando" : sessao ? "autenticado" : "anonimo";
+
   return (
     <AutenticacaoContext.Provider
       value={{
         usuario: sessao?.user ?? null,
+        estado,
         sessaoIndisponivel: sessao !== null && servidorSemResposta,
         iniciarSessao,
+        atualizarSessao,
         sair,
       }}
     >

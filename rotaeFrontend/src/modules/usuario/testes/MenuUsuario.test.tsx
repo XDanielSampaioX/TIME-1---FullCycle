@@ -1,17 +1,19 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MenuUsuario } from "../components/MenuUsuario";
-import type { Usuario } from "../types/usuario";
 
-const usuario: Usuario = {
-  id: 1,
-  nome: "Snow",
-  email: "snow@email.com",
-  celular: "(85) 99999-0000",
-  dataNasc: "1995-04-20",
-  cpf: "529.982.247-25",
-  criadoEm: "2026-10-01T10:00:00Z",
-  atualizadoEm: "2026-10-01T10:00:00Z",
-};
+const useAutenticacao = jest.fn();
+
+jest.mock("@/modules/autenticacao/hooks/useAutenticacao", () => ({ useAutenticacao: () => useAutenticacao() }));
+
+type Sessao = { estado: "carregando" | "anonimo" | "autenticado"; sessaoIndisponivel: boolean };
+
+function renderizar({ estado, sessaoIndisponivel = false }: { estado: Sessao["estado"]; sessaoIndisponivel?: boolean }) {
+  const sair = jest.fn();
+  useAutenticacao.mockReturnValue({ estado, sessaoIndisponivel, sair });
+  render(<MenuUsuario />);
+
+  return { sair };
+}
 
 function menuAberto() {
   const menu = document.querySelector("details")!;
@@ -21,14 +23,14 @@ function menuAberto() {
 
 describe("MenuUsuario", () => {
   it("mostra só um indicador de carregamento enquanto a sessão é lida", () => {
-    render(<MenuUsuario estado="carregando" usuario={null} sessaoIndisponivel={false} aoSair={jest.fn()} />);
+    renderizar({ estado: "carregando" });
 
     expect(screen.getByRole("status")).toHaveTextContent("Carregando sessão...");
     expect(screen.queryByRole("link", { name: "Entrar" })).not.toBeInTheDocument();
   });
 
   it("oferece login e cadastro no estado anônimo", () => {
-    render(<MenuUsuario estado="anonimo" usuario={null} sessaoIndisponivel={false} aoSair={jest.fn()} />);
+    renderizar({ estado: "anonimo" });
 
     expect(screen.getByRole("link", { name: "Entrar" })).toHaveAttribute("href", "/login");
     expect(screen.getByRole("link", { name: "Criar conta" })).toHaveAttribute("href", "/cadastro");
@@ -36,19 +38,18 @@ describe("MenuUsuario", () => {
   });
 
   it("oferece editar perfil e sair no estado autenticado, sem link para rota inexistente", () => {
-    const aoSair = jest.fn();
-    render(<MenuUsuario estado="autenticado" usuario={usuario} sessaoIndisponivel={false} aoSair={aoSair} />);
+    const { sair } = renderizar({ estado: "autenticado" });
 
     expect(screen.queryByRole("link", { name: "Minhas viagens" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Editar perfil" })).toHaveAttribute("href", "/editar-perfil");
     expect(screen.queryByRole("link", { name: "Entrar" })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Sair" }));
-    expect(aoSair).toHaveBeenCalledTimes(1);
+    expect(sair).toHaveBeenCalledTimes(1);
   });
 
   it("avisa quando a sessão está indisponível, sem tirar o acesso do usuário", () => {
-    render(<MenuUsuario estado="autenticado" usuario={usuario} sessaoIndisponivel aoSair={jest.fn()} />);
+    renderizar({ estado: "autenticado", sessaoIndisponivel: true });
 
     expect(screen.getByRole("status")).toHaveTextContent("Não foi possível confirmar sua sessão");
     expect(screen.getByLabelText("Menu da conta (sessão indisponível)")).toBeInTheDocument();
@@ -56,7 +57,7 @@ describe("MenuUsuario", () => {
   });
 
   it("fecha com Esc, clique fora ou escolha de um link", () => {
-    render(<MenuUsuario estado="anonimo" usuario={null} sessaoIndisponivel={false} aoSair={jest.fn()} />);
+    renderizar({ estado: "anonimo" });
     const menu = menuAberto();
 
     fireEvent.keyDown(document, { key: "Escape" });
@@ -73,7 +74,7 @@ describe("MenuUsuario", () => {
   });
 
   it("fecha quando o foco sai do menu pelo teclado, mas não enquanto fica dentro dele", () => {
-    render(<MenuUsuario estado="anonimo" usuario={null} sessaoIndisponivel={false} aoSair={jest.fn()} />);
+    renderizar({ estado: "anonimo" });
     const menu = menuAberto();
     const entrar = screen.getByRole("link", { name: "Entrar" });
     const criarConta = screen.getByRole("link", { name: "Criar conta" });
@@ -92,7 +93,7 @@ describe("MenuUsuario", () => {
   });
 
   it("não fecha ao clicar dentro do menu", () => {
-    render(<MenuUsuario estado="anonimo" usuario={null} sessaoIndisponivel={false} aoSair={jest.fn()} />);
+    renderizar({ estado: "anonimo" });
     const menu = menuAberto();
 
     fireEvent.pointerDown(screen.getByRole("link", { name: "Criar conta" }));

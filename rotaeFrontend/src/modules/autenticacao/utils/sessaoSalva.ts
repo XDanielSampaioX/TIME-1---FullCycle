@@ -18,6 +18,13 @@ export function salvarSessao(sessao: Sessao) {
   window.dispatchEvent(new Event("storage"));
 }
 
+// Troca só parte da sessão (tokens e/ou usuário) sobre o que está salvo agora, sem tocar no resto.
+export function atualizarSessao(parcial: Partial<Sessao>) {
+  const sessao = lerSessao();
+
+  if (sessao) salvarSessao({ ...sessao, ...parcial });
+}
+
 export function removerSessao() {
   localStorage.removeItem(CHAVE_SESSAO);
   window.dispatchEvent(new Event("storage"));
