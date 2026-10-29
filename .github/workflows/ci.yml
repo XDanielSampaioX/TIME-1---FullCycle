@@ -26,7 +26,7 @@ jobs:
         run: docker compose exec -T backend python manage.py migrate
 
       - name: Testes do backend
-        run: docker compose exec -T backend python manage.py test
+        run: docker compose exec -T backend pytest
 
       - name: Lint do frontend
         run: docker compose exec -T frontend npm run lint
