@@ -8,11 +8,12 @@ from viagens.models import Viagem, ViagemAssento
 from .exceptions import (
     AssentoIndisponivelError,
     AssentoOutraViagemError,
+    QuantidadePassageirosError,
     ReservaInvalidaError,
     ReservaNaoEncontradaError,
     ViagemNaoEncontradaError,
 )
-from .models import Reserva
+from .models import Passageiro, Reserva
 
 
 @transaction.atomic
@@ -120,3 +121,41 @@ def cancelar_reserva(*, reserva_id, usuario):
         ViagemAssento.objects.bulk_update(assentos, ["status", "reserva"])
 
     return reserva
+
+
+@transaction.atomic
+def cadastrar_passageiros(*, reserva_id, usuario, passageiros):
+    """
+    Cadastra os passageiros de uma reserva do usuário autenticado.
+    Exige reserva em PAGAMENTO_PENDENTE, não expirada e ainda sem passageiros,
+    com exatamente um passageiro por assento reservado.
+    Vincula ao usuário autenticado apenas o passageiro com o CPF dele.
+    """
+    try:
+        reserva = (
+            Reserva.objects
+            .select_for_update()
+            .get(pk=reserva_id, usuario=usuario)
+        )
+    except Reserva.DoesNotExist:
+        raise ReservaNaoEncontradaError(f"Reserva com id={reserva_id} não encontrada.")
+
+    if reserva.status != Reserva.Status.PAGAMENTO_PENDENTE:
+        raise ReservaInvalidaError(f"Reserva não aceita passageiros (status: {reserva.status}).")
+
+    if reserva.expira_em <= timezone.now():
+        raise ReservaInvalidaError("Reserva expirada.")
+
+    if reserva.passageiros.exists():
+        raise ReservaInvalidaError("Reserva já possui passageiros cadastrados.")
+
+    total_assentos = reserva.viagem_assentos.count()
+    if len(passageiros) != total_assentos:
+        raise QuantidadePassageirosError(
+            f"Informe exatamente {total_assentos} passageiro(s), um para cada assento da reserva."
+        )
+
+    return Passageiro.objects.bulk_create(
+        Passageiro(reserva=reserva, usuario=usuario if dados["cpf"] == usuario.cpf else None, **dados)
+        for dados in passageiros
+    )

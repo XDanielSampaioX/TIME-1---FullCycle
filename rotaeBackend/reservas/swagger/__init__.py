@@ -1,3 +1,4 @@
+from .passageiros import passageiros_cadastrar_schema
 from .reservas import (
     reserva_cancelar_schema,
     reserva_criar_schema,
@@ -6,6 +7,7 @@ from .reservas import (
 )
 
 __all__ = [
+    "passageiros_cadastrar_schema",
     "reserva_cancelar_schema",
     "reserva_criar_schema",
     "reserva_detalhe_schema",

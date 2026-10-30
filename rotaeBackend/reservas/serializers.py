@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from viagens.models import ViagemAssento
 from viagens.serializers import ViagemSerializer
-from .models import Reserva
+from .models import Passageiro, Reserva
 
 
 class ReservaCriarSerializer(serializers.Serializer):
@@ -17,6 +17,38 @@ class ReservaCriarSerializer(serializers.Serializer):
         if len(value) != len(set(value)):
             raise serializers.ValidationError("A lista contém assentos duplicados.")
         return value
+
+
+class PassageirosCriarListSerializer(serializers.ListSerializer):
+    def validate(self, attrs):
+        cpfs = [passageiro["cpf"] for passageiro in attrs]
+        if len(cpfs) != len(set(cpfs)):
+            raise serializers.ValidationError("A lista contém CPFs duplicados.")
+        return attrs
+
+
+class PassageiroCriarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Passageiro
+        fields = ("nome", "email", "celular", "data_nasc", "cpf")
+        list_serializer_class = PassageirosCriarListSerializer
+
+
+class PassageiroSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Passageiro
+        fields = (
+            "id",
+            "usuario_id",
+            "nome",
+            "email",
+            "celular",
+            "data_nasc",
+            "cpf",
+            "criado_em",
+            "atualizado_em",
+        )
+        read_only_fields = fields
 
 
 class ReservaViagemAssentoSerializer(serializers.ModelSerializer):
@@ -51,3 +83,11 @@ class ReservaSerializer(serializers.ModelSerializer):
 
     def get_total_assentos(self, obj):
         return len(obj.viagem_assentos.all())
+
+
+class ReservaDetalheSerializer(ReservaSerializer):
+    passageiros = PassageiroSerializer(many=True, read_only=True)
+
+    class Meta(ReservaSerializer.Meta):
+        fields = (*ReservaSerializer.Meta.fields, "passageiros")
+        read_only_fields = fields
