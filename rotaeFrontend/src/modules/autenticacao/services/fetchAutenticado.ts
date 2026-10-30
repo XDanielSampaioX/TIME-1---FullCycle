@@ -1,5 +1,5 @@
 import { Tokens } from "../types/sessao";
-import { lerSessao, removerSessao, salvarSessao } from "../utils/sessaoSalva";
+import { atualizarSessao, lerSessao, removerSessao } from "../utils/sessaoSalva";
 import { renovarTokens } from "./renovarTokens";
 
 // Exemplo de uso de Proxy: mesmo contrato do fetch, mas envia o token da sessão
@@ -34,7 +34,7 @@ function criarProxyAutenticado(requisicaoReal: Requisicao): Requisicao {
       return resposta;
     }
 
-    salvarSessao({ ...sessao, ...tokens });
+    atualizarSessao(tokens);
     return enviarComToken(entrada, opcoes, tokens.access);
   };
 }
