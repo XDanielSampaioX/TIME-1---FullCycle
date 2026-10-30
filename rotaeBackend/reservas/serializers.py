@@ -65,7 +65,6 @@ class ReservaSerializer(serializers.ModelSerializer):
     viagem = ViagemSerializer(read_only=True)
     assentos = ReservaViagemAssentoSerializer(source="viagem_assentos", many=True, read_only=True)
     total_assentos = serializers.SerializerMethodField()
-    passageiros = PassageiroSerializer(many=True, read_only=True)
 
     class Meta:
         model = Reserva
@@ -77,7 +76,6 @@ class ReservaSerializer(serializers.ModelSerializer):
             "expira_em",
             "assentos",
             "total_assentos",
-            "passageiros",
             "criado_em",
             "atualizado_em",
         )
@@ -85,3 +83,11 @@ class ReservaSerializer(serializers.ModelSerializer):
 
     def get_total_assentos(self, obj):
         return len(obj.viagem_assentos.all())
+
+
+class ReservaDetalheSerializer(ReservaSerializer):
+    passageiros = PassageiroSerializer(many=True, read_only=True)
+
+    class Meta(ReservaSerializer.Meta):
+        fields = (*ReservaSerializer.Meta.fields, "passageiros")
+        read_only_fields = fields

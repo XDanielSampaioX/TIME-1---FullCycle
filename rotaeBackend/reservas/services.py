@@ -4,7 +4,6 @@ from django.db import transaction
 from django.db.models import prefetch_related_objects
 from django.utils import timezone
 
-from usuarios.models import Usuario
 from viagens.models import Viagem, ViagemAssento
 from .exceptions import (
     AssentoIndisponivelError,
@@ -130,7 +129,7 @@ def cadastrar_passageiros(*, reserva_id, usuario, passageiros):
     Cadastra os passageiros de uma reserva do usuário autenticado.
     Exige reserva em PAGAMENTO_PENDENTE, não expirada e ainda sem passageiros,
     com exatamente um passageiro por assento reservado.
-    Vincula o passageiro ao usuário cadastrado com o mesmo CPF, se houver.
+    Vincula ao usuário autenticado apenas o passageiro com o CPF dele.
     """
     try:
         reserva = (
@@ -156,12 +155,7 @@ def cadastrar_passageiros(*, reserva_id, usuario, passageiros):
             f"Informe exatamente {total_assentos} passageiro(s), um para cada assento da reserva."
         )
 
-    usuarios_por_cpf = {
-        u.cpf: u
-        for u in Usuario.objects.filter(cpf__in=[p["cpf"] for p in passageiros])
-    }
-
     return Passageiro.objects.bulk_create(
-        Passageiro(reserva=reserva, usuario=usuarios_por_cpf.get(dados["cpf"]), **dados)
+        Passageiro(reserva=reserva, usuario=usuario if dados["cpf"] == usuario.cpf else None, **dados)
         for dados in passageiros
     )

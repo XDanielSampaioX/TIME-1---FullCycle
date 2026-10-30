@@ -17,6 +17,7 @@ from .serializers import (
     PassageiroCriarSerializer,
     PassageiroSerializer,
     ReservaCriarSerializer,
+    ReservaDetalheSerializer,
     ReservaSerializer,
 )
 from .services import cadastrar_passageiros, cancelar_reserva, criar_reserva
@@ -72,7 +73,7 @@ class ReservaCriarView(APIView):
 @reserva_detalhe_schema
 class ReservaDetalheView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = ReservaSerializer
+    serializer_class = ReservaDetalheSerializer
 
     def get_queryset(self):
         return (
@@ -149,6 +150,6 @@ class ReservaMinhasReservasView(ListAPIView):
             Reserva.objects
             .filter(usuario=self.request.user)
             .select_related("viagem__origem", "viagem__destino", "viagem__onibus")
-            .prefetch_related("viagem_assentos__assento", "passageiros")
+            .prefetch_related("viagem_assentos__assento")
             .order_by("-criado_em")
         )

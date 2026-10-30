@@ -41,7 +41,7 @@ class PassageiroAdmin(admin.ModelAdmin):
     list_filter = ("reserva__status", "criado_em")
     search_fields = ("nome", "cpf", "email", "reserva__id", "usuario__email")
     list_select_related = ("reserva__usuario", "reserva__viagem__origem", "reserva__viagem__destino", "usuario")
-    raw_id_fields = ("reserva", "usuario")
+    readonly_fields = ("reserva", "usuario", "cpf", "criado_em", "atualizado_em")
 
     # Passageiros só nascem pelo cadastro na reserva; o admin serve para busca e auditoria.
     def has_add_permission(self, request):

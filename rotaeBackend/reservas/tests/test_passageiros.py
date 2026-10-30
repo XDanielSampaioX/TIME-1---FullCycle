@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from reservas.models import Passageiro, Reserva
 from reservas.services import criar_reserva
+from usuarios.models import Usuario
 
 pytestmark = pytest.mark.django_db
 
@@ -63,12 +64,29 @@ def test_cadastrar_passageiros_sucesso(api_client, autenticar, reserva, usuario)
     assert [p["nome"] for p in data] == ["João da Silva", "Maria de Sousa"]
     assert data[0]["dataNasc"] == "1995-04-20"
 
-    # O passageiro com o CPF de uma conta é vinculado a ela; os demais ficam sem usuário
+    # Só o passageiro com o CPF do usuário autenticado é vinculado à conta dele
     assert data[0]["usuarioId"] == usuario.id
     assert data[1]["usuarioId"] is None
 
     passageiros = Passageiro.objects.filter(reserva=reserva).order_by("id")
     assert [p.cpf for p in passageiros] == [CPF_USUARIO, CPF_SEM_CONTA]
+
+
+def test_cadastrar_passageiros_nao_vincula_conta_de_terceiro_com_mesmo_cpf(api_client, autenticar, reserva):
+    Usuario.objects.create_user(
+        email="terceiro@email.com",
+        password="Rotae@2026forte",
+        nome="Maria de Sousa",
+        celular="85988880000",
+        data_nasc="1996-05-15",
+        cpf=CPF_SEM_CONTA,
+    )
+    autenticar()
+
+    resposta = api_client.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
+
+    assert resposta.status_code == 201
+    assert resposta.json()[1]["usuarioId"] is None
 
 
 def test_cadastrar_passageiros_mesmo_cpf_em_reservas_diferentes(api_client, autenticar, reserva, usuario, viagem):
@@ -211,3 +229,13 @@ def test_detalhe_reserva_sem_passageiros_retorna_lista_vazia(api_client, autenti
 
     assert resposta.status_code == 200
     assert resposta.json()["passageiros"] == []
+
+
+def test_minhas_reservas_nao_retorna_passageiros(api_client, autenticar, reserva):
+    autenticar()
+    api_client.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
+
+    resposta = api_client.get(reverse("minhas_reservas"))
+
+    assert resposta.status_code == 200
+    assert "passageiros" not in resposta.json()["results"][0]

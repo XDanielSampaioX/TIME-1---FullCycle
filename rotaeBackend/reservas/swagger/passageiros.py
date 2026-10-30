@@ -45,7 +45,7 @@ passageiros_cadastrar_schema = extend_schema(
     description=(
         "Cadastra os passageiros de uma reserva do usuário autenticado, um para cada assento reservado. "
         "Todos os dados do bilhete são obrigatórios, inclusive quando o passageiro é o próprio usuário; "
-        "o passageiro é vinculado à conta com o mesmo CPF, se existir."
+        "apenas o passageiro com o CPF do usuário autenticado é vinculado à conta dele."
     ),
     tags=["passageiros"],
 )

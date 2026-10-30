@@ -1,7 +1,7 @@
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import serializers
 
-from reservas.serializers import ReservaCriarSerializer, ReservaSerializer
+from reservas.serializers import ReservaCriarSerializer, ReservaDetalheSerializer, ReservaSerializer
 
 
 class AssentoIndisponivelResponseSerializer(serializers.Serializer):
@@ -33,7 +33,7 @@ reserva_criar_schema = extend_schema(
 
 reserva_detalhe_schema = extend_schema(
     responses={
-        200: ReservaSerializer,
+        200: ReservaDetalheSerializer,
         401: OpenApiResponse(description="Não autenticado."),
         404: OpenApiResponse(description="Reserva não encontrada."),
     },
