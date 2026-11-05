@@ -57,7 +57,9 @@ def sobral(db):
 
 @pytest.fixture
 def onibus(db):
-    return Onibus.objects.create(identificacao="RT-001", total_assentos=4, modelo="Marcopolo G8")
+    return Onibus.objects.create(
+        identificacao="RT-001", total_assentos=4, modelo="Marcopolo G8"
+    )
 
 
 @pytest.fixture

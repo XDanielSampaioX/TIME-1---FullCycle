@@ -6,13 +6,23 @@ from .models import Cidade, Onibus, Viagem, ViagemAssento
 class CidadeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cidade
-        fields = ("id", "nome", "uf", "imagem_url",)
+        fields = (
+            "id",
+            "nome",
+            "uf",
+            "imagem_url",
+        )
 
 
 class OnibusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Onibus
-        fields = ("id", "identificacao", "modelo", "total_assentos",)
+        fields = (
+            "id",
+            "identificacao",
+            "modelo",
+            "total_assentos",
+        )
 
 
 class ViagemSerializer(serializers.ModelSerializer):
@@ -45,4 +55,10 @@ class ViagemAssentoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ViagemAssento
-        fields = ("id", "viagem_id", "assento_id", "numero", "status",)
+        fields = (
+            "id",
+            "viagem_id",
+            "assento_id",
+            "numero",
+            "status",
+        )

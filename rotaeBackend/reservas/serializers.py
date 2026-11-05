@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from viagens.models import ViagemAssento
 from viagens.serializers import ViagemSerializer
+
 from .models import Passageiro, Reserva
 
 
@@ -63,7 +64,9 @@ class ReservaViagemAssentoSerializer(serializers.ModelSerializer):
 
 class ReservaSerializer(serializers.ModelSerializer):
     viagem = ViagemSerializer(read_only=True)
-    assentos = ReservaViagemAssentoSerializer(source="viagem_assentos", many=True, read_only=True)
+    assentos = ReservaViagemAssentoSerializer(
+        source="viagem_assentos", many=True, read_only=True
+    )
     total_assentos = serializers.SerializerMethodField()
 
     class Meta:

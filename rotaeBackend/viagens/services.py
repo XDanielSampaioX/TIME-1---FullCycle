@@ -32,6 +32,9 @@ def gerar_assentos_da_viagem(viagem: Viagem) -> None:
     de_outro_onibus.delete()
 
     ViagemAssento.objects.bulk_create(
-        [ViagemAssento(viagem=viagem, assento=assento) for assento in viagem.onibus.assentos.all()],
+        [
+            ViagemAssento(viagem=viagem, assento=assento)
+            for assento in viagem.onibus.assentos.all()
+        ],
         ignore_conflicts=True,
     )

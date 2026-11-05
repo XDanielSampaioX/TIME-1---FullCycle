@@ -27,7 +27,10 @@ me_schema = extend_schema_view(
     get=extend_schema(
         summary="Dados do usuário autenticado",
         tags=["usuarios"],
-        responses={200: UsuarioSerializer, 401: OpenApiResponse(description="Não autenticado.")},
+        responses={
+            200: UsuarioSerializer,
+            401: OpenApiResponse(description="Não autenticado."),
+        },
     ),
     patch=extend_schema(
         summary="Atualizar dados do usuário autenticado",
@@ -59,7 +62,9 @@ alterar_senha_schema = extend_schema(
     request=AlteracaoSenhaSerializer,
     responses={
         200: TokensSerializer,
-        400: OpenApiResponse(description="Senha atual incorreta, confirmação diferente ou senha fraca."),
+        400: OpenApiResponse(
+            description="Senha atual incorreta, confirmação diferente ou senha fraca."
+        ),
         401: OpenApiResponse(description="Não autenticado."),
     },
 )

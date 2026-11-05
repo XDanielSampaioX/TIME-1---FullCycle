@@ -48,11 +48,14 @@ def test_filtra_por_origem_destino_e_data(api_client, criar_viagem, fortaleza, s
     criar_viagem(origem=sobral, destino=fortaleza)
     criar_viagem(partida_em=amanha_as(8) + timedelta(days=1))
 
-    resposta = api_client.get(URL_VIAGENS, {
-        "origem": fortaleza.id,
-        "destino": sobral.id,
-        "data": amanha_as(8).date().isoformat(),
-    })
+    resposta = api_client.get(
+        URL_VIAGENS,
+        {
+            "origem": fortaleza.id,
+            "destino": sobral.id,
+            "data": amanha_as(8).date().isoformat(),
+        },
+    )
 
     assert ids(resposta) == [ida.id]
 
@@ -91,7 +94,9 @@ def test_filtra_por_periodo_de_partida(api_client, criar_viagem):
 
 def test_filtra_por_assentos_livres_suficientes(api_client, criar_viagem):
     lotada = criar_viagem()
-    lotada.viagem_assentos.exclude(assento__numero=1).update(status=ViagemAssento.Status.RESERVADO)
+    lotada.viagem_assentos.exclude(assento__numero=1).update(
+        status=ViagemAssento.Status.RESERVADO
+    )
     livre = criar_viagem()
 
     resposta = api_client.get(URL_VIAGENS, {"passageiros": 2})
@@ -110,9 +115,15 @@ def test_filtra_por_assentos_livres_suficientes(api_client, criar_viagem):
 )
 def test_ordena_viagens(api_client, criar_viagem, ordering, esperado):
     viagens = {
-        "barata": criar_viagem(preco_centavos=5000, partida_em=amanha_as(20), chegada_em=amanha_as(23)),
-        "media": criar_viagem(preco_centavos=8000, partida_em=amanha_as(6), chegada_em=amanha_as(11)),
-        "cara": criar_viagem(preco_centavos=12000, partida_em=amanha_as(9), chegada_em=amanha_as(10)),
+        "barata": criar_viagem(
+            preco_centavos=5000, partida_em=amanha_as(20), chegada_em=amanha_as(23)
+        ),
+        "media": criar_viagem(
+            preco_centavos=8000, partida_em=amanha_as(6), chegada_em=amanha_as(11)
+        ),
+        "cara": criar_viagem(
+            preco_centavos=12000, partida_em=amanha_as(9), chegada_em=amanha_as(10)
+        ),
     }
 
     resposta = api_client.get(URL_VIAGENS, {"ordering": ordering})
@@ -137,7 +148,9 @@ def test_detalhe_de_viagem_inexistente_retorna_404(api_client, db):
 
 def test_lista_assentos_da_viagem_com_status(api_client, criar_viagem):
     viagem = criar_viagem()
-    viagem.viagem_assentos.filter(assento__numero=2).update(status=ViagemAssento.Status.SEGURADO)
+    viagem.viagem_assentos.filter(assento__numero=2).update(
+        status=ViagemAssento.Status.SEGURADO
+    )
     criar_viagem()
 
     resposta = api_client.get(reverse("assentos_viagem", args=[viagem.id]))
@@ -145,7 +158,12 @@ def test_lista_assentos_da_viagem_com_status(api_client, criar_viagem):
     assert resposta.status_code == 200
     assentos = resposta.json()
     assert [assento["numero"] for assento in assentos] == [1, 2, 3, 4]
-    assert [assento["status"] for assento in assentos] == ["DISPONIVEL", "SEGURADO", "DISPONIVEL", "DISPONIVEL"]
+    assert [assento["status"] for assento in assentos] == [
+        "DISPONIVEL",
+        "SEGURADO",
+        "DISPONIVEL",
+        "DISPONIVEL",
+    ]
     assert {"id", "viagemId", "assentoId"} <= assentos[0].keys()
 
 

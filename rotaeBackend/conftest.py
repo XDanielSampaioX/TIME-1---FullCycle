@@ -31,6 +31,7 @@ def senha():
 def usuario(db):
     """Usuário padrão cadastrado e ativo no banco para testes entre apps."""
     from datetime import date
+
     from usuarios.models import Usuario
 
     return Usuario.objects.create_user(

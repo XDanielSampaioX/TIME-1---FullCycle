@@ -1,5 +1,9 @@
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (
+    CreateAPIView,
+    GenericAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenBlacklistView, TokenRefreshView
@@ -77,7 +81,9 @@ class MeView(RetrieveUpdateDestroyAPIView):
         return UsuarioSerializer
 
     def update(self, request, *args, **kwargs):
-        serializer = self.get_serializer(self.get_object(), data=request.data, partial=True)
+        serializer = self.get_serializer(
+            self.get_object(), data=request.data, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         usuario = serializer.save()
         return Response(UsuarioSerializer(usuario).data)

@@ -1,0 +1,54 @@
+[tool.ruff]
+target-version = "py313"
+
+src = ["."]
+
+line-length = 88
+
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    ".pytest_cache",
+    ".ruff_cache",
+    "*/migrations/*",
+    "staticfiles",
+    "media",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors (estilo PEP 8: indentação, espaços, etc.)
+    "W",      # pycodestyle warnings (avisos de estilo PEP 8)
+    "F",      # Pyflakes (variáveis não usadas, imports inexistentes, erros lógicos)
+    "I",      # isort (ordenação automática de imports em blocos PEP 8 - 100% autofix)
+    "UP",     # pyupgrade (moderniza sintaxe antiga para Python 3.13 - 100% autofix)
+    "B",      # flake8-bugbear (previne bugs reais e armadilhas comuns do Python)
+    "C4",     # flake8-comprehensions (simplifica list/dict comprehensions desnecessárias)
+]
+
+ignore = [
+    "E501",   # Desativa erro de linha longa no linter: o 'ruff format' já formata automaticamente
+    "B008",   # Permite chamadas em defaults de argumentos (muito comum em Django/DRF)
+    "B904",   # Permite raise de exceções de domínio sem exigir 'from None'
+]
+
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+# Em arquivos __init__.py é comum importar classes apenas para expor no módulo
+"__init__.py" = ["F401"]
+# Nos testes podemos ter asserts simples ou regras flexibilizadas
+"**/tests/*" = ["B011"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+[tool.ruff.format]
+# Formatação no estilo Black (aspas duplas, indentação com 4 espaços)
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+skip-magic-trailing-comma = false

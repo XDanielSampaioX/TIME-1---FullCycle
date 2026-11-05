@@ -7,7 +7,12 @@ from django.db import IntegrityError
 from django.utils import timezone
 
 from usuarios.models import Usuario
-from usuarios.validators import so_digitos, validar_celular, validar_cpf, validar_data_nascimento
+from usuarios.validators import (
+    so_digitos,
+    validar_celular,
+    validar_cpf,
+    validar_data_nascimento,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -26,7 +31,9 @@ def test_senha_fica_na_coluna_senha_hash_do_modelo_de_dados():
 
 
 def test_create_user_normaliza_email_para_minusculas(db):
-    usuario = Usuario.objects.create_user(email="  Maria@Email.COM ", password="x", nome="Maria")
+    usuario = Usuario.objects.create_user(
+        email="  Maria@Email.COM ", password="x", nome="Maria"
+    )
     assert usuario.email == "maria@email.com"
 
 
@@ -54,7 +61,9 @@ def test_email_e_unico(usuario):
 
 def test_cpf_e_unico(usuario):
     with pytest.raises(IntegrityError):
-        Usuario.objects.create_user(email="outro@email.com", password="x", nome="Outro", cpf="52998224725")
+        Usuario.objects.create_user(
+            email="outro@email.com", password="x", nome="Outro", cpf="52998224725"
+        )
 
 
 def test_varios_usuarios_sem_cpf_sao_permitidos(db):
@@ -73,7 +82,9 @@ def test_validar_cpf_aceita_cpf_valido(cpf):
     validar_cpf(cpf)
 
 
-@pytest.mark.parametrize("cpf", ["52998224724", "11111111111", "1234567890", "abcdefghijk"])
+@pytest.mark.parametrize(
+    "cpf", ["52998224724", "11111111111", "1234567890", "abcdefghijk"]
+)
 def test_validar_cpf_rejeita_cpf_invalido(cpf):
     with pytest.raises(ValidationError):
         validar_cpf(cpf)

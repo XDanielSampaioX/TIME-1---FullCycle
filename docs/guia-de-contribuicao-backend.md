@@ -18,6 +18,7 @@ Este documento define a estrutura do backend do Rotaê e o fluxo para implementa
   - [8. Resultado](#8-resultado)
   - [9. Quando dividir os arquivos](#9-quando-dividir-os-arquivos)
   - [10. Testes](#10-testes)
+  - [11. Lint e Formatação](#11-lint-e-formatação)
 - [Referência rápida](#referência-rápida)
 
 ---
@@ -447,6 +448,49 @@ token = str(RefreshToken.for_user(usuario).access_token)
 
 Fixtures específicas de um domínio (como dados de viagens ou múltiplos usuários) devem ficar no `conftest.py` do próprio app.
 
+---
+
+## 11. Lint e Formatação
+
+Utilizamos o **Ruff** como linter e formatter do backend para garantir conformidade com a **PEP 8**, ordenação de imports e prevenção de bugs comuns do Python.
+
+A configuração foi pensada para ser amigável e resolver quase tudo de forma automática, sem regras burocráticas que atrasem o desenvolvimento.
+
+### Como rodar via Docker
+
+Antes de realizar commits ou abrir um Pull Request, execute no terminal:
+
+```bash
+# 1. Corrige automaticamente erros de lint e organiza imports
+docker compose exec backend ruff check --fix .
+
+# 2. Formata todos os arquivos no padrão PEP 8
+docker compose exec backend ruff format .
+```
+
+Para apenas checar o código sem alterar arquivos (o mesmo comando executado pelo CI):
+
+```bash
+docker compose exec backend ruff check .
+docker compose exec backend ruff format --check .
+```
+
+### Configuração no VS Code (Recomendado)
+
+Para que a formatação e a organização de imports ocorram automaticamente a cada salvamento (`Ctrl + S`), instale a extensão oficial **Ruff** (`charliermarsh.ruff`) e adicione as seguintes linhas ao seu `.vscode/settings.json`:
+
+```json
+{
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    }
+  }
+}
+```
 ---
 
 ## Referência rápida

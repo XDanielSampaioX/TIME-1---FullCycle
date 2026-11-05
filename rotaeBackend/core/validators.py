@@ -23,9 +23,13 @@ def validar_cpf(valor):
 
 def validar_celular(valor):
     if not re.fullmatch(r"\d{10,11}", valor or ""):
-        raise ValidationError("Celular deve ter DDD e 10 ou 11 dígitos.", code="celular_invalido")
+        raise ValidationError(
+            "Celular deve ter DDD e 10 ou 11 dígitos.", code="celular_invalido"
+        )
 
 
 def validar_data_nascimento(valor):
     if valor and valor > timezone.localdate():
-        raise ValidationError("Data de nascimento não pode estar no futuro.", code="data_nasc_futura")
+        raise ValidationError(
+            "Data de nascimento não pode estar no futuro.", code="data_nasc_futura"
+        )

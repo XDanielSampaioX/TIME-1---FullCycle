@@ -1,4 +1,5 @@
 """As rotas de consulta de viagens são públicas: não dependem de token."""
+
 import pytest
 from django.urls import reverse
 
@@ -27,6 +28,11 @@ def test_rotas_publicas_funcionam_mesmo_com_token_invalido(api_client, urls_publ
 def test_swagger_nao_pede_token_nas_rotas_publicas(api_client):
     schema = api_client.get(reverse("schema"), {"format": "json"}).json()
 
-    for caminho in ("/api/v1/cidades/", "/api/v1/viagens/", "/api/v1/viagens/{id}/", "/api/v1/viagens/{id}/assentos/"):
+    for caminho in (
+        "/api/v1/cidades/",
+        "/api/v1/viagens/",
+        "/api/v1/viagens/{id}/",
+        "/api/v1/viagens/{id}/assentos/",
+    ):
         seguranca = schema["paths"][caminho]["get"].get("security", [])
         assert {"jwtAuth": []} not in seguranca, caminho

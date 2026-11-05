@@ -39,7 +39,9 @@ class ViagemListView(RotaPublica, ListAPIView):
 @viagens_detail_schema
 class ViagemDetailView(RotaPublica, RetrieveAPIView):
     serializer_class = ViagemSerializer
-    queryset = Viagem.objects.com_assentos_livres().select_related("origem", "destino", "onibus")
+    queryset = Viagem.objects.com_assentos_livres().select_related(
+        "origem", "destino", "onibus"
+    )
 
 
 @viagem_assentos_list_schema
@@ -52,4 +54,6 @@ class ViagemAssentoListView(RotaPublica, ListAPIView):
             return ViagemAssento.objects.none()
 
         viagem = get_object_or_404(Viagem, pk=self.kwargs["pk"])
-        return viagem.viagem_assentos.select_related("assento").order_by("assento__numero")
+        return viagem.viagem_assentos.select_related("assento").order_by(
+            "assento__numero"
+        )

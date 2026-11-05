@@ -13,14 +13,25 @@ def test_cadastra_usuario_e_devolve_dados_publicos(api_client, dados_usuario, se
 
     assert resposta.status_code == 201
     corpo = resposta.json()
-    assert set(corpo) == {"id", "nome", "email", "celular", "dataNasc", "cpf", "criadoEm", "atualizadoEm"}
+    assert set(corpo) == {
+        "id",
+        "nome",
+        "email",
+        "celular",
+        "dataNasc",
+        "cpf",
+        "criadoEm",
+        "atualizadoEm",
+    }
     assert corpo["dataNasc"] == "1995-04-20"
     usuario = Usuario.objects.get(pk=corpo["id"])
     assert usuario.check_password(senha)
     assert usuario.is_active is True
 
 
-@pytest.mark.parametrize("campo", ["nome", "email", "senha", "celular", "dataNasc", "cpf"])
+@pytest.mark.parametrize(
+    "campo", ["nome", "email", "senha", "celular", "dataNasc", "cpf"]
+)
 def test_campos_obrigatorios(api_client, dados_usuario, campo):
     del dados_usuario[campo]
 
@@ -49,7 +60,9 @@ def test_normaliza_email(api_client, dados_usuario):
     assert resposta.json()["email"] == "joao@email.com"
 
 
-def test_rejeita_email_duplicado_mesmo_com_outra_caixa(api_client, dados_usuario, usuario):
+def test_rejeita_email_duplicado_mesmo_com_outra_caixa(
+    api_client, dados_usuario, usuario
+):
     dados_usuario.update(email="JOAO@email.com", cpf="11144477735")
 
     resposta = api_client.post(URL, dados_usuario, format="json")
@@ -110,7 +123,11 @@ def test_ignora_campos_de_permissao_enviados_pelo_cliente(api_client, dados_usua
     resposta = api_client.post(URL, dados_usuario, format="json")
 
     usuario = Usuario.objects.get(pk=resposta.json()["id"])
-    assert (usuario.is_staff, usuario.is_superuser, usuario.is_active) == (False, False, True)
+    assert (usuario.is_staff, usuario.is_superuser, usuario.is_active) == (
+        False,
+        False,
+        True,
+    )
 
 
 def test_cadastro_funciona_com_token_invalido_no_cabecalho(api_client, dados_usuario):
@@ -129,12 +146,21 @@ def sem_validacao_de_unicidade(monkeypatch):
     monkeypatch.setattr(UniqueValidator, "__call__", lambda self, value, field: None)
 
 
-@pytest.mark.parametrize("campo, valor, mensagem", [
-    ("email", "joao@email.com", "Já existe um usuário com este e-mail."),
-    ("cpf", "52998224725", "Já existe um usuário com este CPF."),
-])
+@pytest.mark.parametrize(
+    "campo, valor, mensagem",
+    [
+        ("email", "joao@email.com", "Já existe um usuário com este e-mail."),
+        ("cpf", "52998224725", "Já existe um usuário com este CPF."),
+    ],
+)
 def test_corrida_no_cadastro_devolve_400_e_nao_500(
-    api_client, dados_usuario, usuario, sem_validacao_de_unicidade, campo, valor, mensagem,
+    api_client,
+    dados_usuario,
+    usuario,
+    sem_validacao_de_unicidade,
+    campo,
+    valor,
+    mensagem,
 ):
     dados_usuario.update(email="novo@email.com", cpf="11144477735")
     dados_usuario[campo] = valor
