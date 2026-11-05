@@ -25,6 +25,12 @@ jobs:
       - name: Aplicar migrações
         run: docker compose exec -T backend python manage.py migrate
 
+      - name: Lint do backend
+        run: docker compose exec -T backend ruff check .
+
+      - name: Formatação do backend
+        run: docker compose exec -T backend ruff format --check .
+
       - name: Testes unitários do backend
         run: docker compose exec -T backend pytest -m unit
 
