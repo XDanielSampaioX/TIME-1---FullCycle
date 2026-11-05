@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 
 import pytest
 from django.utils import timezone
-from rest_framework.test import APIClient
 
 from viagens.models import Cidade, Onibus, Viagem
 from viagens.services import gerar_assentos_da_viagem
@@ -12,11 +11,6 @@ def amanha_as(hora, minuto=0):
     """Datetime de amanhã no fuso do projeto (America/Sao_Paulo)."""
     amanha = timezone.localdate() + timedelta(days=1)
     return timezone.make_aware(datetime.combine(amanha, datetime.min.time()).replace(hour=hora, minute=minuto))
-
-
-@pytest.fixture
-def api_client():
-    return APIClient()
 
 
 @pytest.fixture

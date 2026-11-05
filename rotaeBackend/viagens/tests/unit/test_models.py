@@ -6,7 +6,7 @@ from django.db import IntegrityError
 
 from viagens.models import Assento, Onibus, ViagemAssento
 
-from .conftest import amanha_as
+from ..conftest import amanha_as
 
 pytestmark = pytest.mark.django_db
 

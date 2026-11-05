@@ -1,39 +1,22 @@
 from datetime import datetime, timedelta
 
 import pytest
-from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from usuarios.models import Usuario
 from viagens.models import Cidade, Onibus, Viagem
 from viagens.services import gerar_assentos_da_viagem
 
-SENHA = "Rotae@2026forte"
-
 
 @pytest.fixture
-def api_client():
-    return APIClient()
+def outro_usuario(db, senha):
+    """Segundo usuário para testar isolamento de reservas e concorrência."""
+    from usuarios.models import Usuario
 
-
-@pytest.fixture
-def usuario(db):
-    return Usuario.objects.create_user(
-        email="joao@email.com",
-        password=SENHA,
-        nome="João da Silva",
-        celular="85999990000",
-        data_nasc="1995-04-20",
-        cpf="52998224725",
-    )
-
-
-@pytest.fixture
-def outro_usuario(db):
     return Usuario.objects.create_user(
         email="maria@email.com",
-        password=SENHA,
+        password=senha,
         nome="Maria de Sousa",
         celular="85988880000",
         data_nasc="1996-05-15",
@@ -42,31 +25,17 @@ def outro_usuario(db):
 
 
 @pytest.fixture
-def token(api_client, usuario):
-    url = reverse("login")
-    resposta = api_client.post(url, {"email": "joao@email.com", "senha": SENHA}, format="json")
-    return resposta.json()["access"]
+def outro_token(outro_usuario):
+    """String do access token do segundo usuário emitido em memória."""
+    return str(RefreshToken.for_user(outro_usuario).access_token)
 
 
 @pytest.fixture
-def outro_token(api_client, outro_usuario):
-    url = reverse("login")
-    resposta = api_client.post(url, {"email": "maria@email.com", "senha": SENHA}, format="json")
-    return resposta.json()["access"]
-
-
-@pytest.fixture
-def autenticar(api_client, token):
-    def _autenticar():
-        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-    return _autenticar
-
-
-@pytest.fixture
-def autenticar_outro(api_client, outro_token):
-    def _autenticar_outro():
-        api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {outro_token}")
-    return _autenticar_outro
+def outro_cliente(outro_token):
+    """Cliente de teste pré-autenticado com o token do segundo usuário."""
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {outro_token}")
+    return client
 
 
 def amanha_as(hora, minuto=0):

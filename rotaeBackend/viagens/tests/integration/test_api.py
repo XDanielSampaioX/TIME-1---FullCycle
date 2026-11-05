@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from viagens.models import Cidade, Viagem, ViagemAssento
 
-from .conftest import amanha_as
+from ..conftest import amanha_as
 
 pytestmark = pytest.mark.django_db
 
@@ -132,7 +132,7 @@ def test_detalha_viagem(api_client, criar_viagem):
 
 
 def test_detalhe_de_viagem_inexistente_retorna_404(api_client, db):
-    assert api_client.get(reverse("detalhe_viagem", args=[999])).status_code == 404
+    assert api_client.get(reverse("detalhe_viagem", args=[99999])).status_code == 404
 
 
 def test_lista_assentos_da_viagem_com_status(api_client, criar_viagem):
@@ -150,7 +150,7 @@ def test_lista_assentos_da_viagem_com_status(api_client, criar_viagem):
 
 
 def test_assentos_de_viagem_inexistente_retorna_404(api_client, db):
-    assert api_client.get(reverse("assentos_viagem", args=[999])).status_code == 404
+    assert api_client.get(reverse("assentos_viagem", args=[99999])).status_code == 404
 
 
 def test_listagem_de_cidades_continua_funcionando_em_camel_case(api_client, db):

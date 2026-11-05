@@ -381,7 +381,7 @@ viagens/swagger/cidades.py
 
 A estrutura inicial deve permanecer simples.
 
-Se um arquivo crescer significativamente (>100 linhas de código), ele pode ser transformado em um pacote:
+Se um arquivo crescer significativamente (>150 linhas de código), ele pode ser transformado em um pacote:
 
 ```text
 viagens/
@@ -404,18 +404,48 @@ A divisão deve acontecer quando a quantidade de código ou a complexidade do m�
 
 ## 10. Testes
 
-Os testes automatizados serão escritos utilizando **pytest**.
-
-A estrutura prevista é:
+Os testes são escritos com **pytest** e ficam dentro de cada app, divididos entre unitários e de integração:
 
 ```text
 viagens/
 └── tests/
-    ├── test_cidades.py
-    └── ...
+    ├── conftest.py          # fixtures do app
+    ├── unit/
+    │   ├── test_models.py
+    │   └── test_services.py
+    └── integration/
+        ├── test_api.py
+        └── test_admin.py
 ```
 
-A implementação dos testes não faz parte deste guia inicial, mas novos endpoints deverão ser testados conforme o desenvolvimento do projeto avançar.
+* **`unit/`**: regras de negócio, métodos de models e validações isoladas. Não fazem requisições HTTP nem passam por views.
+* **`integration/`**: chamadas aos endpoints com `api_client`, testando o fluxo completo com banco, permissões e status HTTP.
+
+### Como rodar
+
+A marcação `unit` e `integration` é aplicada automaticamente pelo diretório do teste:
+
+```bash
+docker compose exec backend pytest                  # roda tudo
+docker compose exec backend pytest -m unit         # só unitários
+docker compose exec backend pytest -m integration  # só integração
+```
+
+### Autenticação nos testes
+
+O `conftest.py` na raiz do backend já fornece:
+* `usuario`: usuário padrão criado no banco.
+* `cliente_autenticado`: `api_client` já autenticado com o token do `usuario`.
+
+Ao testar rotas protegidas em novos módulos, use `cliente_autenticado` diretamente. Não faça requisições HTTP para a rota de login dentro de fixtures somente para obter tokens; se precisar, crie direto em memória:
+
+```python
+from rest_framework_simplejwt.tokens import RefreshToken
+
+token = str(RefreshToken.for_user(usuario).access_token)
+```
+
+Fixtures específicas de um domínio (como dados de viagens ou múltiplos usuários) devem ficar no `conftest.py` do próprio app.
 
 ---
 

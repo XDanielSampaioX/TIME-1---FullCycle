@@ -54,10 +54,8 @@ def reserva(usuario, viagem):
 # --- Cadastro de passageiros (POST /reservas/{id}/passageiros/) ---
 
 
-def test_cadastrar_passageiros_sucesso(api_client, autenticar, reserva, usuario):
-    autenticar()
-
-    resposta = api_client.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
+def test_cadastrar_passageiros_sucesso(cliente_autenticado, reserva, usuario):
+    resposta = cliente_autenticado.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
 
     assert resposta.status_code == 201
     data = resposta.json()
@@ -72,7 +70,7 @@ def test_cadastrar_passageiros_sucesso(api_client, autenticar, reserva, usuario)
     assert [p.cpf for p in passageiros] == [CPF_USUARIO, CPF_SEM_CONTA]
 
 
-def test_cadastrar_passageiros_nao_vincula_conta_de_terceiro_com_mesmo_cpf(api_client, autenticar, reserva):
+def test_cadastrar_passageiros_nao_vincula_conta_de_terceiro_com_mesmo_cpf(cliente_autenticado, reserva):
     Usuario.objects.create_user(
         email="terceiro@email.com",
         password="Rotae@2026forte",
@@ -81,38 +79,32 @@ def test_cadastrar_passageiros_nao_vincula_conta_de_terceiro_com_mesmo_cpf(api_c
         data_nasc="1996-05-15",
         cpf=CPF_SEM_CONTA,
     )
-    autenticar()
 
-    resposta = api_client.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
+    resposta = cliente_autenticado.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
 
     assert resposta.status_code == 201
     assert resposta.json()[1]["usuarioId"] is None
 
 
-def test_cadastrar_passageiros_mesmo_cpf_em_reservas_diferentes(api_client, autenticar, reserva, usuario, viagem):
-    autenticar()
+def test_cadastrar_passageiros_mesmo_cpf_em_reservas_diferentes(cliente_autenticado, reserva, usuario, viagem):
     outra_reserva = criar_reserva_com_assentos(usuario, viagem, 1)
 
-    api_client.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
-    resposta = api_client.post(url_cadastrar_passageiros(outra_reserva.id), [passageiro()], format="json")
+    cliente_autenticado.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
+    resposta = cliente_autenticado.post(url_cadastrar_passageiros(outra_reserva.id), [passageiro()], format="json")
 
     assert resposta.status_code == 201
     assert Passageiro.objects.filter(cpf=CPF_USUARIO).count() == 2
 
 
-def test_cadastrar_passageiros_quantidade_diferente_dos_assentos_retorna_400(api_client, autenticar, reserva):
-    autenticar()
-
-    resposta = api_client.post(url_cadastrar_passageiros(reserva.id), [passageiro()], format="json")
+def test_cadastrar_passageiros_quantidade_diferente_dos_assentos_retorna_400(cliente_autenticado, reserva):
+    resposta = cliente_autenticado.post(url_cadastrar_passageiros(reserva.id), [passageiro()], format="json")
 
     assert resposta.status_code == 400
     assert not Passageiro.objects.filter(reserva=reserva).exists()
 
 
-def test_cadastrar_passageiros_cpfs_duplicados_retorna_400(api_client, autenticar, reserva):
-    autenticar()
-
-    resposta = api_client.post(
+def test_cadastrar_passageiros_cpfs_duplicados_retorna_400(cliente_autenticado, reserva):
+    resposta = cliente_autenticado.post(
         url_cadastrar_passageiros(reserva.id),
         [passageiro(), passageiro(nome="Outro Nome")],
         format="json",
@@ -132,21 +124,18 @@ def test_cadastrar_passageiros_cpfs_duplicados_retorna_400(api_client, autentica
         ("nome", ""),
     ],
 )
-def test_cadastrar_passageiros_dados_invalidos_retorna_400(api_client, autenticar, reserva, campo, valor):
-    autenticar()
+def test_cadastrar_passageiros_dados_invalidos_retorna_400(cliente_autenticado, reserva, campo, valor):
     passageiros = dois_passageiros()
     passageiros[1][campo] = valor
 
-    resposta = api_client.post(url_cadastrar_passageiros(reserva.id), passageiros, format="json")
+    resposta = cliente_autenticado.post(url_cadastrar_passageiros(reserva.id), passageiros, format="json")
 
     assert resposta.status_code == 400
     assert not Passageiro.objects.filter(reserva=reserva).exists()
 
 
-def test_cadastrar_passageiros_payload_que_nao_e_lista_retorna_400(api_client, autenticar, reserva):
-    autenticar()
-
-    resposta = api_client.post(url_cadastrar_passageiros(reserva.id), passageiro(), format="json")
+def test_cadastrar_passageiros_payload_que_nao_e_lista_retorna_400(cliente_autenticado, reserva):
+    resposta = cliente_autenticado.post(url_cadastrar_passageiros(reserva.id), passageiro(), format="json")
 
     assert resposta.status_code == 400
 
@@ -157,28 +146,23 @@ def test_cadastrar_passageiros_sem_autenticacao_retorna_401(api_client, reserva)
     assert resposta.status_code == 401
 
 
-def test_cadastrar_passageiros_reserva_de_outro_usuario_retorna_404(api_client, autenticar_outro, reserva):
-    autenticar_outro()
-
-    resposta = api_client.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
+def test_cadastrar_passageiros_reserva_de_outro_usuario_retorna_404(outro_cliente, reserva):
+    resposta = outro_cliente.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
 
     assert resposta.status_code == 404
     assert not Passageiro.objects.filter(reserva=reserva).exists()
 
 
-def test_cadastrar_passageiros_reserva_inexistente_retorna_404(api_client, autenticar):
-    autenticar()
-
-    resposta = api_client.post(url_cadastrar_passageiros(99999), dois_passageiros(), format="json")
+def test_cadastrar_passageiros_reserva_inexistente_retorna_404(cliente_autenticado):
+    resposta = cliente_autenticado.post(url_cadastrar_passageiros(99999), dois_passageiros(), format="json")
 
     assert resposta.status_code == 404
 
 
-def test_cadastrar_passageiros_reserva_que_ja_possui_passageiros_retorna_409(api_client, autenticar, reserva):
-    autenticar()
-    api_client.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
+def test_cadastrar_passageiros_reserva_que_ja_possui_passageiros_retorna_409(cliente_autenticado, reserva):
+    cliente_autenticado.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
 
-    resposta = api_client.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
+    resposta = cliente_autenticado.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
 
     assert resposta.status_code == 409
     assert Passageiro.objects.filter(reserva=reserva).count() == 2
@@ -188,21 +172,19 @@ def test_cadastrar_passageiros_reserva_que_ja_possui_passageiros_retorna_409(api
     "status_reserva",
     [Reserva.Status.CANCELADO, Reserva.Status.PAGO, Reserva.Status.EXPIRADO, Reserva.Status.FALHA],
 )
-def test_cadastrar_passageiros_reserva_nao_pendente_retorna_409(api_client, autenticar, reserva, status_reserva):
-    autenticar()
+def test_cadastrar_passageiros_reserva_nao_pendente_retorna_409(cliente_autenticado, reserva, status_reserva):
     Reserva.objects.filter(pk=reserva.pk).update(status=status_reserva)
 
-    resposta = api_client.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
+    resposta = cliente_autenticado.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
 
     assert resposta.status_code == 409
     assert not Passageiro.objects.filter(reserva=reserva).exists()
 
 
-def test_cadastrar_passageiros_reserva_pendente_mas_vencida_retorna_409(api_client, autenticar, reserva):
-    autenticar()
+def test_cadastrar_passageiros_reserva_pendente_mas_vencida_retorna_409(cliente_autenticado, reserva):
     Reserva.objects.filter(pk=reserva.pk).update(expira_em=timezone.now() - timedelta(minutes=1))
 
-    resposta = api_client.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
+    resposta = cliente_autenticado.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
 
     assert resposta.status_code == 409
     assert not Passageiro.objects.filter(reserva=reserva).exists()
@@ -211,31 +193,27 @@ def test_cadastrar_passageiros_reserva_pendente_mas_vencida_retorna_409(api_clie
 # --- Passageiros no detalhe da reserva (GET /reservas/{id}/) ---
 
 
-def test_detalhe_reserva_retorna_passageiros(api_client, autenticar, reserva):
-    autenticar()
-    api_client.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
+def test_detalhe_reserva_retorna_passageiros(cliente_autenticado, reserva):
+    cliente_autenticado.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
 
-    resposta = api_client.get(url_detalhe_reserva(reserva.id))
+    resposta = cliente_autenticado.get(url_detalhe_reserva(reserva.id))
 
     assert resposta.status_code == 200
     passageiros = resposta.json()["passageiros"]
     assert [p["cpf"] for p in passageiros] == [CPF_USUARIO, CPF_SEM_CONTA]
 
 
-def test_detalhe_reserva_sem_passageiros_retorna_lista_vazia(api_client, autenticar, reserva):
-    autenticar()
-
-    resposta = api_client.get(url_detalhe_reserva(reserva.id))
+def test_detalhe_reserva_sem_passageiros_retorna_lista_vazia(cliente_autenticado, reserva):
+    resposta = cliente_autenticado.get(url_detalhe_reserva(reserva.id))
 
     assert resposta.status_code == 200
     assert resposta.json()["passageiros"] == []
 
 
-def test_minhas_reservas_nao_retorna_passageiros(api_client, autenticar, reserva):
-    autenticar()
-    api_client.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
+def test_minhas_reservas_nao_retorna_passageiros(cliente_autenticado, reserva):
+    cliente_autenticado.post(url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json")
 
-    resposta = api_client.get(reverse("minhas_reservas"))
+    resposta = cliente_autenticado.get(reverse("minhas_reservas"))
 
     assert resposta.status_code == 200
     assert "passageiros" not in resposta.json()["results"][0]

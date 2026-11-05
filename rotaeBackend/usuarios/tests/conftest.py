@@ -1,30 +1,14 @@
-from datetime import date
-
 import pytest
-from rest_framework.test import APIClient
-
-from usuarios.models import Usuario
-
-SENHA = "Rotae@2026forte"
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 @pytest.fixture
-def api_client():
-    return APIClient()
-
-
-@pytest.fixture
-def senha():
-    return SENHA
-
-
-@pytest.fixture
-def dados_usuario():
+def dados_usuario(senha):
     """Dados válidos de cadastro, já no formato camelCase enviado pelo frontend."""
     return {
         "nome": "João da Silva",
         "email": "joao@email.com",
-        "senha": SENHA,
+        "senha": senha,
         "celular": "85999990000",
         "dataNasc": "1995-04-20",
         "cpf": "52998224725",
@@ -32,12 +16,10 @@ def dados_usuario():
 
 
 @pytest.fixture
-def usuario(db):
-    return Usuario.objects.create_user(
-        email="joao@email.com",
-        password=SENHA,
-        nome="João da Silva",
-        celular="85999990000",
-        data_nasc=date(1995, 4, 20),
-        cpf="52998224725",
-    )
+def tokens(usuario):
+    """Dicionário com tokens access e refresh para testes de ciclo de vida do JWT (logout/refresh)."""
+    refresh = RefreshToken.for_user(usuario)
+    return {
+        "access": str(refresh.access_token),
+        "refresh": str(refresh),
+    }
