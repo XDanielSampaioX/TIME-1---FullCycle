@@ -10,37 +10,48 @@ pytestmark = pytest.mark.django_db
 
 
 def test_cadastrar_onibus_no_admin_cria_os_assentos(admin_client):
-    resposta = admin_client.post(reverse("admin:viagens_onibus_add"), {
-        "identificacao": "RT-010",
-        "total_assentos": 3,
-        "modelo": "Marcopolo",
-        "assentos-TOTAL_FORMS": 0,
-        "assentos-INITIAL_FORMS": 0,
-    })
+    resposta = admin_client.post(
+        reverse("admin:viagens_onibus_add"),
+        {
+            "identificacao": "RT-010",
+            "total_assentos": 3,
+            "modelo": "Marcopolo",
+            "assentos-TOTAL_FORMS": 0,
+            "assentos-INITIAL_FORMS": 0,
+        },
+    )
 
     assert resposta.status_code == 302
     assert Onibus.objects.get(identificacao="RT-010").assentos.count() == 3
 
 
-def test_cadastrar_viagem_no_admin_gera_assentos_disponiveis(admin_client, onibus, fortaleza, sobral):
-    resposta = admin_client.post(reverse("admin:viagens_viagem_add"), {
-        "onibus": onibus.id,
-        "origem": fortaleza.id,
-        "destino": sobral.id,
-        "classe": Viagem.Classe.CONVENCIONAL,
-        "partida_em_0": amanha_as(8).strftime("%d/%m/%Y"),
-        "partida_em_1": "08:00:00",
-        "chegada_em_0": amanha_as(12).strftime("%d/%m/%Y"),
-        "chegada_em_1": "12:00:00",
-        "preco_centavos": 8990,
-        "status": Viagem.Status.AGENDADA,
-        "viagem_assentos-TOTAL_FORMS": 0,
-        "viagem_assentos-INITIAL_FORMS": 0,
-    })
+def test_cadastrar_viagem_no_admin_gera_assentos_disponiveis(
+    admin_client, onibus, fortaleza, sobral
+):
+    resposta = admin_client.post(
+        reverse("admin:viagens_viagem_add"),
+        {
+            "onibus": onibus.id,
+            "origem": fortaleza.id,
+            "destino": sobral.id,
+            "classe": Viagem.Classe.CONVENCIONAL,
+            "partida_em_0": amanha_as(8).strftime("%d/%m/%Y"),
+            "partida_em_1": "08:00:00",
+            "chegada_em_0": amanha_as(12).strftime("%d/%m/%Y"),
+            "chegada_em_1": "12:00:00",
+            "preco_centavos": 8990,
+            "status": Viagem.Status.AGENDADA,
+            "viagem_assentos-TOTAL_FORMS": 0,
+            "viagem_assentos-INITIAL_FORMS": 0,
+        },
+    )
 
     assert resposta.status_code == 302
     viagem = Viagem.objects.get()
-    assert viagem.viagem_assentos.filter(status="DISPONIVEL").count() == onibus.total_assentos
+    assert (
+        viagem.viagem_assentos.filter(status="DISPONIVEL").count()
+        == onibus.total_assentos
+    )
 
 
 def test_paginas_do_admin_abrem(admin_client, criar_viagem):

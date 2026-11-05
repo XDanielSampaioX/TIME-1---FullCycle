@@ -10,7 +10,9 @@ from viagens.services import gerar_assentos_da_viagem
 def amanha_as(hora, minuto=0):
     """Datetime de amanhã no fuso do projeto (America/Sao_Paulo)."""
     amanha = timezone.localdate() + timedelta(days=1)
-    return timezone.make_aware(datetime.combine(amanha, datetime.min.time()).replace(hour=hora, minute=minuto))
+    return timezone.make_aware(
+        datetime.combine(amanha, datetime.min.time()).replace(hour=hora, minute=minuto)
+    )
 
 
 @pytest.fixture
@@ -25,7 +27,9 @@ def sobral(db):
 
 @pytest.fixture
 def onibus(db):
-    return Onibus.objects.create(identificacao="RT-001", total_assentos=4, modelo="Marcopolo G8")
+    return Onibus.objects.create(
+        identificacao="RT-001", total_assentos=4, modelo="Marcopolo G8"
+    )
 
 
 @pytest.fixture

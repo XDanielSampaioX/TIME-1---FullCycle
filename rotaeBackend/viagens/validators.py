@@ -27,7 +27,11 @@ class ChegadaAposPartidaValidator(ViagemValidator):
 
 class TrocaDeOnibusComAssentosOcupadosValidator(ViagemValidator):
     def _trocou_onibus_com_assentos_ocupados(self, viagem: Viagem) -> bool:
-        onibus_atual = viagem.__class__.objects.filter(pk=viagem.pk).values_list("onibus_id", flat=True).first()
+        onibus_atual = (
+            viagem.__class__.objects.filter(pk=viagem.pk)
+            .values_list("onibus_id", flat=True)
+            .first()
+        )
         if onibus_atual is None or onibus_atual == viagem.onibus_id:
             return False
 
@@ -35,4 +39,6 @@ class TrocaDeOnibusComAssentosOcupadosValidator(ViagemValidator):
 
     def validar(self, viagem: Viagem, erros: dict):
         if viagem.pk and self._trocou_onibus_com_assentos_ocupados(viagem):
-            erros["onibus"] = "Não é possível trocar o ônibus de uma viagem com assentos segurados ou reservados."
+            erros["onibus"] = (
+                "Não é possível trocar o ônibus de uma viagem com assentos segurados ou reservados."
+            )

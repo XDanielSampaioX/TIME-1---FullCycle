@@ -5,6 +5,7 @@ from django.db.models import prefetch_related_objects
 from django.utils import timezone
 
 from viagens.models import Viagem, ViagemAssento
+
 from .exceptions import (
     AssentoIndisponivelError,
     AssentoOutraViagemError,
@@ -26,20 +27,20 @@ def criar_reserva(*, usuario, viagem_id, viagem_assento_ids):
     """
     try:
         viagem = (
-            Viagem.objects
-            .disponiveis_para_venda()
+            Viagem.objects.disponiveis_para_venda()
             .select_related("origem", "destino", "onibus")
             .get(pk=viagem_id)
         )
     except Viagem.DoesNotExist:
-        raise ViagemNaoEncontradaError(f"Viagem com id={viagem_id} não encontrada ou não disponível para venda.")
+        raise ViagemNaoEncontradaError(
+            f"Viagem com id={viagem_id} não encontrada ou não disponível para venda."
+        )
 
     ids_unicos = list(dict.fromkeys(viagem_assento_ids))
 
     # A ordem por pk evita deadlock entre requisições concorrentes
     assentos = list(
-        ViagemAssento.objects
-        .select_for_update()
+        ViagemAssento.objects.select_for_update()
         .filter(pk__in=ids_unicos, viagem_id=viagem.pk)
         .order_by("pk")
     )
@@ -55,13 +56,16 @@ def criar_reserva(*, usuario, viagem_id, viagem_assento_ids):
 
     assentos_indisponiveis = []
     for assento in assentos:
-        if assento.status != ViagemAssento.Status.DISPONIVEL or assento.reserva_id is not None:
+        if (
+            assento.status != ViagemAssento.Status.DISPONIVEL
+            or assento.reserva_id is not None
+        ):
             assentos_indisponiveis.append(assento.pk)
 
     if assentos_indisponiveis:
         raise AssentoIndisponivelError(
             "Um ou mais assentos já estão reservados.",
-            assentos_indisponiveis=assentos_indisponiveis
+            assentos_indisponiveis=assentos_indisponiveis,
         )
 
     valor_total = viagem.preco_centavos * len(assentos)
@@ -94,23 +98,27 @@ def cancelar_reserva(*, reserva_id, usuario):
     with transaction.atomic():
         try:
             reserva = (
-                Reserva.objects
-                .select_related("viagem__origem", "viagem__destino", "viagem__onibus")
+                Reserva.objects.select_related(
+                    "viagem__origem", "viagem__destino", "viagem__onibus"
+                )
                 .select_for_update(of=("self",))
                 .get(pk=reserva_id, usuario=usuario)
             )
         except Reserva.DoesNotExist:
-            raise ReservaNaoEncontradaError(f"Reserva com id={reserva_id} não encontrada.")
+            raise ReservaNaoEncontradaError(
+                f"Reserva com id={reserva_id} não encontrada."
+            )
 
         if reserva.status != Reserva.Status.PAGAMENTO_PENDENTE:
-            raise ReservaInvalidaError(f"Reserva não pode ser cancelada (status: {reserva.status}).")
+            raise ReservaInvalidaError(
+                f"Reserva não pode ser cancelada (status: {reserva.status})."
+            )
 
         reserva.status = Reserva.Status.CANCELADO
         reserva.save(update_fields=["status", "atualizado_em"])
 
         assentos = list(
-            ViagemAssento.objects
-            .select_for_update()
+            ViagemAssento.objects.select_for_update()
             .filter(reserva=reserva)
             .order_by("pk")
         )
@@ -132,16 +140,16 @@ def cadastrar_passageiros(*, reserva_id, usuario, passageiros):
     Vincula ao usuário autenticado apenas o passageiro com o CPF dele.
     """
     try:
-        reserva = (
-            Reserva.objects
-            .select_for_update()
-            .get(pk=reserva_id, usuario=usuario)
+        reserva = Reserva.objects.select_for_update().get(
+            pk=reserva_id, usuario=usuario
         )
     except Reserva.DoesNotExist:
         raise ReservaNaoEncontradaError(f"Reserva com id={reserva_id} não encontrada.")
 
     if reserva.status != Reserva.Status.PAGAMENTO_PENDENTE:
-        raise ReservaInvalidaError(f"Reserva não aceita passageiros (status: {reserva.status}).")
+        raise ReservaInvalidaError(
+            f"Reserva não aceita passageiros (status: {reserva.status})."
+        )
 
     if reserva.expira_em <= timezone.now():
         raise ReservaInvalidaError("Reserva expirada.")
@@ -156,6 +164,10 @@ def cadastrar_passageiros(*, reserva_id, usuario, passageiros):
         )
 
     return Passageiro.objects.bulk_create(
-        Passageiro(reserva=reserva, usuario=usuario if dados["cpf"] == usuario.cpf else None, **dados)
+        Passageiro(
+            reserva=reserva,
+            usuario=usuario if dados["cpf"] == usuario.cpf else None,
+            **dados,
+        )
         for dados in passageiros
     )

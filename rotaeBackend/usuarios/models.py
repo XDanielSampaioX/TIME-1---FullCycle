@@ -1,4 +1,8 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 from django.db import models
 
 from .validators import validar_celular, validar_cpf, validar_data_nascimento
@@ -10,7 +14,9 @@ class UsuarioManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
         if not email:
             raise ValueError("O e-mail é obrigatório.")
-        usuario = self.model(email=self.normalize_email(email).strip().lower(), **extra_fields)
+        usuario = self.model(
+            email=self.normalize_email(email).strip().lower(), **extra_fields
+        )
         usuario.set_password(password)
         usuario.save(using=self._db)
         return usuario
@@ -39,7 +45,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     # O modelo de dados chama a coluna de senha_hash; o Django guarda só o hash.
     password = models.CharField("senha", max_length=128, db_column="senha_hash")
     celular = models.CharField(max_length=11, blank=True, validators=[validar_celular])
-    data_nasc = models.DateField(null=True, blank=True, validators=[validar_data_nascimento])
+    data_nasc = models.DateField(
+        null=True, blank=True, validators=[validar_data_nascimento]
+    )
     # Nulo só para contas administrativas criadas pelo createsuperuser; a API exige o CPF.
     cpf = models.CharField(
         max_length=11,

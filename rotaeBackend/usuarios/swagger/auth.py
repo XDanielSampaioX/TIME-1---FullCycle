@@ -17,6 +17,7 @@ class LoginRespostaSerializer(TokensSerializer):
 
     user = UsuarioSerializer()
 
+
 login_schema = extend_schema(
     summary="Login",
     description="Autentica por e-mail e senha e devolve os tokens JWT e os dados do usuário.",
@@ -25,7 +26,9 @@ login_schema = extend_schema(
     responses={
         200: LoginRespostaSerializer,
         400: OpenApiResponse(description="E-mail ou senha não enviados."),
-        401: OpenApiResponse(description="E-mail ou senha inválidos, ou conta desativada."),
+        401: OpenApiResponse(
+            description="E-mail ou senha inválidos, ou conta desativada."
+        ),
     },
 )
 
@@ -46,6 +49,8 @@ logout_schema = extend_schema(
     responses={
         204: OpenApiResponse(description="Sessão encerrada."),
         400: OpenApiResponse(description="Refresh token não enviado."),
-        401: OpenApiResponse(description="Refresh token inválido, expirado ou já revogado."),
+        401: OpenApiResponse(
+            description="Refresh token inválido, expirado ou já revogado."
+        ),
     },
 )

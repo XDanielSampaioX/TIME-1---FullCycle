@@ -21,11 +21,43 @@ ONIBUS = (
 
 # (origem, destino, identificação do ônibus, classe, horário de partida, duração em minutos, preço em centavos)
 VIAGENS = (
-    ("Fortaleza", "Juazeiro do Norte", "RT-001", Viagem.Classe.CONVENCIONAL, time(8, 0), 270, 8990),
-    ("Fortaleza", "Juazeiro do Norte", "RT-002", Viagem.Classe.EXECUTIVA, time(22, 0), 480, 12990),
+    (
+        "Fortaleza",
+        "Juazeiro do Norte",
+        "RT-001",
+        Viagem.Classe.CONVENCIONAL,
+        time(8, 0),
+        270,
+        8990,
+    ),
+    (
+        "Fortaleza",
+        "Juazeiro do Norte",
+        "RT-002",
+        Viagem.Classe.EXECUTIVA,
+        time(22, 0),
+        480,
+        12990,
+    ),
     ("Fortaleza", "Sobral", "RT-002", Viagem.Classe.EXECUTIVA, time(14, 0), 255, 7490),
-    ("Juazeiro do Norte", "Fortaleza", "RT-001", Viagem.Classe.CONVENCIONAL, time(22, 0), 480, 12990),
-    ("Fortaleza", "Teresina", "RT-001", Viagem.Classe.CONVENCIONAL, time(5, 30), 600, 15990),
+    (
+        "Juazeiro do Norte",
+        "Fortaleza",
+        "RT-001",
+        Viagem.Classe.CONVENCIONAL,
+        time(22, 0),
+        480,
+        12990,
+    ),
+    (
+        "Fortaleza",
+        "Teresina",
+        "RT-001",
+        Viagem.Classe.CONVENCIONAL,
+        time(5, 30),
+        600,
+        15990,
+    ),
 )
 
 
@@ -33,7 +65,12 @@ class Command(BaseCommand):
     help = "Cria cidades, ônibus e viagens de exemplo para os próximos dias."
 
     def add_arguments(self, parser):
-        parser.add_argument("--dias", type=int, default=7, help="Quantidade de dias com viagens (padrão: 7).")
+        parser.add_argument(
+            "--dias",
+            type=int,
+            default=7,
+            help="Quantidade de dias com viagens (padrão: 7).",
+        )
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -53,7 +90,15 @@ class Command(BaseCommand):
         hoje = timezone.localdate()
         for dia in range(1, options["dias"] + 1):
             data = hoje + timedelta(days=dia)
-            for origem, destino, identificacao, classe, horario, duracao, preco in VIAGENS:
+            for (
+                origem,
+                destino,
+                identificacao,
+                classe,
+                horario,
+                duracao,
+                preco,
+            ) in VIAGENS:
                 partida = timezone.make_aware(datetime.combine(data, horario))
                 viagem, criada = Viagem.objects.get_or_create(
                     origem=cidades[origem],

@@ -12,7 +12,9 @@ from rest_framework.views import APIView
     description="Verifica a saúde da aplicação e a conexão com o banco de dados.",
     tags=["health"],
     responses={
-        200: OpenApiResponse(description="Aplicação saudável e banco de dados conectado."),
+        200: OpenApiResponse(
+            description="Aplicação saudável e banco de dados conectado."
+        ),
         503: OpenApiResponse(description="Falha na conexão com o banco de dados."),
     },
 )

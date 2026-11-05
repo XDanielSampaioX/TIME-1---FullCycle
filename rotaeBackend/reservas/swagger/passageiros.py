@@ -2,7 +2,6 @@ from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 
 from reservas.serializers import PassageiroCriarSerializer, PassageiroSerializer
 
-
 passageiros_cadastrar_schema = extend_schema(
     request=PassageiroCriarSerializer(many=True),
     responses={
@@ -14,7 +13,9 @@ passageiros_cadastrar_schema = extend_schema(
             )
         ),
         401: OpenApiResponse(description="Não autenticado."),
-        404: OpenApiResponse(description="Reserva não encontrada ou pertencente a outro usuário."),
+        404: OpenApiResponse(
+            description="Reserva não encontrada ou pertencente a outro usuário."
+        ),
         409: OpenApiResponse(
             description="Reserva já possui passageiros cadastrados, não está pendente de pagamento ou expirou."
         ),

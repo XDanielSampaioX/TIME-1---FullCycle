@@ -1,13 +1,13 @@
-from datetime import datetime, timedelta
 import threading
+from datetime import datetime, timedelta
 
 import pytest
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APIClient
 
-from viagens.models import Viagem, ViagemAssento
 from reservas.models import Reserva
+from viagens.models import Viagem, ViagemAssento
 
 pytestmark = pytest.mark.django_db
 
@@ -26,8 +26,7 @@ def url_cancelar_reserva(pk):
 def ids_viagem_assentos(viagem, numeros):
     """Retorna os IDs de ViagemAssento (PKs) para os números de assento informados."""
     return list(
-        viagem.viagem_assentos
-        .filter(assento__numero__in=numeros)
+        viagem.viagem_assentos.filter(assento__numero__in=numeros)
         .order_by("assento__numero")
         .values_list("id", flat=True)
     )
@@ -56,7 +55,11 @@ def test_criar_reserva_sucesso(cliente_autenticado, viagem):
 
     # Valida expira_em em torno de 24h a partir da criação
     expira_em = datetime.fromisoformat(data["expiraEm"].replace("Z", "+00:00"))
-    assert antes + timedelta(hours=23, minutes=59) <= expira_em <= depois + timedelta(hours=24, minutes=1)
+    assert (
+        antes + timedelta(hours=23, minutes=59)
+        <= expira_em
+        <= depois + timedelta(hours=24, minutes=1)
+    )
 
     # Verifica persistência no banco
     reserva = Reserva.objects.get(pk=data["id"])
@@ -70,7 +73,9 @@ def test_criar_reserva_sucesso(cliente_autenticado, viagem):
         assert a.reserva_id == reserva.id
 
 
-def test_criar_reserva_assento_indisponivel_retorna_lista_assentos(cliente_autenticado, viagem):
+def test_criar_reserva_assento_indisponivel_retorna_lista_assentos(
+    cliente_autenticado, viagem
+):
     """Testa que o erro 409 retorna a lista de assentos indisponíveis."""
     assentos_ids = ids_viagem_assentos(viagem, [1])
 
@@ -108,7 +113,9 @@ def test_criar_reserva_assento_ja_reservado_retorna_409(cliente_autenticado, via
     assert resposta.status_code == 409
 
 
-def test_criar_reserva_rollback_quando_um_dos_assentos_indisponivel(cliente_autenticado, viagem):
+def test_criar_reserva_rollback_quando_um_dos_assentos_indisponivel(
+    cliente_autenticado, viagem
+):
     """
     Se pedir 1 assento livre e 1 ocupado, deve falhar com 409 e nada deve ser alterado
     (rollback total: nem reserva criada, nem o assento livre segurado).
@@ -183,7 +190,9 @@ def test_criar_reserva_viagem_passada_rejeita_400(cliente_autenticado, viagem):
     assert resposta.status_code == 400
 
 
-def test_criar_reserva_assento_de_outra_viagem_retorna_400(cliente_autenticado, viagem, outra_viagem):
+def test_criar_reserva_assento_de_outra_viagem_retorna_400(
+    cliente_autenticado, viagem, outra_viagem
+):
     assento_outra_viagem = ids_viagem_assentos(outra_viagem, [1])[0]
 
     resposta = cliente_autenticado.post(
@@ -234,7 +243,9 @@ def test_detalhe_reserva_sucesso(cliente_autenticado, viagem):
     assert "destino" in data["viagem"]
 
 
-def test_detalhe_reserva_outro_usuario_retorna_404(cliente_autenticado, outro_cliente, viagem):
+def test_detalhe_reserva_outro_usuario_retorna_404(
+    cliente_autenticado, outro_cliente, viagem
+):
     assentos_ids = ids_viagem_assentos(viagem, [1])
     post_resp = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
@@ -280,7 +291,9 @@ def test_cancelar_reserva_pendente_sucesso(cliente_autenticado, viagem):
         assert a.reserva is None
 
 
-def test_cancelar_reserva_outro_usuario_retorna_404(cliente_autenticado, outro_cliente, viagem):
+def test_cancelar_reserva_outro_usuario_retorna_404(
+    cliente_autenticado, outro_cliente, viagem
+):
     assentos_ids = ids_viagem_assentos(viagem, [1])
     post_resp = cliente_autenticado.post(
         URL_CRIAR_RESERVA,
@@ -312,16 +325,30 @@ def test_cancelar_reserva_ja_cancelada_retorna_400(cliente_autenticado, viagem):
 # --- Testes de Listagem (/me/reservas/) ---
 
 
-def test_minhas_reservas_retorna_apenas_do_usuario_autenticado(cliente_autenticado, outro_cliente, viagem, outra_viagem):
+def test_minhas_reservas_retorna_apenas_do_usuario_autenticado(
+    cliente_autenticado, outro_cliente, viagem, outra_viagem
+):
     # Usuário A cria 2 reservas
     a1 = ids_viagem_assentos(viagem, [1])
     a2 = ids_viagem_assentos(viagem, [2])
-    cliente_autenticado.post(URL_CRIAR_RESERVA, {"viagem_id": viagem.id, "viagem_assento_ids": a1}, format="json")
-    cliente_autenticado.post(URL_CRIAR_RESERVA, {"viagem_id": viagem.id, "viagem_assento_ids": a2}, format="json")
+    cliente_autenticado.post(
+        URL_CRIAR_RESERVA,
+        {"viagem_id": viagem.id, "viagem_assento_ids": a1},
+        format="json",
+    )
+    cliente_autenticado.post(
+        URL_CRIAR_RESERVA,
+        {"viagem_id": viagem.id, "viagem_assento_ids": a2},
+        format="json",
+    )
 
     # Usuário B cria 1 reserva
     b1 = ids_viagem_assentos(outra_viagem, [1])
-    outro_cliente.post(URL_CRIAR_RESERVA, {"viagem_id": outra_viagem.id, "viagem_assento_ids": b1}, format="json")
+    outro_cliente.post(
+        URL_CRIAR_RESERVA,
+        {"viagem_id": outra_viagem.id, "viagem_assento_ids": b1},
+        format="json",
+    )
 
     # Usuário A busca suas reservas
     resposta = cliente_autenticado.get(URL_MINHAS_RESERVAS)
@@ -341,7 +368,9 @@ def test_minhas_reservas_sem_autenticacao_retorna_401(api_client):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_concorrencia_dois_usuarios_mesmo_assento_apenas_um_reserva(viagem, usuario, outro_usuario, token, outro_token):
+def test_concorrencia_dois_usuarios_mesmo_assento_apenas_um_reserva(
+    viagem, usuario, outro_usuario, token, outro_token
+):
     assento_id = ids_viagem_assentos(viagem, [1])[0]
 
     resultados = []
@@ -360,6 +389,7 @@ def test_concorrencia_dois_usuarios_mesmo_assento_apenas_um_reserva(viagem, usua
             resultados.append(resp.status_code)
         finally:
             from django.db import connections
+
             connections.close_all()
 
     t1 = threading.Thread(target=tentar_reservar, args=(token,))
@@ -370,6 +400,7 @@ def test_concorrencia_dois_usuarios_mesmo_assento_apenas_um_reserva(viagem, usua
     t1.join()
     t2.join()
     from django.db import connections
+
     connections.close_all()
 
     assert 201 in resultados

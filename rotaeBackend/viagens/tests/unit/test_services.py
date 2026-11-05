@@ -24,7 +24,9 @@ def test_viagem_tem_um_assento_disponivel_para_cada_assento_do_onibus(criar_viag
     viagem = criar_viagem()
 
     assert viagem.viagem_assentos.count() == viagem.onibus.total_assentos
-    assert set(viagem.viagem_assentos.values_list("status", flat=True)) == {ViagemAssento.Status.DISPONIVEL}
+    assert set(viagem.viagem_assentos.values_list("status", flat=True)) == {
+        ViagemAssento.Status.DISPONIVEL
+    }
 
 
 def test_gerar_assentos_novamente_nao_duplica_nem_altera_status(criar_viagem):
@@ -53,7 +55,9 @@ def test_trocar_onibus_recria_os_assentos_da_viagem(criar_viagem):
 
 def test_trocar_onibus_com_assento_ocupado_falha(criar_viagem):
     viagem = criar_viagem()
-    viagem.viagem_assentos.filter(assento__numero=1).update(status=ViagemAssento.Status.RESERVADO)
+    viagem.viagem_assentos.filter(assento__numero=1).update(
+        status=ViagemAssento.Status.RESERVADO
+    )
     viagem.onibus = Onibus.objects.create(identificacao="RT-002", total_assentos=2)
     viagem.save()
 

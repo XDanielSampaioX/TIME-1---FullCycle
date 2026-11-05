@@ -43,13 +43,17 @@ class Onibus(models.Model):
 
 
 class Assento(models.Model):
-    onibus = models.ForeignKey(Onibus, on_delete=models.CASCADE, related_name="assentos")
+    onibus = models.ForeignKey(
+        Onibus, on_delete=models.CASCADE, related_name="assentos"
+    )
     numero = models.PositiveIntegerField(validators=[MinValueValidator(1)])
 
     class Meta:
         ordering = ("onibus", "numero")
         constraints = (
-            models.UniqueConstraint(fields=("onibus", "numero"), name="assento_numero_unico_por_onibus"),
+            models.UniqueConstraint(
+                fields=("onibus", "numero"), name="assento_numero_unico_por_onibus"
+            ),
         )
 
     def __str__(self):
@@ -80,14 +84,22 @@ class Viagem(models.Model):
         CANCELADA = "CANCELADA", "Cancelada"
 
     onibus = models.ForeignKey(Onibus, on_delete=models.PROTECT, related_name="viagens")
-    origem = models.ForeignKey(Cidade, on_delete=models.PROTECT, related_name="viagens_origem")
-    destino = models.ForeignKey(Cidade, on_delete=models.PROTECT, related_name="viagens_destino")
+    origem = models.ForeignKey(
+        Cidade, on_delete=models.PROTECT, related_name="viagens_origem"
+    )
+    destino = models.ForeignKey(
+        Cidade, on_delete=models.PROTECT, related_name="viagens_destino"
+    )
     classe = models.CharField(max_length=20, choices=Classe.choices)
     partida_em = models.DateTimeField()
     chegada_em = models.DateTimeField()
-    duracao = models.PositiveIntegerField(editable=False, help_text="Duração estimada em minutos.")
+    duracao = models.PositiveIntegerField(
+        editable=False, help_text="Duração estimada em minutos."
+    )
     preco_centavos = models.PositiveIntegerField()
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.AGENDADA)
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.AGENDADA
+    )
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 
@@ -103,11 +115,19 @@ class Viagem(models.Model):
         verbose_name_plural = "Viagens"
         ordering = ("partida_em",)
         indexes = (
-            models.Index(fields=("origem", "destino", "partida_em"), name="viagem_busca_idx"),
+            models.Index(
+                fields=("origem", "destino", "partida_em"), name="viagem_busca_idx"
+            ),
         )
         constraints = (
-            models.CheckConstraint(condition=~Q(origem=F("destino")), name="viagem_origem_diferente_destino"),
-            models.CheckConstraint(condition=Q(chegada_em__gt=F("partida_em")), name="viagem_chegada_apos_partida"),
+            models.CheckConstraint(
+                condition=~Q(origem=F("destino")),
+                name="viagem_origem_diferente_destino",
+            ),
+            models.CheckConstraint(
+                condition=Q(chegada_em__gt=F("partida_em")),
+                name="viagem_chegada_apos_partida",
+            ),
         )
 
     def __str__(self):
@@ -127,14 +147,19 @@ class Viagem(models.Model):
             self.duracao = max(int(minutos), 0)
         super().save(*args, **kwargs)
 
+
 class ViagemAssento(models.Model):
     class Status(models.TextChoices):
         DISPONIVEL = "DISPONIVEL", "Disponível"
         SEGURADO = "SEGURADO", "Segurado"
         RESERVADO = "RESERVADO", "Reservado"
 
-    viagem = models.ForeignKey(Viagem, on_delete=models.CASCADE, related_name="viagem_assentos")
-    assento = models.ForeignKey(Assento, on_delete=models.PROTECT, related_name="viagem_assentos")
+    viagem = models.ForeignKey(
+        Viagem, on_delete=models.CASCADE, related_name="viagem_assentos"
+    )
+    assento = models.ForeignKey(
+        Assento, on_delete=models.PROTECT, related_name="viagem_assentos"
+    )
     reserva = models.ForeignKey(
         "reservas.Reserva",
         on_delete=models.SET_NULL,
@@ -142,19 +167,29 @@ class ViagemAssento(models.Model):
         blank=True,
         related_name="viagem_assentos",
     )
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.DISPONIVEL)
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.DISPONIVEL
+    )
 
     class Meta:
         verbose_name = "Assento da viagem"
         verbose_name_plural = "Assentos das viagens"
         ordering = ("viagem", "assento__numero")
         constraints = (
-            models.UniqueConstraint(fields=("viagem", "assento"), name="viagem_assento_unico"),
+            models.UniqueConstraint(
+                fields=("viagem", "assento"), name="viagem_assento_unico"
+            ),
         )
 
     def __str__(self):
         return f"{self.viagem} - Assento {self.assento.numero} ({self.status})"
 
     def clean(self):
-        if self.viagem_id and self.assento_id and self.assento.onibus_id != self.viagem.onibus_id:
-            raise ValidationError({"assento": "O assento deve pertencer ao ônibus da viagem."})
+        if (
+            self.viagem_id
+            and self.assento_id
+            and self.assento.onibus_id != self.viagem.onibus_id
+        ):
+            raise ValidationError(
+                {"assento": "O assento deve pertencer ao ônibus da viagem."}
+            )

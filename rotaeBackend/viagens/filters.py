@@ -12,19 +12,29 @@ PERIODOS = {
 
 
 class ViagemFilter(django_filters.FilterSet):
-    origem = django_filters.NumberFilter(field_name="origem_id", label="ID da cidade de origem.")
-    destino = django_filters.NumberFilter(field_name="destino_id", label="ID da cidade de destino.")
+    origem = django_filters.NumberFilter(
+        field_name="origem_id", label="ID da cidade de origem."
+    )
+    destino = django_filters.NumberFilter(
+        field_name="destino_id", label="ID da cidade de destino."
+    )
     data = django_filters.DateFilter(
-        field_name="partida_em", lookup_expr="date", label="Data de partida (AAAA-MM-DD)."
+        field_name="partida_em",
+        lookup_expr="date",
+        label="Data de partida (AAAA-MM-DD).",
     )
     classe = django_filters.MultipleChoiceFilter(
         choices=Viagem.Classe.choices, label="Classe do ônibus. Aceita vários valores."
     )
     preco_min = django_filters.NumberFilter(
-        field_name="preco_centavos", lookup_expr="gte", label="Preço mínimo em centavos."
+        field_name="preco_centavos",
+        lookup_expr="gte",
+        label="Preço mínimo em centavos.",
     )
     preco_max = django_filters.NumberFilter(
-        field_name="preco_centavos", lookup_expr="lte", label="Preço máximo em centavos."
+        field_name="preco_centavos",
+        lookup_expr="lte",
+        label="Preço máximo em centavos.",
     )
     periodo = django_filters.MultipleChoiceFilter(
         choices=[(valor, titulo) for valor, (titulo, _, _) in PERIODOS.items()],

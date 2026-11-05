@@ -12,7 +12,16 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Usuario
 from .validators import so_digitos
 
-CAMPOS_PUBLICOS = ("id", "nome", "email", "celular", "data_nasc", "cpf", "criado_em", "atualizado_em")
+CAMPOS_PUBLICOS = (
+    "id",
+    "nome",
+    "email",
+    "celular",
+    "data_nasc",
+    "cpf",
+    "criado_em",
+    "atualizado_em",
+)
 
 
 def salvar_respeitando_unicidade(salvar, dados, instancia=None):
@@ -40,7 +49,6 @@ def validar_senha(senha, usuario):
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Usuario
         fields = CAMPOS_PUBLICOS
@@ -64,7 +72,9 @@ class NormalizaDadosMixin:
 
 
 class CadastroUsuarioSerializer(NormalizaDadosMixin, serializers.ModelSerializer):
-    senha = serializers.CharField(write_only=True, trim_whitespace=False, style={"input_type": "password"})
+    senha = serializers.CharField(
+        write_only=True, trim_whitespace=False, style={"input_type": "password"}
+    )
 
     class Meta:
         model = Usuario
@@ -93,7 +103,9 @@ class CadastroUsuarioSerializer(NormalizaDadosMixin, serializers.ModelSerializer
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
-    senha = serializers.CharField(write_only=True, trim_whitespace=False, style={"input_type": "password"})
+    senha = serializers.CharField(
+        write_only=True, trim_whitespace=False, style={"input_type": "password"}
+    )
 
     def validate(self, attrs):
         usuario = authenticate(
@@ -103,7 +115,9 @@ class LoginSerializer(serializers.Serializer):
         )
         # authenticate() também devolve None para conta desativada (is_active=False).
         if usuario is None:
-            raise AuthenticationFailed("E-mail ou senha inválidos.", code="credenciais_invalidas")
+            raise AuthenticationFailed(
+                "E-mail ou senha inválidos.", code="credenciais_invalidas"
+            )
 
         refresh = RefreshToken.for_user(usuario)
         update_last_login(None, usuario)
@@ -127,7 +141,9 @@ class AtualizacaoUsuarioSerializer(NormalizaDadosMixin, serializers.ModelSeriali
 
     def update(self, instance, validated_data):
         return salvar_respeitando_unicidade(
-            lambda: super(AtualizacaoUsuarioSerializer, self).update(instance, validated_data),
+            lambda: super(AtualizacaoUsuarioSerializer, self).update(
+                instance, validated_data
+            ),
             validated_data,
             instancia=instance,
         )
@@ -136,7 +152,9 @@ class AtualizacaoUsuarioSerializer(NormalizaDadosMixin, serializers.ModelSeriali
 class AlteracaoSenhaSerializer(serializers.Serializer):
     senha_atual = serializers.CharField(write_only=True, trim_whitespace=False)
     nova_senha = serializers.CharField(write_only=True, trim_whitespace=False)
-    confirmacao_nova_senha = serializers.CharField(write_only=True, trim_whitespace=False)
+    confirmacao_nova_senha = serializers.CharField(
+        write_only=True, trim_whitespace=False
+    )
 
     def validate_senha_atual(self, valor):
         if not self.context["request"].user.check_password(valor):
@@ -146,11 +164,12 @@ class AlteracaoSenhaSerializer(serializers.Serializer):
     def validate(self, attrs):
         if attrs["nova_senha"] != attrs["confirmacao_nova_senha"]:
             raise serializers.ValidationError(
-                {"confirmacao_nova_senha": "A confirmação não confere com a nova senha."}
+                {
+                    "confirmacao_nova_senha": "A confirmação não confere com a nova senha."
+                }
             )
         try:
             validar_senha(attrs["nova_senha"], self.context["request"].user)
         except serializers.ValidationError as erro:
             raise serializers.ValidationError({"nova_senha": erro.detail}) from erro
         return attrs
-

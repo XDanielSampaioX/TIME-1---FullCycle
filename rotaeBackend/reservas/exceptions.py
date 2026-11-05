@@ -28,4 +28,3 @@ class ReservaInvalidaError(ReservaError):
 
 class QuantidadePassageirosError(ReservaError):
     pass
-

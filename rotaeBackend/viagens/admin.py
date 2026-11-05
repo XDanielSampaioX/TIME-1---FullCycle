@@ -58,7 +58,9 @@ class ViagemAdmin(admin.ModelAdmin):
     def gerar_assentos(self, request, queryset):
         for viagem in queryset.select_related("onibus"):
             gerar_assentos_da_viagem(viagem)
-        self.message_user(request, f"Assentos gerados para {queryset.count()} viagem(ns).")
+        self.message_user(
+            request, f"Assentos gerados para {queryset.count()} viagem(ns)."
+        )
 
 
 @admin.register(ViagemAssento)
@@ -66,5 +68,10 @@ class ViagemAssentoAdmin(admin.ModelAdmin):
     list_display = ("viagem", "assento", "status", "reserva")
     list_filter = ("status",)
     search_fields = ("viagem__origem__nome", "viagem__destino__nome", "reserva__id")
-    list_select_related = ("viagem__origem", "viagem__destino", "assento__onibus", "reserva")
+    list_select_related = (
+        "viagem__origem",
+        "viagem__destino",
+        "assento__onibus",
+        "reserva",
+    )
     readonly_fields = ("viagem", "assento", "reserva")

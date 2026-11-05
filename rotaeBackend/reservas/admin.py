@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from viagens.models import ViagemAssento
+
 from .exceptions import ReservaInvalidaError
 from .models import Passageiro, Reserva
 from .services import cancelar_reserva
@@ -40,7 +41,12 @@ class PassageiroAdmin(admin.ModelAdmin):
     list_display = ("id", "nome", "cpf", "email", "reserva", "usuario", "criado_em")
     list_filter = ("reserva__status", "criado_em")
     search_fields = ("nome", "cpf", "email", "reserva__id", "usuario__email")
-    list_select_related = ("reserva__usuario", "reserva__viagem__origem", "reserva__viagem__destino", "usuario")
+    list_select_related = (
+        "reserva__usuario",
+        "reserva__viagem__origem",
+        "reserva__viagem__destino",
+        "usuario",
+    )
     readonly_fields = ("reserva", "usuario", "cpf", "criado_em", "atualizado_em")
 
     # Passageiros só nascem pelo cadastro na reserva; o admin serve para busca e auditoria.
