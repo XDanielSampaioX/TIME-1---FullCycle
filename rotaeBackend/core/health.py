@@ -1,10 +1,18 @@
 from django.db import connections
 from django.db.utils import Error as DatabaseError
-from drf_spectacular.utils import OpenApiResponse, extend_schema
-from rest_framework import status
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
+from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+
+class HealthSerializer(serializers.Serializer):
+    """Só documenta o corpo do healthcheck no Swagger."""
+
+    status = serializers.CharField()
+    database = serializers.CharField()
+    error = serializers.CharField(required=False)
 
 
 @extend_schema(
@@ -13,9 +21,26 @@ from rest_framework.views import APIView
     tags=["health"],
     responses={
         200: OpenApiResponse(
-            description="Aplicação saudável e banco de dados conectado."
+            response=HealthSerializer,
+            description="Aplicação saudável e banco de dados conectado.",
+            examples=[
+                OpenApiExample("Saudável", value={"status": "ok", "database": "up"})
+            ],
         ),
-        503: OpenApiResponse(description="Falha na conexão com o banco de dados."),
+        503: OpenApiResponse(
+            response=HealthSerializer,
+            description="Falha na conexão com o banco de dados.",
+            examples=[
+                OpenApiExample(
+                    "Banco fora do ar",
+                    value={
+                        "status": "error",
+                        "database": "down",
+                        "error": "connection refused",
+                    },
+                )
+            ],
+        ),
     },
 )
 class HealthView(APIView):
