@@ -87,8 +87,9 @@ def _concluir_pagamento(*, pagamento, aprovado, referencia_externa):
     APROVADO: reserva -> PAGO e assentos -> RESERVADO.
     NEGADO: só atualiza o pagamento; ao atingir MAX_TENTATIVAS_PAGAMENTO,
     reserva -> FALHA e assentos liberados.
-    Retorna False se a reserva deixou de estar pendente enquanto o gateway
-    respondia; nesse caso o pagamento é registrado como NEGADO e nada é confirmado.
+    Retorna (pagamento, aplicado). `aplicado` é False se a reserva deixou de estar
+    pendente enquanto o gateway respondia; nesse caso o pagamento é registrado
+    como NEGADO e nada é confirmado.
     """
     reserva = Reserva.objects.select_for_update().get(pk=pagamento.reserva_id)
     pagamento = Pagamento.objects.select_for_update().get(pk=pagamento.pk)
