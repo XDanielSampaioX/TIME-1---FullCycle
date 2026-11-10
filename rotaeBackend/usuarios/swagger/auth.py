@@ -1,7 +1,11 @@
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenBlacklistSerializer
+from rest_framework_simplejwt.serializers import (
+    TokenBlacklistSerializer,
+    TokenRefreshSerializer,
+)
 
+from core.api.swagger import resposta_erro, resposta_validacao
 from usuarios.serializers import LoginSerializer, UsuarioSerializer
 
 
@@ -18,6 +22,11 @@ class LoginRespostaSerializer(TokensSerializer):
     user = UsuarioSerializer()
 
 
+REFRESH_INVALIDO = resposta_erro(
+    "Refresh token inválido, expirado ou já revogado.",
+    "O token é inválido",
+)
+
 login_schema = extend_schema(
     summary="Login",
     description="Autentica por e-mail e senha e devolve os tokens JWT e os dados do usuário.",
@@ -25,9 +34,13 @@ login_schema = extend_schema(
     request=LoginSerializer,
     responses={
         200: LoginRespostaSerializer,
-        400: OpenApiResponse(description="E-mail ou senha não enviados."),
-        401: OpenApiResponse(
-            description="E-mail ou senha inválidos, ou conta desativada."
+        400: resposta_validacao(
+            "E-mail ou senha não enviados.",
+            {"Campos ausentes": {"email": ["Este campo é obrigatório."]}},
+        ),
+        401: resposta_erro(
+            "E-mail ou senha inválidos, ou conta desativada.",
+            "E-mail ou senha inválidos.",
         ),
     },
 )
@@ -36,6 +49,15 @@ refresh_schema = extend_schema(
     summary="Renovar token",
     description="Troca um refresh token válido por um novo access token e um novo refresh token.",
     tags=["auth"],
+    request=TokenRefreshSerializer,
+    responses={
+        200: TokensSerializer,
+        400: resposta_validacao(
+            "Refresh token não enviado.",
+            {"Campo ausente": {"refresh": ["Este campo é obrigatório."]}},
+        ),
+        401: REFRESH_INVALIDO,
+    },
 )
 
 logout_schema = extend_schema(
@@ -48,9 +70,10 @@ logout_schema = extend_schema(
     request=TokenBlacklistSerializer,
     responses={
         204: OpenApiResponse(description="Sessão encerrada."),
-        400: OpenApiResponse(description="Refresh token não enviado."),
-        401: OpenApiResponse(
-            description="Refresh token inválido, expirado ou já revogado."
+        400: resposta_validacao(
+            "Refresh token não enviado.",
+            {"Campo ausente": {"refresh": ["Este campo é obrigatório."]}},
         ),
+        401: REFRESH_INVALIDO,
     },
 )

@@ -1,5 +1,6 @@
-from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
+from core.api.swagger import NAO_AUTENTICADO, resposta_validacao
 from usuarios.serializers import (
     AlteracaoSenhaSerializer,
     AtualizacaoUsuarioSerializer,
@@ -19,7 +20,16 @@ cadastro_usuario_schema = extend_schema(
     request=CadastroUsuarioSerializer,
     responses={
         201: UsuarioSerializer,
-        400: OpenApiResponse(description="Erros de validação por campo."),
+        400: resposta_validacao(
+            "Erros de validação por campo (inclui e-mail ou CPF já cadastrados).",
+            {
+                "Campos inválidos": {
+                    "email": ["Já existe um usuário com este e-mail."],
+                    "cpf": ["CPF inválido."],
+                    "dataNasc": ["Este campo é obrigatório."],
+                }
+            },
+        ),
     },
 )
 
@@ -29,7 +39,7 @@ me_schema = extend_schema_view(
         tags=["usuarios"],
         responses={
             200: UsuarioSerializer,
-            401: OpenApiResponse(description="Não autenticado."),
+            401: NAO_AUTENTICADO,
         },
     ),
     patch=extend_schema(
@@ -39,15 +49,22 @@ me_schema = extend_schema_view(
         request=AtualizacaoUsuarioSerializer,
         responses={
             200: UsuarioSerializer,
-            400: OpenApiResponse(description="Erros de validação por campo."),
-            401: OpenApiResponse(description="Não autenticado."),
+            400: resposta_validacao(
+                "Erros de validação por campo.",
+                {
+                    "E-mail já usado": {
+                        "email": ["Já existe um usuário com este e-mail."]
+                    }
+                },
+            ),
+            401: NAO_AUTENTICADO,
         },
     ),
     delete=extend_schema(
         summary="Desativar conta",
         description="Marca a conta como inativa e revoga os refresh tokens. O histórico de reservas é mantido.",
         tags=["usuarios"],
-        responses={204: None, 401: OpenApiResponse(description="Não autenticado.")},
+        responses={204: None, 401: NAO_AUTENTICADO},
     ),
 )
 
@@ -62,9 +79,17 @@ alterar_senha_schema = extend_schema(
     request=AlteracaoSenhaSerializer,
     responses={
         200: TokensSerializer,
-        400: OpenApiResponse(
-            description="Senha atual incorreta, confirmação diferente ou senha fraca."
+        400: resposta_validacao(
+            "Senha atual incorreta, confirmação diferente ou senha fraca.",
+            {
+                "Senha atual incorreta": {"senhaAtual": ["Senha atual incorreta."]},
+                "Confirmação diferente": {
+                    "confirmacaoNovaSenha": [
+                        "A confirmação não confere com a nova senha."
+                    ]
+                },
+            },
         ),
-        401: OpenApiResponse(description="Não autenticado."),
+        401: NAO_AUTENTICADO,
     },
 )
