@@ -1,0 +1,782 @@
+/* A página usa .viagem-page, de viagens.css. Aqui ficam só as cores que as telas de viagem não têm. */
+.reserva-page {
+  --reserva-perigo: #b43c3c;
+  --reserva-neutro: #eff2ef;
+  --reserva-neutro-forte: #8cad9e;
+  --reserva-alerta: #a46418;
+  --reserva-alerta-suave: #fff3d6;
+  --reserva-perigo-suave: #fdeeee;
+}
+
+.assento-resumo [role="alert"] {
+  color: var(--reserva-perigo);
+}
+
+.reserva-page .viagem-estado p {
+  margin-bottom: 1rem;
+}
+
+.reserva-dialogo {
+  width: min(calc(100% - 2 * var(--page-gutter)), 45rem);
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 2.5rem;
+  overflow-y: auto;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-page);
+  color: var(--color-text-primary);
+}
+
+.reserva-dialogo:focus-visible {
+  outline: none;
+}
+
+.reserva-dialogo::backdrop {
+  background: rgb(18 61 51 / 55%);
+}
+
+.reserva-dialogo[open] {
+  display: grid;
+  gap: 2rem;
+}
+
+@media (max-width: 640px) {
+  .reserva-dialogo {
+    padding: 1.25rem;
+  }
+}
+
+[data-status="PAGAMENTO_PENDENTE"] {
+  --status-cor: var(--color-accent-500);
+  --status-fundo: var(--reserva-alerta-suave);
+  --status-texto: var(--reserva-alerta);
+}
+
+[data-status="PAGO"] {
+  --status-cor: var(--viagem-verde);
+  --status-fundo: var(--viagem-suave);
+  --status-texto: var(--viagem-verde);
+}
+
+[data-status="EXPIRADO"] {
+  --status-cor: var(--reserva-neutro-forte);
+  --status-fundo: var(--reserva-neutro);
+  --status-texto: var(--viagem-texto);
+}
+
+[data-status="FALHA"],
+[data-status="CANCELADO"] {
+  --status-cor: var(--reserva-perigo);
+  --status-fundo: var(--reserva-perigo-suave);
+  --status-texto: var(--reserva-perigo);
+}
+
+.reserva-conteudo {
+  display: grid;
+  gap: 2rem;
+  padding: 3rem 0 4.5rem;
+}
+
+.reserva-introducao {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.reserva-introducao h1 {
+  margin-bottom: .5rem;
+  font-size: 2.125rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.reserva-introducao p {
+  color: var(--viagem-texto);
+  line-height: 1.5;
+}
+
+.reserva-nova {
+  gap: .625rem;
+  padding: .8125rem 1.375rem;
+}
+
+.reserva-nova span {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.reserva-filtros,
+.reserva-acoes {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.reserva-filtros {
+  gap: .625rem;
+}
+
+.reserva-filtros button {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .625rem 1rem;
+  border: 1px solid var(--viagem-borda);
+  border-radius: .5rem;
+  background: var(--color-surface-card);
+  color: var(--viagem-texto);
+  font-size: .875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.reserva-filtros span {
+  display: grid;
+  min-width: 1.375rem;
+  height: 1.375rem;
+  place-items: center;
+  border-radius: 99px;
+  background: var(--reserva-neutro);
+  font-size: .6875rem;
+  font-weight: 700;
+}
+
+.reserva-filtros button[aria-pressed="true"] {
+  border: 1.5px solid var(--viagem-verde);
+  background: var(--viagem-suave);
+  color: var(--viagem-verde);
+  font-weight: 700;
+}
+
+.reserva-filtros button[aria-pressed="true"] span {
+  background: var(--viagem-verde);
+  color: var(--color-surface-card);
+}
+
+.reserva-secao {
+  display: grid;
+  gap: 1rem;
+}
+
+.reserva-secao-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: .8125rem;
+}
+
+.reserva-secao-titulo span {
+  color: var(--viagem-texto);
+}
+
+.reserva-secao-titulo h2 {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.reserva-secao-titulo h2::before {
+  content: "";
+  width: 4px;
+  height: 22px;
+  border-radius: 99px;
+  background: var(--color-accent-500);
+}
+
+.reserva-secao-titulo[data-destaque="historico"] h2::before {
+  background: var(--reserva-neutro-forte);
+}
+
+.reserva-card {
+  position: relative;
+  display: grid;
+  gap: 1.125rem;
+  padding: 1.5rem 1.5rem 1.5rem 1.75rem;
+  overflow: hidden;
+  border: 1px solid var(--viagem-borda);
+  border-radius: .75rem;
+  background: var(--color-surface-card);
+  box-shadow: 0 4px 14px rgb(18 61 51 / 5%);
+}
+
+.reserva-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px auto -1px -1px;
+  width: 5px;
+  background: var(--status-cor, var(--viagem-borda));
+}
+
+.reserva-card[data-compacto="true"] {
+  gap: .875rem;
+  padding-block: 1.25rem;
+}
+
+.reserva-card-topo,
+.reserva-card-estado {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+.reserva-card-topo {
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--viagem-borda);
+}
+
+.reserva-card[data-compacto="true"] .reserva-card-topo {
+  padding-bottom: .875rem;
+}
+
+.reserva-card-estado > span:last-child {
+  color: var(--viagem-texto);
+  font-size: .8125rem;
+}
+
+.reserva-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .4375rem .75rem;
+  border-radius: 99px;
+  background: var(--status-fundo);
+  color: var(--status-texto);
+  font-size: .75rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.reserva-status i {
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  background: var(--status-cor);
+}
+
+.reserva-codigo {
+  color: var(--viagem-texto);
+  font-size: .6875rem;
+}
+
+.reserva-card-info {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.reserva-rota {
+  display: grid;
+  flex: 1;
+  gap: .5rem;
+  min-width: 0;
+}
+
+.reserva-cidades,
+.reserva-horarios {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+}
+
+.reserva-cidades {
+  color: var(--viagem-verde);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.reserva-cidades strong {
+  color: var(--color-text-primary);
+  font-weight: inherit;
+}
+
+.reserva-card[data-compacto="true"] .reserva-cidades strong {
+  font-size: 1.125rem;
+}
+
+.reserva-horarios {
+  color: var(--viagem-verde);
+  font-size: .8125rem;
+  font-weight: 600;
+}
+
+.reserva-horarios span {
+  color: var(--reserva-neutro-forte);
+  font-size: .6875rem;
+  font-weight: 400;
+}
+
+.reserva-passagens,
+.reserva-valor {
+  align-self: stretch;
+  padding-left: 2rem;
+  border-left: 1px solid var(--viagem-borda);
+}
+
+.reserva-passagens {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px;
+  align-content: center;
+  gap: 1.5rem;
+  width: calc(370px + 2rem);
+}
+
+.reserva-passagens dt,
+.reserva-total small {
+  color: var(--viagem-texto);
+  font-size: .6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.reserva-passagens dd {
+  margin-top: .25rem;
+  font-size: .875rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.reserva-valor {
+  display: grid;
+  justify-items: end;
+  align-content: center;
+  gap: .75rem;
+  width: calc(280px + 2rem);
+}
+
+.reserva-total {
+  display: grid;
+  justify-items: end;
+  gap: .125rem;
+}
+
+.reserva-total small,
+.reserva-total strong {
+  line-height: 1.2;
+}
+
+.reserva-total strong {
+  color: var(--viagem-verde);
+  font-size: 1.25rem;
+}
+
+.reserva-acoes {
+  justify-content: flex-end;
+  gap: .5rem;
+}
+
+.reserva-acoes .viagem-selecionar {
+  min-height: 0;
+  padding: .5rem 1rem;
+  border: 1px solid transparent;
+  font-size: .8125rem;
+  line-height: 1.25rem;
+}
+
+.reserva-acoes .reserva-botao-branco {
+  border-color: var(--viagem-borda);
+}
+
+.reserva-botao-branco,
+.reserva-botao-branco:hover {
+  background: var(--color-surface-card);
+  color: var(--color-text-primary);
+}
+
+.reserva-botao-vermelho,
+.reserva-botao-vermelho:hover {
+  background: var(--reserva-perigo);
+}
+
+.reserva-confirmacao {
+  display: grid;
+  justify-items: end;
+  gap: .5rem;
+  font-size: .8125rem;
+  text-align: right;
+}
+
+.reserva-confirmacao [role="alert"] {
+  color: var(--reserva-perigo);
+}
+
+.reserva-modal-titulo {
+  display: grid;
+  justify-items: center;
+  gap: .75rem;
+  text-align: center;
+}
+
+.reserva-modal-titulo > span {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--status-cor);
+  color: var(--color-surface-card);
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.reserva-modal-titulo h2 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.reserva-modal-titulo p {
+  color: var(--viagem-texto);
+}
+
+.reserva-bilhete {
+  overflow: hidden;
+  border: 2px solid var(--color-accent-500);
+  border-radius: 1rem;
+  background: var(--color-surface-card);
+}
+
+.reserva-bilhete-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .5rem 1rem;
+  padding: 1rem 2rem;
+  background: var(--color-brand-950);
+  color: var(--color-surface-card);
+  font-size: .875rem;
+  font-weight: 600;
+}
+
+.reserva-bilhete-topo strong {
+  color: var(--color-accent-500);
+}
+
+.reserva-bilhete-corpo {
+  display: grid;
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.reserva-bilhete-corpo img {
+  max-width: 100%;
+}
+
+.reserva-bilhete-rota {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.reserva-bilhete-rota > span {
+  color: var(--viagem-verde);
+  font-size: 1.5rem;
+}
+
+.reserva-bilhete-rota > div {
+  display: grid;
+  gap: .25rem;
+}
+
+.reserva-bilhete-rota > div:last-child {
+  justify-items: end;
+  text-align: right;
+}
+
+.reserva-bilhete-rota small {
+  color: var(--viagem-texto);
+  font-size: .8125rem;
+}
+
+.reserva-bilhete-rota strong {
+  font-size: 1.125rem;
+}
+
+.reserva-bilhete-rota time {
+  color: var(--viagem-verde);
+  font-size: .875rem;
+  font-weight: 600;
+}
+
+.reserva-bilhete-dados {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.reserva-bilhete-dados dt {
+  color: var(--viagem-texto);
+  font-size: .6875rem;
+  font-weight: 700;
+}
+
+.reserva-bilhete-dados dd {
+  margin-top: .25rem;
+  font-size: .9375rem;
+  font-weight: 600;
+}
+
+.reserva-bilhete-dados dd[data-destaque] {
+  color: var(--viagem-verde);
+  font-weight: 700;
+}
+
+.reserva-bilhete-embarque {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.reserva-bilhete-embarque > div {
+  display: grid;
+  flex-shrink: 0;
+  width: 110px;
+  height: 110px;
+  place-items: center;
+  border: 1px solid var(--viagem-borda);
+  border-radius: .5rem;
+  background: var(--color-surface-page);
+}
+
+.reserva-bilhete-embarque p {
+  display: grid;
+  gap: .375rem;
+  color: var(--viagem-texto);
+  font-size: .8125rem;
+}
+
+.reserva-bilhete-embarque strong {
+  color: var(--color-text-primary);
+  font-size: .875rem;
+}
+
+.reserva-modal-acoes {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.reserva-modal-acoes > * {
+  min-height: 0;
+  padding: .875rem 2rem;
+  border: 1.5px solid var(--color-brand-950);
+  border-radius: .5rem;
+  font-size: .9375rem;
+  text-decoration: none;
+}
+
+.reserva-modal-acoes button {
+  color: var(--color-surface-card);
+}
+
+/* Etapa 2 do checkout (quadro "dados-passageiro" do Figma): formulário à esquerda e resumo de 380px à direita. */
+.reserva-etapa-passageiros {
+  padding: 2.5rem 0 4rem;
+}
+
+.reserva-passageiros {
+  display: flex;
+  align-items: flex-start;
+  gap: 2.5rem;
+}
+
+.reserva-passageiros-card {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 1.5rem;
+  padding: 2rem;
+  border: 1px solid var(--viagem-borda);
+  border-radius: .75rem;
+  background: var(--color-surface-card);
+}
+
+.reserva-passageiros-card header {
+  display: grid;
+  gap: .5rem;
+}
+
+.reserva-passageiros-card h1 {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.reserva-passageiros-card header p {
+  color: var(--viagem-texto);
+  font-size: .8125rem;
+}
+
+/* A legenda flutuante vira um item comum da grade e divide a primeira linha com "Passagem N". */
+.reserva-passageiro {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--viagem-borda);
+  border-radius: .625rem;
+  background: var(--color-surface-page);
+}
+
+.reserva-passageiro legend {
+  float: left;
+  padding: 0;
+  font-size: .8125rem;
+  font-weight: 700;
+}
+
+.reserva-passageiro > span {
+  color: var(--viagem-texto);
+  font-size: .6875rem;
+  font-weight: 700;
+}
+
+.reserva-passageiro-campos {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.reserva-passageiro-campos > :first-child {
+  grid-column: 1 / -1;
+}
+
+.reserva-passageiro input {
+  border-radius: .375rem;
+  background: var(--viagem-suave);
+  font-size: .8125rem;
+}
+
+.reserva-comprador {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--viagem-borda);
+  font-size: .8125rem;
+  font-weight: 500;
+}
+
+.reserva-comprador input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--viagem-verde);
+}
+
+.reserva-resumo {
+  flex: 0 0 23.75rem;
+  gap: 1.25rem;
+}
+
+.reserva-resumo-rota {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+.reserva-resumo-rota > span[aria-hidden] {
+  color: var(--viagem-texto);
+}
+
+.reserva-resumo > p + strong {
+  margin-top: -.625rem;
+}
+
+.reserva-resumo [role="alert"] {
+  color: var(--reserva-perigo);
+}
+
+/* Quadro "confirmacao" do Figma: tudo centralizado, com o bilhete de 640px. */
+.reserva-confirmacao-pagina {
+  display: grid;
+  width: min(calc(100% - 2 * var(--page-gutter)), 40rem);
+  gap: 2rem;
+  padding: 3.75rem 0 5rem;
+}
+
+.reserva-confirmacao-pagina .reserva-modal-acoes > .shared-button-secondary {
+  color: var(--color-surface-card);
+}
+
+@media (max-width: 1100px) {
+  .reserva-card-info {
+    flex-wrap: wrap;
+  }
+
+  .reserva-rota {
+    flex-basis: 100%;
+  }
+
+  .reserva-passagens {
+    flex: 1;
+    width: auto;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .reserva-valor {
+    width: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .reserva-cidades {
+    font-size: 1rem;
+  }
+
+  .reserva-passagens,
+  .reserva-valor {
+    flex-basis: 100%;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .reserva-bilhete-corpo {
+    padding: 1.25rem;
+  }
+
+  .reserva-modal-titulo h2 {
+    font-size: 1.5rem;
+  }
+
+  .reserva-bilhete-rota {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .reserva-bilhete-rota > span {
+    align-self: center;
+    transform: rotate(90deg);
+  }
+
+  .reserva-passageiros-card {
+    padding: 1.25rem;
+  }
+
+  .reserva-passageiro-campos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1000px) {
+  .reserva-passageiros {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .reserva-resumo {
+    flex-basis: auto;
+  }
+}

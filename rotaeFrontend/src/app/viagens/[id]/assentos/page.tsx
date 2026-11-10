@@ -1,4 +1,4 @@
-import { SelecaoAssentosPage } from "@/modules/viagem-assento/pages/SelecaoAssentosPage";
+import { SelecaoAssentosPage } from "@/modules/reserva/pages/SelecaoAssentosPage";
 import { obterBuscaViagem } from "@/modules/viagem/utils/obterBuscaViagem";
 import { notFound } from "next/navigation";
 

@@ -37,10 +37,10 @@ describe("MenuUsuario", () => {
     expect(screen.queryByRole("button", { name: "Sair" })).not.toBeInTheDocument();
   });
 
-  it("oferece editar perfil e sair no estado autenticado, sem link para rota inexistente", () => {
+  it("oferece minhas viagens, editar perfil e sair no estado autenticado", () => {
     const { sair } = renderizar({ estado: "autenticado" });
 
-    expect(screen.queryByRole("link", { name: "Minhas viagens" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Minhas viagens" })).toHaveAttribute("href", "/minhas-viagens");
     expect(screen.getByRole("link", { name: "Editar perfil" })).toHaveAttribute("href", "/editar-perfil");
     expect(screen.queryByRole("link", { name: "Entrar" })).not.toBeInTheDocument();
 
