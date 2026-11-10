@@ -10,7 +10,7 @@ pytestmark = pytest.mark.django_db
 
 
 def url_pagar(reserva_id):
-    return reverse("criar_pagamento", kwargs={"reserva_id": reserva_id})
+    return reverse("criar_pagamento", kwargs={"pk": reserva_id})
 
 
 def test_pagar_reserva_aprovado(cliente_autenticado, reserva):
@@ -120,3 +120,26 @@ def test_pagar_sem_passageiros_retorna_409(
     )
 
     assert resposta.status_code == 409
+
+
+def test_gateway_indisponivel_retorna_502(cliente_autenticado, reserva, monkeypatch):
+    def gateway_com_erro(**kwargs):
+        raise ConnectionError("timeout")
+
+    monkeypatch.setattr(
+        GatewaySimulado, "processar", lambda self, **kw: gateway_com_erro()
+    )
+
+    resposta = cliente_autenticado.post(
+        url_pagar(reserva.id), {"metodoPagamento": "PIX"}, format="json"
+    )
+
+    assert resposta.status_code == 502
+    assert reserva.pagamentos.get().status == Pagamento.Status.NEGADO
+
+
+def test_swagger_usa_pk_no_path_de_pagamentos(api_client):
+    schema = api_client.get("/api/schema/", {"format": "json"}).json()
+
+    operacao = schema["paths"]["/api/v1/reservas/{id}/pagamentos/"]["post"]
+    assert [p["name"] for p in operacao["parameters"] if p["in"] == "path"] == ["id"]

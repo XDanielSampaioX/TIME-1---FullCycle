@@ -1,31 +1,55 @@
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiExample, extend_schema
 
+from core.api.swagger import NAO_AUTENTICADO, resposta_erro, resposta_validacao
 from pagamentos.serializers import PagamentoCriarSerializer, PagamentoSerializer
+from pagamentos.services import MAX_TENTATIVAS_PAGAMENTO
 
 pagamento_criar_schema = extend_schema(
     request=PagamentoCriarSerializer,
-    responses={
-        201: OpenApiResponse(
-            response=PagamentoSerializer,
-            description="Tentativa registrada e processada (status APROVADO ou NEGADO).",
+    examples=[
+        OpenApiExample("Pix", value={"metodoPagamento": "PIX"}, request_only=True),
+        OpenApiExample(
+            "Cartão", value={"metodoPagamento": "CARTAO"}, request_only=True
         ),
-        400: OpenApiResponse(description="Método de pagamento inválido."),
-        401: OpenApiResponse(description="Não autenticado."),
-        404: OpenApiResponse(description="Reserva não encontrada."),
-        409: OpenApiResponse(
-            description=(
-                "Reserva já paga, cancelada, expirada, em FALHA, sem passageiros "
-                "cadastrados ou com viagem indisponível/já iniciada."
-            )
+    ],
+    responses={
+        201: PagamentoSerializer,
+        400: resposta_validacao(
+            "Método de pagamento ausente ou inválido.",
+            {
+                "Método inválido": {
+                    "metodoPagamento": ['"BOLETO" não é uma escolha válida.']
+                }
+            },
+        ),
+        401: NAO_AUTENTICADO,
+        404: resposta_erro(
+            "Reserva não encontrada ou pertencente a outro usuário.",
+            "Reserva não encontrada.",
+        ),
+        409: resposta_erro(
+            "Reserva já paga, cancelada, expirada, em FALHA, sem valor, sem "
+            "passageiros cadastrados, com viagem indisponível/já iniciada ou com "
+            "outro pagamento em processamento.",
+            "Reserva não aceita pagamento (status: PAGO).",
+            "Reserva expirada.",
+            "Cadastre os passageiros de todos os assentos antes de pagar.",
+            "Viagem indisponível ou já iniciada.",
+            "Já existe um pagamento em processamento para esta reserva.",
+        ),
+        502: resposta_erro(
+            "O provedor de pagamento falhou; a tentativa conta como recusada.",
+            "Provedor de pagamento indisponível. Tente novamente.",
         ),
     },
     summary="Pagar reserva",
     description=(
         "Processa o pagamento de uma reserva PAGAMENTO_PENDENTE do usuário "
         "autenticado por meio do gateway simulado do MVP. O valor é calculado no "
-        "servidor. Se aprovado, a reserva vai para PAGO e os assentos para "
-        "RESERVADO. Se negado, a tentativa é registrada; após "
-        "3 recusas a reserva vai para FALHA e os assentos são liberados."
+        "servidor. A resposta 201 traz a tentativa com status APROVADO (reserva vai "
+        "para PAGO e assentos para RESERVADO) ou NEGADO (a reserva continua "
+        f"pendente; após {MAX_TENTATIVAS_PAGAMENTO} recusas vai para FALHA e os "
+        "assentos são liberados)."
     ),
     tags=["pagamentos"],
 )

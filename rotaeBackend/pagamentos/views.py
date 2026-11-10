@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 
 from reservas.exceptions import ReservaNaoEncontradaError
 
-from .exceptions import PagamentoNaoPermitidoError
+from .exceptions import GatewayIndisponivelError, PagamentoNaoPermitidoError
 from .serializers import PagamentoCriarSerializer, PagamentoSerializer
 from .services import processar_pagamento
 from .swagger import pagamento_criar_schema
@@ -15,13 +15,13 @@ from .swagger import pagamento_criar_schema
 class PagamentoCriarView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, reserva_id):
+    def post(self, request, pk):
         serializer = PagamentoCriarSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         try:
             pagamento = processar_pagamento(
-                reserva_id=reserva_id,
+                reserva_id=pk,
                 usuario=request.user,
                 metodo_pagamento=serializer.validated_data["metodo_pagamento"],
             )
@@ -34,6 +34,11 @@ class PagamentoCriarView(APIView):
             return Response(
                 {"detail": str(e)},
                 status=status.HTTP_409_CONFLICT,
+            )
+        except GatewayIndisponivelError as e:
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_502_BAD_GATEWAY,
             )
 
         output = PagamentoSerializer(pagamento)

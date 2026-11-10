@@ -4,12 +4,13 @@ import pytest
 from django.db import IntegrityError
 from django.utils import timezone
 
-from pagamentos.exceptions import PagamentoNaoPermitidoError
+from pagamentos.exceptions import GatewayIndisponivelError, PagamentoNaoPermitidoError
 from pagamentos.gateways import GatewaySimulado
 from pagamentos.models import Pagamento
 from pagamentos.services import MAX_TENTATIVAS_PAGAMENTO, processar_pagamento
 from reservas.exceptions import ReservaNaoEncontradaError
 from reservas.models import Reserva
+from reservas.services import cancelar_reserva
 from viagens.models import Viagem, ViagemAssento
 
 pytestmark = pytest.mark.django_db
@@ -178,3 +179,75 @@ def test_nao_permite_pagar_viagem_ja_iniciada(reserva, usuario, viagem):
 
     with pytest.raises(PagamentoNaoPermitidoError, match="Viagem"):
         pagar(reserva, usuario)
+
+
+def test_nao_permite_pagar_reserva_sem_valor(reserva, usuario):
+    Reserva.objects.filter(pk=reserva.pk).update(valor_total=0)
+
+    with pytest.raises(PagamentoNaoPermitidoError, match="sem valor"):
+        pagar(reserva, usuario)
+
+    assert not reserva.pagamentos.exists()
+
+
+def test_nao_permite_segundo_pagamento_com_outro_em_processamento(reserva, usuario):
+    Pagamento.objects.create(
+        reserva=reserva,
+        valor_centavos=reserva.valor_total,
+        metodo_pagamento="PIX",
+        status=Pagamento.Status.PENDENTE,
+    )
+
+    with pytest.raises(PagamentoNaoPermitidoError, match="em processamento"):
+        pagar(reserva, usuario)
+
+
+def test_recusa_abaixo_do_limite_nao_altera_a_reserva(reserva, usuario):
+    atualizado_em = Reserva.objects.get(pk=reserva.pk).atualizado_em
+
+    pagar(reserva, usuario, gateway=NEGA)
+
+    assert Reserva.objects.get(pk=reserva.pk).atualizado_em == atualizado_em
+
+
+# --- Falhas durante a chamada ao gateway ---
+
+
+class GatewayComErro(GatewaySimulado):
+    def processar(self, **kwargs):
+        raise ConnectionError("timeout")
+
+
+class GatewayQueCancelaReserva(GatewaySimulado):
+    """Simula a reserva sendo cancelada enquanto o provedor responde."""
+
+    def __init__(self, reserva):
+        super().__init__(aprovar=True)
+        self.reserva = reserva
+
+    def processar(self, **kwargs):
+        cancelar_reserva(reserva_id=self.reserva.id, usuario=self.reserva.usuario)
+        return super().processar(**kwargs)
+
+
+def test_gateway_indisponivel_registra_recusa_e_libera_nova_tentativa(reserva, usuario):
+    with pytest.raises(GatewayIndisponivelError):
+        pagar(reserva, usuario, gateway=GatewayComErro())
+
+    pagamento = reserva.pagamentos.get()
+    assert pagamento.status == Pagamento.Status.NEGADO
+    reserva.refresh_from_db()
+    assert reserva.status == Reserva.Status.PAGAMENTO_PENDENTE
+
+    # Não fica PENDENTE bloqueando a próxima tentativa.
+    assert pagar(reserva, usuario).status == Pagamento.Status.APROVADO
+
+
+def test_reserva_cancelada_durante_o_gateway_nao_e_confirmada(reserva, usuario):
+    with pytest.raises(PagamentoNaoPermitidoError, match="mudou de status"):
+        pagar(reserva, usuario, gateway=GatewayQueCancelaReserva(reserva))
+
+    assert reserva.pagamentos.get().status == Pagamento.Status.NEGADO
+    reserva.refresh_from_db()
+    assert reserva.status == Reserva.Status.CANCELADO
+    assert ViagemAssento.objects.filter(reserva=reserva).count() == 0
