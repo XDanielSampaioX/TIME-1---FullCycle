@@ -1,6 +1,11 @@
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import extend_schema
 
+from core.api.swagger import PAGINA_INVALIDA, resposta_erro, resposta_validacao
 from viagens.serializers import ViagemAssentoSerializer, ViagemSerializer
+
+VIAGEM_NAO_ENCONTRADA = resposta_erro(
+    "Viagem não encontrada.", "No Viagem matches the given query."
+)
 
 viagens_list_schema = extend_schema(
     summary="Listar viagens disponíveis",
@@ -13,6 +18,17 @@ viagens_list_schema = extend_schema(
     tags=["viagens"],
     responses={
         200: ViagemSerializer(many=True),
+        400: resposta_validacao(
+            "Filtro com valor inválido.",
+            {
+                "Classe inválida": {
+                    "classe": [
+                        "Faça uma escolha válida. XYZ não é uma das escolhas disponíveis."
+                    ]
+                }
+            },
+        ),
+        404: PAGINA_INVALIDA,
     },
 )
 
@@ -22,7 +38,7 @@ viagens_detail_schema = extend_schema(
     tags=["viagens"],
     responses={
         200: ViagemSerializer,
-        404: OpenApiResponse(description="Viagem não encontrada."),
+        404: VIAGEM_NAO_ENCONTRADA,
     },
 )
 
@@ -35,6 +51,6 @@ viagem_assentos_list_schema = extend_schema(
     tags=["viagens"],
     responses={
         200: ViagemAssentoSerializer(many=True),
-        404: OpenApiResponse(description="Viagem não encontrada."),
+        404: VIAGEM_NAO_ENCONTRADA,
     },
 )

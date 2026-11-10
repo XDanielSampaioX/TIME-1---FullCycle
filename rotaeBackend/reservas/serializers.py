@@ -84,7 +84,7 @@ class ReservaSerializer(serializers.ModelSerializer):
         )
         read_only_fields = fields
 
-    def get_total_assentos(self, obj):
+    def get_total_assentos(self, obj) -> int:
         return len(obj.viagem_assentos.all())
 
 
