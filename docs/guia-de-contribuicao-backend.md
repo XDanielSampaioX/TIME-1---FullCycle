@@ -132,8 +132,8 @@ Consulte a documentação oficial do Django sobre [Models e banco de dados](http
 Depois de alterar os Models:
 
 ```bash
-docker compose exec backend python manage.py makemigrations
-docker compose exec backend python manage.py migrate
+docker compose -f docker-compose.dev.yml exec backend python manage.py makemigrations
+docker compose -f docker-compose.dev.yml exec backend python manage.py migrate
 ```
 
 As migrations devem ser versionadas junto com as alterações dos Models.
@@ -427,9 +427,9 @@ viagens/
 A marcação `unit` e `integration` é aplicada automaticamente pelo diretório do teste:
 
 ```bash
-docker compose exec backend pytest                  # roda tudo
-docker compose exec backend pytest -m unit         # só unitários
-docker compose exec backend pytest -m integration  # só integração
+docker compose -f docker-compose.dev.yml exec backend pytest                  # roda tudo
+docker compose -f docker-compose.dev.yml exec backend pytest -m unit         # só unitários
+docker compose -f docker-compose.dev.yml exec backend pytest -m integration  # só integração
 ```
 
 ### Autenticação nos testes
@@ -462,17 +462,17 @@ Antes de realizar commits ou abrir um Pull Request, execute no terminal:
 
 ```bash
 # 1. Corrige automaticamente erros de lint e organiza imports
-docker compose exec backend ruff check --fix .
+docker compose -f docker-compose.dev.yml exec backend ruff check --fix .
 
 # 2. Formata todos os arquivos no padrão PEP 8
-docker compose exec backend ruff format .
+docker compose -f docker-compose.dev.yml exec backend ruff format .
 ```
 
 Para apenas checar o código sem alterar arquivos (o mesmo comando executado pelo CI):
 
 ```bash
-docker compose exec backend ruff check .
-docker compose exec backend ruff format --check .
+docker compose -f docker-compose.dev.yml exec backend ruff check .
+docker compose -f docker-compose.dev.yml exec backend ruff format --check .
 ```
 
 ### Configuração no VS Code (Recomendado)
