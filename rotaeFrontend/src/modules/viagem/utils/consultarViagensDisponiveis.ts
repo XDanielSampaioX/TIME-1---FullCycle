@@ -1,5 +1,7 @@
 import type { BuscaViagem } from "../types/buscaViagem";
 import type { Viagem, ViagemDisponivel } from "../types/viagem";
+import { formatarNomeCidade } from "./formatarNomeCidade";
+import { normalizarTexto } from "./normalizarTexto";
 
 export function consultarViagensDisponiveis(
   viagens: Viagem[],
@@ -9,10 +11,7 @@ export function consultarViagensDisponiveis(
   const corresponde = (cidade: Viagem["origem"], termo: string) => {
     if (!termo || String(cidade.id) === termo) return true;
 
-    const nomeNormalizado = `${cidade.nome} (${cidade.uf})`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLocaleLowerCase("pt-BR");
-    const termoNormalizado = termo.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLocaleLowerCase("pt-BR");
-
-    return nomeNormalizado.includes(termoNormalizado);
+    return normalizarTexto(formatarNomeCidade(cidade)).includes(normalizarTexto(termo));
   };
 
   return viagens.filter((viagem) => viagem.status === "AGENDADA"

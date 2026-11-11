@@ -9,9 +9,13 @@ import type { OrdenacaoViagem } from "../classes/OrdenacaoViagem";
 import type { FiltrosViagem } from "../types/filtrosViagem";
 import type { BuscaViagem } from "../types/buscaViagem";
 import { ViagemDisponivel } from "../types/viagem";
+import { formatarNomeCidade } from "../utils/formatarNomeCidade";
+import { normalizarTexto } from "../utils/normalizarTexto";
 
 // Teto fixo (R$ 1.000,00): derivá-lo das viagens filtradas impedia subir o slider depois de baixá-lo.
 const LIMITE_PRECO_CENTAVOS = 100000;
+
+const FILTROS_INICIAIS: FiltrosViagem = { periodos: [], classes: [], precoMinimo: 0, precoMaximo: Infinity };
 
 const ordenacoes: OrdenacaoViagem[] = [
   new OrdenacaoMenorPreco(),
@@ -26,12 +30,7 @@ export function useFiltrosViagem(
   cidadesCarregadas: boolean,
   consultarViagens: (parametros: URLSearchParams) => void,
 ) {
-  const [filtros, setFiltros] = useState<FiltrosViagem>({
-    periodos: [],
-    classes: [],
-    precoMinimo: 0,
-    precoMaximo: Infinity,
-  });
+  const [filtros, setFiltros] = useState<FiltrosViagem>(FILTROS_INICIAIS);
   const [ordenacaoId, setOrdenacaoId] = useState(ordenacoes[0].id);
   const ordenacao = ordenacoes.find((item) => item.id === ordenacaoId) ?? ordenacoes[0];
   const resultados = viagens;
@@ -45,9 +44,8 @@ export function useFiltrosViagem(
       const cidadePorId = cidades.find((item) => String(item.id) === valor);
       if (cidadePorId) return String(cidadePorId.id);
 
-      const termoNormalizado = valor.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLocaleLowerCase("pt-BR");
-      const cidade = cidades.find((item) => `${item.nome} (${item.uf})`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLocaleLowerCase("pt-BR")
-        .includes(termoNormalizado));
+      const termoNormalizado = normalizarTexto(valor);
+      const cidade = cidades.find((item) => normalizarTexto(formatarNomeCidade(item)).includes(termoNormalizado));
       return cidade ? String(cidade.id) : "-1";
     };
 
@@ -68,7 +66,7 @@ export function useFiltrosViagem(
   }, [busca, cidades, cidadesCarregadas, consultarViagens, filtros, ordenacao]);
 
   function limpar() {
-    setFiltros({ periodos: [], classes: [], precoMinimo: 0, precoMaximo: Infinity });
+    setFiltros(FILTROS_INICIAIS);
   }
 
   return { filtros, setFiltros, resultados, limitePreco: LIMITE_PRECO_CENTAVOS, ordenacoes, ordenacaoId, setOrdenacaoId, limpar };

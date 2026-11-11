@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useViagem } from "../hooks/useViagem";
 import type { BuscaViagem } from "../types/buscaViagem";
+import { formatarNomeCidade } from "../utils/formatarNomeCidade";
 import { Button } from "@/shared/components/Button";
 
 export function ResumoBuscaViagem({ busca }: { busca: BuscaViagem }) {
@@ -10,7 +11,7 @@ export function ResumoBuscaViagem({ busca }: { busca: BuscaViagem }) {
   const [editando, setEditando] = useState(false);
   const nomeCidade = (valor: string, vazio: string) => {
     const cidade = cidades.find((item) => String(item.id) === valor);
-    return cidade ? `${cidade.nome} (${cidade.uf})` : valor || vazio;
+    return cidade ? formatarNomeCidade(cidade) : valor || vazio;
   };
   const data = new Date(`${busca.partida}T12:00:00`);
   const dataExibida = !busca.partida ? "Todas as datas"
@@ -47,7 +48,7 @@ export function ResumoBuscaViagem({ busca }: { busca: BuscaViagem }) {
           </label>
           <datalist id="cidades-busca">
             {cidades.map((cidade) => (
-              <option key={cidade.id} value={`${cidade.nome} (${cidade.uf})`} />
+              <option key={cidade.id} value={formatarNomeCidade(cidade)} />
             ))}
           </datalist>
           <label>

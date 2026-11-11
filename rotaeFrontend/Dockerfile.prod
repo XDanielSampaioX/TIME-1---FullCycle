@@ -1,27 +1,41 @@
-# --- ETAPA 1: Instalação de dependências limpas ---
-FROM node:20-alpine AS deps
+# --- ETAPA 1: dependências ---
+FROM node:22-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-
 COPY package.json package-lock.json* ./
 RUN npm ci
 
-# --- ETAPA 2: Build do Next.js ---
-FROM node:20-alpine AS builder
+# --- ETAPA 2: build do Next.js ---
+FROM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# --- ETAPA 3: Imagem final leve para execução ---
-FROM node:20-alpine AS runner
+# O rewrites do next.config.ts é calculado no build,
+# então API_URL precisa existir aqui
+ARG API_URL
+ENV API_URL=$API_URL
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build
+
+# --- ETAPA 3: imagem final leve para execução ---
+FROM node:22-alpine AS runner
 WORKDIR /app
 
-# O Next.js standalone precisa da pasta public e dos arquivos estáticos
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+
+RUN addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 nextjs
+
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+USER nextjs
 EXPOSE 3000
 
-# O modo standalone gera o 'server.js' para rodar com Node puro em produção
+# O modo standalone gera o server.js para rodar com Node puro
 CMD ["node", "server.js"]
