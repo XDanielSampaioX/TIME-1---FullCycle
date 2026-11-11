@@ -26,7 +26,8 @@ describe("EdicaoPerfilPage", () => {
     useAutenticacao.mockReturnValue({ usuario: null, estado: "anonimo", sessaoIndisponivel: false, ...funcoes });
     render(<EdicaoPerfilPage />);
 
-    expect(screen.getByRole("link", { name: "Entrar" })).toHaveAttribute("href", "/login");
+    // Depois de entrar, o login traz o usuário de volta para o perfil.
+    expect(screen.getByRole("link", { name: "Entrar" })).toHaveAttribute("href", "/login?voltar=%2Feditar-perfil");
     expect(screen.queryByRole("button", { name: "Salvar alterações" })).not.toBeInTheDocument();
   });
 

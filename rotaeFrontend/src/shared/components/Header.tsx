@@ -75,4 +75,4 @@ function Header() {
   );
 }
 
-export { Header };
+export { Brand, Header };
