@@ -34,4 +34,5 @@ jobs:
             git reset --hard ${{ github.event.workflow_run.head_sha || github.sha }}
             docker compose -f docker-compose.prod.yml up -d --build
             docker compose -f docker-compose.prod.yml exec -T backend python manage.py migrate --noinput
+            docker compose -f docker-compose.prod.yml exec -T backend python manage.py popular_viagens
             docker image prune -f
