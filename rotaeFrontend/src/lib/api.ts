@@ -1,10 +1,8 @@
 import type { Pagina } from "@/shared/types/pagina";
 
-const API_URL = process.env.API_URL ?? "http://localhost:8000";
-
 export function apiUrl(path: string) {
-  const url = new URL(path, API_URL);
-  return typeof window === "undefined" ? url.toString() : url.pathname + url.search;
+  const url = new URL(path, window.location.origin);
+  return url.pathname + url.search;
 }
 
 export async function buscarPagina<T>(caminhoOuUrl: string, mensagemErro: string): Promise<Pagina<T>> {

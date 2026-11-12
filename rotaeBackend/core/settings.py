@@ -132,6 +132,13 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API para reserva de passagens de ônibus",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    # Vários models têm um enum "status"; nomes explícitos evitam "Status208Enum".
+    "ENUM_NAME_OVERRIDES": {
+        "StatusViagemEnum": "viagens.models.Viagem.Status",
+        "StatusViagemAssentoEnum": "viagens.models.ViagemAssento.Status",
+        "StatusReservaEnum": "reservas.models.Reserva.Status",
+        "StatusPagamentoEnum": "pagamentos.models.Pagamento.Status",
+    },
     "POSTPROCESSING_HOOKS": [
         "drf_spectacular.hooks.postprocess_schema_enums",
         "drf_spectacular.contrib.djangorestframework_camel_case.camelize_serializer_fields",

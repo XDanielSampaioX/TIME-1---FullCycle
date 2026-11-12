@@ -2,6 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { ViagemDisponivel } from "../types/viagem";
 import { BuscaViagem } from "../types/buscaViagem";
+import { formatarNomeCidade } from "../utils/formatarNomeCidade";
+import { ROTULOS_CLASSE_VIAGEM } from "../utils/rotulosClasseViagem";
+import { formatarValorEmReais } from "@/shared/utils/formatarValorEmReais";
 
 export function CardViagem({ resultado, busca, recomendado }: {
   resultado: ViagemDisponivel;
@@ -22,7 +25,7 @@ export function CardViagem({ resultado, busca, recomendado }: {
         <div className="viagem-trajeto">
           <div>
             <time dateTime={viagem.partidaEm}>{viagem.partidaEm.slice(11, 16)}</time>
-            <span>{origem.nome} ({origem.uf})</span>
+            <span>{formatarNomeCidade(origem)}</span>
           </div>
           <div className="viagem-duracao">
             <span>{Math.floor(viagem.duracao / 60)}h{String(viagem.duracao % 60).padStart(2, "0")}</span>
@@ -31,17 +34,17 @@ export function CardViagem({ resultado, busca, recomendado }: {
           </div>
           <div>
             <time dateTime={viagem.chegadaEm}>{viagem.chegadaEm.slice(11, 16)}</time>
-            <span>{destino.nome} ({destino.uf})</span>
+            <span>{formatarNomeCidade(destino)}</span>
           </div>
         </div>
         <div className="viagem-classe">
-          <span className="viagem-badge">{viagem.classe === "EXECUTIVA" ? "Executiva" : viagem.classe === "CONVENCIONAL" ? "Convencional" : "Classe não informada"}</span>
+          <span className="viagem-badge">{ROTULOS_CLASSE_VIAGEM[viagem.classe] ?? "Classe não informada"}</span>
           <small>{assentosLivres} {assentosLivres === 1 ? "assento livre" : "assentos livres"}</small>
         </div>
         <div className="viagem-compra">
           <div>
             <small>Por passageiro</small>
-            <strong>{(viagem.precoCentavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong>
+            <strong>{formatarValorEmReais(viagem.precoCentavos)}</strong>
           </div>
           <Link className="viagem-selecionar" href={`/viagens/${viagem.id}/assentos?${parametros}`}>
             Selecionar

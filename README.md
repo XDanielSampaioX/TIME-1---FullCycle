@@ -59,21 +59,29 @@ Tanto no diretório do backend quanto no frontend, existem arquivos de exemplo (
   ```
 
 **3. Inicie os containers com Docker Compose:**
-Na raiz do projeto (onde está o arquivo `docker-compose.yml`), execute o comando:
-```bash
-docker compose up --build -d
-```
+Na raiz do projeto, escolha o ambiente e execute o comando correspondente:
+
+- **Desenvolvimento** (código montado nos containers, com hot reload):
+  ```bash
+  docker compose -f docker-compose.dev.yml up --build -d
+  ```
+- **Produção** (Next.js em modo standalone e Django com Gunicorn):
+  ```bash
+  docker compose -f docker-compose.prod.yml up --build -d
+  ```
+
+Os próximos comandos deste README usam o arquivo de desenvolvimento. Em produção, troque `docker-compose.dev.yml` por `docker-compose.prod.yml`.
 
 **4. Execute as migrações do banco de dados (Backend):**
 Após subir os containers, aplique as migrações para criar a estrutura inicial das tabelas no banco de dados PostgreSQL:
 ```bash
-docker compose exec backend python manage.py migrate
+docker compose -f docker-compose.dev.yml exec backend python manage.py migrate
 ```
 
 **5. (Opcional) Crie um superusuário para o painel Django Admin:**
 Para acessar a interface de administração do backend ([http://localhost/admin/](http://localhost/admin/)), crie a conta administrativa:
 ```bash
-docker compose exec backend python manage.py createsuperuser
+docker compose -f docker-compose.dev.yml exec backend python manage.py createsuperuser
 ```
 O terminal interativo solicitará nome de usuário, email e senha.
 
@@ -84,29 +92,29 @@ O terminal interativo solicitará nome de usuário, email e senha.
 Com os containers em execução, o Nginx irá expor a aplicação na porta `80` (porta web padrão) do seu localhost.
 
 - **Frontend (Aplicação Web):** [http://localhost](http://localhost) (ou http://127.0.0.1)
-- **Backend (API Base):** O Nginx redireciona as requisições que começam com `/api`, `/admin` ou `/docs` para o Django. Se acessar localmente com o Nginx desligado, o Django responde em http://localhost:8000.
+- **Backend (API Base):** O Nginx redireciona as requisições que começam com `/api`, `/admin` ou `/docs` para o Django. No ambiente de desenvolvimento, o Django também responde direto em http://localhost:8000 e o Next.js em http://localhost:3000. Em produção, só a porta `80` fica exposta.
 - **Documentação da API (Swagger):** [http://localhost/docs/](http://localhost/docs/) (Interface visual interativa gerada pelo drf-spectacular)
 
 ---
 
 ## Comandos Úteis
 
-Abaixo estão os comandos essenciais para o dia a dia do desenvolvimento. **Execute-os sempre na raiz do projeto:**
+Abaixo estão os comandos essenciais para o dia a dia do desenvolvimento. **Execute-os sempre na raiz do projeto** (em produção, troque `docker-compose.dev.yml` por `docker-compose.prod.yml`):
 
 **Parar a aplicação:**
 ```bash
-docker compose down
+docker compose -f docker-compose.dev.yml down
 ```
 
 **Parar e resetar o banco de dados (⚠️ ATENÇÃO: isso apaga todos os dados persistidos):**
 ```bash
-docker compose down -v
+docker compose -f docker-compose.dev.yml down -v
 ```
 
 
-**Criar novas migrações após alterar os models do Django:**
+**Criar novas migrações após alterar os models do Django (somente em desenvolvimento):**
 ```bash
-docker compose exec backend python manage.py makemigrations
+docker compose -f docker-compose.dev.yml exec backend python manage.py makemigrations
 ```
 
 ---

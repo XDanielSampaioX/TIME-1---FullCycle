@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const API_URL = process.env.API_URL;
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   reactCompiler: true,
   skipTrailingSlashRedirect: true,
   async rewrites() {

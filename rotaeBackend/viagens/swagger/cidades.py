@@ -1,5 +1,6 @@
 from drf_spectacular.utils import extend_schema
 
+from core.api.swagger import PAGINA_INVALIDA
 from viagens.serializers import CidadeSerializer
 
 cidades_list_schema = extend_schema(
@@ -8,5 +9,6 @@ cidades_list_schema = extend_schema(
     tags=["cidades"],
     responses={
         200: CidadeSerializer(many=True),
+        404: PAGINA_INVALIDA,
     },
 )

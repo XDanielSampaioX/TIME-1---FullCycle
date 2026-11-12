@@ -70,22 +70,18 @@ export function ViagemProvider({ children, carregarViagensInicialmente = true }:
     setVersao((valor) => valor + 1);
   }
 
-  function navegarPaginaViagens(url: string) {
-    urlPaginaAtual.current = url;
-    setCarregando(true);
-    setErro(null);
-    setUrlPagina(url);
-  }
-
-  const consultarViagens = useCallback((parametros: URLSearchParams) => {
-    const query = parametros.toString();
-    const url = `/api/v1/viagens/${query ? `?${query}` : ""}`;
-    if (urlPaginaAtual.current === url) return;
+  const navegarPaginaViagens = useCallback((url: string) => {
     urlPaginaAtual.current = url;
     setCarregando(true);
     setErro(null);
     setUrlPagina(url);
   }, []);
+
+  const consultarViagens = useCallback((parametros: URLSearchParams) => {
+    const query = parametros.toString();
+    const url = `/api/v1/viagens/${query ? `?${query}` : ""}`;
+    if (urlPaginaAtual.current !== url) navegarPaginaViagens(url);
+  }, [navegarPaginaViagens]);
 
   return (
     <ViagemContext.Provider value={{

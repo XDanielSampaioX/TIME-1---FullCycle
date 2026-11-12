@@ -10,6 +10,7 @@ api_v1_patterns = [
     path("", include("usuarios.urls")),
     path("", include("viagens.urls")),
     path("", include("reservas.urls")),
+    path("", include("pagamentos.urls")),
 ]
 
 urlpatterns = [
