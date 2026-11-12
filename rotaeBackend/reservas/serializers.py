@@ -53,12 +53,11 @@ class PassageiroSerializer(serializers.ModelSerializer):
 
 
 class ReservaViagemAssentoSerializer(serializers.ModelSerializer):
-    assento_id = serializers.IntegerField(read_only=True)
     numero = serializers.IntegerField(source="assento.numero", read_only=True)
 
     class Meta:
         model = ViagemAssento
-        fields = ("id", "assento_id", "numero", "status")
+        fields = ("id", "numero", "status")
         read_only_fields = fields
 
 
@@ -66,6 +65,9 @@ class ReservaSerializer(serializers.ModelSerializer):
     viagem = ViagemSerializer(read_only=True)
     assentos = ReservaViagemAssentoSerializer(
         source="viagem_assentos", many=True, read_only=True
+    )
+    passageiros = serializers.SlugRelatedField(
+        many=True, read_only=True, slug_field="nome"
     )
     total_assentos = serializers.SerializerMethodField()
 
@@ -78,6 +80,7 @@ class ReservaSerializer(serializers.ModelSerializer):
             "valor_total",
             "expira_em",
             "assentos",
+            "passageiros",
             "total_assentos",
             "criado_em",
             "atualizado_em",
@@ -90,7 +93,3 @@ class ReservaSerializer(serializers.ModelSerializer):
 
 class ReservaDetalheSerializer(ReservaSerializer):
     passageiros = PassageiroSerializer(many=True, read_only=True)
-
-    class Meta(ReservaSerializer.Meta):
-        fields = (*ReservaSerializer.Meta.fields, "passageiros")
-        read_only_fields = fields
