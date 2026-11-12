@@ -137,6 +137,7 @@ SPECTACULAR_SETTINGS = {
         "StatusViagemEnum": "viagens.models.Viagem.Status",
         "StatusViagemAssentoEnum": "viagens.models.ViagemAssento.Status",
         "StatusReservaEnum": "reservas.models.Reserva.Status",
+        "StatusPagamentoEnum": "pagamentos.models.Pagamento.Status",
     },
     "POSTPROCESSING_HOOKS": [
         "drf_spectacular.hooks.postprocess_schema_enums",
