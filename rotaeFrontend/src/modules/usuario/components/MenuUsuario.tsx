@@ -11,8 +11,11 @@ const linksAnonimo = [
   { titulo: "Criar conta", href: "/cadastro" },
 ];
 
-// "Minhas viagens" (protótipo) entra aqui quando a tela existir; hoje não há rota para ela.
-const linksAutenticado = [{ titulo: "Editar perfil", href: "/editar-perfil" }];
+// Mesma ordem do menu do protótipo: Minhas viagens, Editar perfil e, depois do divisor, Sair.
+const linksAutenticado = [
+  { titulo: "Minhas viagens", href: "/minhas-viagens" },
+  { titulo: "Editar perfil", href: "/editar-perfil" },
+];
 
 const classeItem = "block w-full rounded-lg px-3 py-2 text-left no-underline hover:bg-black/5";
 
