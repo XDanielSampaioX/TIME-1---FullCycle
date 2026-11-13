@@ -84,7 +84,7 @@ def criar_reserva(*, usuario, viagem_id, viagem_assento_ids):
         assento.reserva = reserva
 
     ViagemAssento.objects.bulk_update(assentos, ["status", "reserva"])
-    prefetch_related_objects([reserva], "viagem_assentos__assento", "passageiros")
+    prefetch_related_objects([reserva], "viagem_assentos__assento")
 
     return reserva
 
@@ -127,7 +127,6 @@ def cancelar_reserva(*, reserva_id, usuario):
             assento.reserva = None
 
         ViagemAssento.objects.bulk_update(assentos, ["status", "reserva"])
-        prefetch_related_objects([reserva], "viagem_assentos__assento", "passageiros")
 
     return reserva
 

@@ -274,7 +274,7 @@ def test_detalhe_reserva_sem_passageiros_retorna_lista_vazia(
     assert resposta.json()["passageiros"] == []
 
 
-def test_minhas_reservas_retorna_nomes_dos_passageiros(cliente_autenticado, reserva):
+def test_minhas_reservas_nao_retorna_passageiros(cliente_autenticado, reserva):
     cliente_autenticado.post(
         url_cadastrar_passageiros(reserva.id), dois_passageiros(), format="json"
     )
@@ -282,5 +282,4 @@ def test_minhas_reservas_retorna_nomes_dos_passageiros(cliente_autenticado, rese
     resposta = cliente_autenticado.get(reverse("minhas_reservas"))
 
     assert resposta.status_code == 200
-    passageiros = resposta.json()["results"][0]["passageiros"]
-    assert passageiros == ["João da Silva", "Maria de Sousa"]
+    assert "passageiros" not in resposta.json()["results"][0]

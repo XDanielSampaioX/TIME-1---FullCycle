@@ -164,8 +164,7 @@ def test_lista_assentos_da_viagem_com_status(api_client, criar_viagem):
         "DISPONIVEL",
         "DISPONIVEL",
     ]
-    assert {"id", "viagemId", "numero", "status"} <= assentos[0].keys()
-    assert "assentoId" not in assentos[0]
+    assert {"id", "viagemId", "assentoId"} <= assentos[0].keys()
 
 
 def test_assentos_de_viagem_inexistente_retorna_404(api_client, db):

@@ -148,6 +148,6 @@ class ReservaMinhasReservasView(ListAPIView):
         return (
             Reserva.objects.filter(usuario=self.request.user)
             .select_related("viagem__origem", "viagem__destino", "viagem__onibus")
-            .prefetch_related("viagem_assentos__assento", "passageiros")
+            .prefetch_related("viagem_assentos__assento")
             .order_by("-criado_em")
         )
