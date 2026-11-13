@@ -13,14 +13,16 @@ describe("EtapaConfirmacao", () => {
   it("mostra o quadro de confirmação do Figma depois dos passageiros", async () => {
     jest.mocked(buscarReserva).mockResolvedValue({
       ...criarReservaFalsa({ expiraEm: "2099-01-01T10:00:00-03:00" }),
-      passageiros: [passageiro],
+      passageiros: [passageiro, { ...passageiro, id: 2, usuarioId: null, nome: "Pedro Souza" }],
     });
     render(<EtapaConfirmacao reservaId={5087} />);
 
     expect(await screen.findByRole("heading", { level: 1, name: "Reserva confirmada!" })).toBeInTheDocument();
-    expect(screen.getByText("BILHETE DIGITAL EMITIDO")).toBeInTheDocument();
+    expect(screen.getAllByText("BILHETE DIGITAL EMITIDO")).toHaveLength(2);
     expect(screen.getByText("Mariana Oliveira")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "QR Code da reserva #ROT-2026-5087" })).toBeInTheDocument();
+    expect(screen.getByText("Pedro Souza")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "QR Code da passagem #ROT-2026-5087-45" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "QR Code da passagem #ROT-2026-5087-46" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Ver minhas viagens" })).toHaveAttribute("href", "/minhas-viagens");
     expect(screen.getByRole("link", { name: "Voltar ao início" })).toHaveAttribute("href", "/");
   });

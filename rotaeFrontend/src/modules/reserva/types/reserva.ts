@@ -10,6 +10,8 @@ export type Reserva = {
   valorTotal: number;
   expiraEm: string;
   assentos: Omit<ViagemAssento, "viagemId">[];
+  // A listagem traz só o nome de cada passageiro.
+  passageiros: string[];
   totalAssentos: number;
   criadoEm: string;
   atualizadoEm: string;

@@ -30,7 +30,7 @@ function reservaCom(dados: Partial<ReservaDetalhe> = {}): ReservaDetalhe {
 }
 
 async function passageiro(numero: number) {
-  return within(await screen.findByRole("group", { name: `Passageiro ${numero}` }));
+  return within(await screen.findByRole("group", { name: new RegExp(`^Passageiro ${numero},`) }));
 }
 
 function preencher(bloco: ReturnType<typeof within>, dados: typeof pedro) {
@@ -55,6 +55,16 @@ describe("EtapaPassageiros", () => {
     const resumo = screen.getByRole("complementary", { name: "Resumo da viagem" });
     expect(within(resumo).getByText("45, 46")).toBeInTheDocument();
     expect(within(resumo).getByText("Grátis")).toBeInTheDocument();
+  });
+
+  it("mostra em cada card a poltrona daquela posição, da menor para a maior", async () => {
+    jest.mocked(buscarReserva).mockResolvedValue(reservaCom({
+      assentos: [{ id: 46, numero: 46, status: "SEGURADO" }, { id: 45, numero: 45, status: "SEGURADO" }],
+    }));
+    render(<EtapaPassageiros reservaId={5087} />);
+
+    expect(await screen.findByRole("group", { name: "Passageiro 1, poltrona 45" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Passageiro 2, poltrona 46" })).toBeInTheDocument();
   });
 
   it("preenche um passageiro com a conta quando o comprador viaja e limpa ao desmarcar", async () => {

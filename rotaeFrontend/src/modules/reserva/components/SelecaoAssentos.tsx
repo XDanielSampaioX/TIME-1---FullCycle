@@ -11,7 +11,7 @@ import { useMapaAssentos } from "../hooks/useMapaAssentos";
 import { useSelecaoAssentos } from "../hooks/useSelecaoAssentos";
 import { AvisoDeErro } from "./AvisoDeErro";
 
-// O mapa e o resumo são os de viagem-assento. O que muda é o hook: aqui, escolher já segura a poltrona.
+// O mapa e o resumo são os de viagem-assento. O que muda é o hook: aqui, confirmar cria a reserva.
 function MapaDaViagem({ viagem }: { viagem: ViagemDisponivel }) {
   const { assentos, carregando, erro, atualizar } = useMapaAssentos(viagem.id);
   const selecao = useSelecaoAssentos(viagem.id, assentos, atualizar);
@@ -19,15 +19,10 @@ function MapaDaViagem({ viagem }: { viagem: ViagemDisponivel }) {
   if (carregando) return <p className="viagem-estado" role="status">Carregando assentos…</p>;
   if (erro) return <AvisoDeErro mensagem={erro} aoTentarNovamente={atualizar} />;
 
-  // As poltronas seguradas pelo próprio usuário voltam do backend como SEGURADO, mas para ele não estão ocupadas.
-  const assentosDoMapa = assentos.map((assento) => (
-    selecao.selecionados.includes(assento.assentoId) ? { ...assento, status: "DISPONIVEL" as const } : assento
-  ));
-
   return (
     <div className="assento-conteudo">
-      <MapaAssentos assentos={assentosDoMapa} {...selecao} />
-      <ResumoSelecaoAssentos resultado={viagem} assentos={assentosDoMapa} selecao={selecao} />
+      <MapaAssentos assentos={assentos} {...selecao} />
+      <ResumoSelecaoAssentos resultado={viagem} assentos={assentos} selecao={selecao} />
     </div>
   );
 }

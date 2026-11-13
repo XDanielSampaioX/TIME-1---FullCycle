@@ -1,6 +1,7 @@
 import type { PassageiroReserva } from "./passageiroReserva";
 import type { Reserva } from "./reserva";
 
-export type ReservaDetalhe = Reserva & {
+// O detalhe troca os nomes pelos dados completos de cada passageiro.
+export type ReservaDetalhe = Omit<Reserva, "passageiros"> & {
   passageiros: PassageiroReserva[];
 };

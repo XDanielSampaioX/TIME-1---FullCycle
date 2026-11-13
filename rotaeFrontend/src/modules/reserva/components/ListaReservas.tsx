@@ -2,29 +2,12 @@
 
 import { useState } from "react";
 import { Paginacao } from "@/shared/components/Paginacao";
-import { useCarregarDados } from "../hooks/useCarregarDados";
-import { buscarReserva } from "../services/buscarReserva";
-import type { PassageiroReserva } from "../types/passageiroReserva";
 import type { Reserva } from "../types/reserva";
 import { separarReservas } from "../utils/regrasReserva";
 import { CardReserva } from "./CardReserva";
 import { ModalDetalhesReserva } from "./ModalDetalhesReserva";
 
 const RESERVAS_POR_PAGINA = 5;
-
-// /me/reservas/ não traz passageiros: eles vêm do detalhe de cada reserva da página.
-// Sem resposta ainda, o nome fica indefinido; se a busca falhar, fica null.
-async function buscarPassageiros(ids: string) {
-  const resultados = await Promise.all(ids.split(",").filter(Boolean).map(async (id): Promise<[string, PassageiroReserva[] | null]> => {
-    try {
-      return [id, (await buscarReserva(Number(id))).passageiros];
-    } catch {
-      return [id, null];
-    }
-  }));
-
-  return Object.fromEntries(resultados);
-}
 
 // Aplica o filtro e a paginação e separa as reservas entre próximas viagens e histórico.
 export function ListaReservas({ reservas, agora, aoAtualizar }: {
@@ -52,11 +35,6 @@ export function ListaReservas({ reservas, agora, aoAtualizar }: {
   // Se reservas saírem da lista, a página escolhida pode deixar de existir.
   const pagina = Math.min(paginaEscolhida, totalPaginas);
   const visiveis = filtradas.slice((pagina - 1) * RESERVAS_POR_PAGINA, pagina * RESERVAS_POR_PAGINA);
-  const { dados: passageiros } = useCarregarDados(
-    buscarPassageiros,
-    visiveis.map((reserva) => reserva.id).join(","),
-    "Não foi possível carregar os passageiros.",
-  );
 
   return (
     <>
@@ -90,7 +68,6 @@ export function ListaReservas({ reservas, agora, aoAtualizar }: {
               <CardReserva
                 key={reserva.id}
                 reserva={reserva}
-                passageiros={passageiros?.[reserva.id]}
                 agora={agora}
                 compacto={compacto}
                 aoVerDetalhes={() => setDetalheId(reserva.id)}

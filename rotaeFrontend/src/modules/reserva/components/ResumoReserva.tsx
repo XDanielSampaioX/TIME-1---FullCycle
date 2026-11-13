@@ -10,7 +10,7 @@ const divisor = <Image src="/viagens/divisor-resumo.svg" width={332} height={1} 
 
 // O card "Resumo da viagem" da etapa de passageiros. Usa as classes do resumo da tela de assentos,
 // que tem o mesmo visual no Figma. `children` é a ação da etapa (o botão de enviar).
-export function ResumoReserva({ reserva, children }: { reserva: Reserva; children: ReactNode }) {
+export function ResumoReserva({ reserva, children }: { reserva: Omit<Reserva, "passageiros">; children: ReactNode }) {
   const { viagem } = reserva;
 
   return (

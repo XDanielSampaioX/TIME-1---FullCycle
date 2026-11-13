@@ -12,7 +12,7 @@ const BRANCO = "viagem-selecionar reserva-botao-branco";
 const VERMELHO = "viagem-selecionar reserva-botao-vermelho";
 
 // Botões do cartão. Cada status mostra botões diferentes, e cancelar pede confirmação antes.
-// semPassageiros: a reserva foi carregada e o backend não tem passageiros nela.
+// semPassageiros: o backend ainda não tem passageiros nesta reserva.
 export function BotoesReserva({ reserva, statusAtual, semPassageiros, aoVerDetalhes, aoAtualizar }: {
   reserva: Reserva;
   statusAtual: StatusReserva;

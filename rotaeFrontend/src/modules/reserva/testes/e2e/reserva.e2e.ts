@@ -82,7 +82,7 @@ test.afterEach(async ({ request }) => {
   }
 });
 
-test("a poltrona escolhida fica bloqueada para outra pessoa", async ({ browser, request }) => {
+test("escolher não reserva; a primeira a confirmar fica com a poltrona", async ({ browser, request }) => {
   const paginaA = await abrirComo(browser, sessaoA);
   const paginaB = await abrirComo(browser, sessaoB);
   await paginaA.goto(`/viagens/${viagemId}/assentos`);
@@ -90,38 +90,46 @@ test("a poltrona escolhida fica bloqueada para outra pessoa", async ({ browser, 
 
   const [primeira, segunda] = livres;
   await poltrona(paginaA, primeira).click();
+  await poltrona(paginaB, primeira).click();
+  await poltrona(paginaB, segunda).click();
   await expect(poltrona(paginaA, primeira)).toHaveAttribute("aria-pressed", "true");
-  await expect(poltrona(paginaA, primeira)).toBeEnabled();
+  await expect(poltrona(paginaB, primeira)).toHaveAttribute("aria-pressed", "true");
 
-  // O mapa da outra pessoa atualiza sozinho a cada 5 segundos.
-  await expect(poltrona(paginaB, primeira)).toBeDisabled({ timeout: 7_000 });
-  await expect(poltrona(paginaB, primeira)).toHaveAttribute("data-ocupado", "true");
+  // A seleção fica só na tela: nenhuma reserva é criada antes de confirmar.
+  expect(await abertas(request, sessaoA)).toHaveLength(0);
+  expect(await abertas(request, sessaoB)).toHaveLength(0);
 
-  // Quem clica numa poltrona que acabou de ser pega recebe o aviso e fica sem ela.
-  await paginaB.reload();
-  await expect(poltrona(paginaB, segunda)).toBeEnabled();
-  await poltrona(paginaA, segunda).click();
-  await expect(poltrona(paginaA, segunda)).toHaveAttribute("aria-pressed", "true");
-  if (await poltrona(paginaB, segunda).isEnabled()) {
-    await poltrona(paginaB, segunda).click();
-    await expect(aviso(paginaB)).toHaveText("Outra pessoa acabou de escolher essa poltrona. Escolha outra.");
-    await expect(poltrona(paginaB, segunda)).not.toHaveAttribute("aria-pressed", "true");
-  }
+  await paginaA.getByRole("button", { name: "Confirmar seleção" }).click();
+  await expect(paginaA).toHaveURL(/\/reservas\/\d+\/passageiros$/);
+
+  // Quem confirma depois recebe o 409: perde só a poltrona tomada e o mapa mostra ela ocupada.
+  await paginaB.getByRole("button", { name: "Confirmar seleção" }).click();
+  await expect(aviso(paginaB)).toHaveText("Outra pessoa acabou de escolher uma das poltronas. Escolha outra.");
+  await expect(poltrona(paginaB, primeira)).toBeDisabled();
+  await expect(poltrona(paginaB, segunda)).toHaveAttribute("aria-pressed", "true");
 
   expect(await abertas(request, sessaoB)).toHaveLength(0);
   const [reservaA] = await abertas(request, sessaoA);
-  expect(reservaA.assentos.map((assento) => assento.numero).sort((x, y) => x - y)).toEqual([primeira, segunda].sort((x, y) => x - y));
+  expect(reservaA.assentos.map((assento) => assento.numero)).toEqual([primeira]);
 });
 
-test("sair da tela sem confirmar devolve as poltronas", async ({ browser, request }) => {
-  const pagina = await abrirComo(browser, sessaoB);
+test("quem não entrou escolhe, faz login ao confirmar e volta com as mesmas poltronas", async ({ browser, request }) => {
+  const pagina = await (await browser.newContext()).newPage();
   await pagina.goto(`/viagens/${viagemId}/assentos`);
   await poltrona(pagina, livres[2]).click();
-  await expect(poltrona(pagina, livres[2])).toHaveAttribute("aria-pressed", "true");
-  expect(await abertas(request, sessaoB)).toHaveLength(1);
+  await poltrona(pagina, livres[3]).click();
 
-  await pagina.goto("/");
-  await expect.poll(async () => (await abertas(request, sessaoB)).length).toBe(0);
+  await pagina.getByRole("button", { name: "Confirmar seleção" }).click();
+  await expect(pagina).toHaveURL(/\/login\?retorno=/);
+
+  await pagina.locator('input[name="email"]').fill(contas.b.email);
+  await pagina.locator('input[name="senha"]').fill(contas.b.senha);
+  await pagina.getByRole("button", { name: "Entrar" }).click();
+
+  await expect(pagina).toHaveURL(new RegExp(`/viagens/${viagemId}/assentos[?]`));
+  await expect(poltrona(pagina, livres[2])).toHaveAttribute("aria-pressed", "true");
+  await expect(poltrona(pagina, livres[3])).toHaveAttribute("aria-pressed", "true");
+  expect(await abertas(request, sessaoB)).toHaveLength(0);
 });
 
 test("respeita o limite de 10, confirma e cancela pela tela", async ({ browser, request }) => {
@@ -164,7 +172,8 @@ test("informa os passageiros depois de escolher as poltronas", async ({ browser,
   const pagina = await abrirComo(browser, sessaoB);
   await pagina.goto(`/viagens/${viagemId}/assentos`);
 
-  for (const numero of livres.slice(11, 13)) {
+  const escolhidas = livres.slice(11, 13).sort((x, y) => x - y);
+  for (const numero of escolhidas) {
     await poltrona(pagina, numero).click();
     await expect(poltrona(pagina, numero)).toHaveAttribute("aria-pressed", "true");
     await expect(poltrona(pagina, numero)).toBeEnabled();
@@ -179,7 +188,8 @@ test("informa os passageiros depois de escolher as poltronas", async ({ browser,
     { nome: "Pedro Teste", cpf: "11144477735", dataNasc: "1996-05-15", celular: "85988880000", email: "pedro@teste.com" },
   ];
   for (const [indice, pessoa] of pessoas.entries()) {
-    const bloco = pagina.getByRole("group", { name: `Passageiro ${indice + 1}` });
+    // O primeiro card é o da menor poltrona escolhida.
+    const bloco = pagina.getByRole("group", { name: `Passageiro ${indice + 1}, poltrona ${escolhidas[indice]}` });
     await bloco.getByLabel("Nome completo").fill(pessoa.nome);
     await bloco.getByLabel("CPF").fill(pessoa.cpf);
     await bloco.getByLabel("Data de nascimento").fill(pessoa.dataNasc);
@@ -191,8 +201,10 @@ test("informa os passageiros depois de escolher as poltronas", async ({ browser,
   await pagina.getByRole("button", { name: "Confirmar reserva" }).click();
   await expect(pagina).toHaveURL(/\/reservas\/\d+\/confirmacao$/);
   await expect(pagina.getByRole("heading", { level: 1, name: "Reserva confirmada!" })).toBeVisible();
-  await expect(pagina.getByRole("img", { name: /^QR Code da reserva/ })).toBeVisible();
-  await expect(pagina.getByText("Joana Teste e Pedro Teste")).toBeVisible();
+  // Um bilhete por passageiro, cada um com o seu QR Code.
+  await expect(pagina.getByRole("img", { name: /^QR Code da passagem/ })).toHaveCount(2);
+  await expect(pagina.getByText("Joana Teste")).toBeVisible();
+  await expect(pagina.getByText("Pedro Teste")).toBeVisible();
 
   // Em Minhas viagens, o detalhe da reserva é o mesmo bilhete da confirmação.
   await pagina.getByRole("link", { name: "Ver minhas viagens" }).click();
@@ -205,5 +217,5 @@ test("informa os passageiros depois de escolher as poltronas", async ({ browser,
   await cartao.getByRole("button", { name: "Ver 2 bilhetes" }).click();
   const modal = pagina.getByRole("dialog", { name: "Detalhes da reserva" });
   await expect(modal.getByRole("heading", { name: "Reserva confirmada!" })).toBeVisible();
-  await expect(modal.getByRole("img", { name: /^QR Code da reserva/ })).toBeVisible();
+  await expect(modal.getByRole("img", { name: /^QR Code da passagem/ })).toHaveCount(2);
 });

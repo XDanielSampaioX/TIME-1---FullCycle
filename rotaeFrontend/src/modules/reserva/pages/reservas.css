@@ -435,6 +435,11 @@
   color: var(--viagem-texto);
 }
 
+.reserva-bilhetes {
+  display: grid;
+  gap: 1.5rem;
+}
+
 .reserva-bilhete {
   overflow: hidden;
   border: 2px solid var(--color-accent-500);
@@ -615,7 +620,7 @@
   font-size: .8125rem;
 }
 
-/* A legenda flutuante vira um item comum da grade e divide a primeira linha com "Passagem N". */
+/* A legenda flutuante vira um item comum da grade e divide a primeira linha com "Poltrona N". */
 .reserva-passageiro {
   display: grid;
   grid-template-columns: 1fr auto;

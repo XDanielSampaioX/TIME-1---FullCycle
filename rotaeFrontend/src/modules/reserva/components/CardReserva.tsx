@@ -1,22 +1,13 @@
-import { Skeleton } from "@/shared/components/Skeleton";
 import { formatarDataHora } from "@/shared/utils/formatarDataHora";
 import { formatarValorEmReais } from "@/shared/utils/formatarValorEmReais";
-import type { PassageiroReserva } from "../types/passageiroReserva";
 import type { Reserva } from "../types/reserva";
 import { formatarCidade, formatarCodigoReserva, formatarNomesPassageiros, formatarPoltronas } from "../utils/formatarReserva";
 import { descreverStatusReserva } from "../utils/regrasReserva";
 import { BotoesReserva } from "./BotoesReserva";
 
-function NomesPassageiros({ passageiros }: { passageiros: PassageiroReserva[] | null | undefined }) {
-  if (passageiros === undefined) return <Skeleton largura="10rem" />;
-  if (passageiros === null) return "—";
-  return passageiros.length ? formatarNomesPassageiros(passageiros) : "Não informados";
-}
-
 // Um cartão da lista: status, rota, passageiros, assentos, valor e botões.
-export function CardReserva({ reserva, passageiros, agora, compacto, aoVerDetalhes, aoAtualizar }: {
+export function CardReserva({ reserva, agora, compacto, aoVerDetalhes, aoAtualizar }: {
   reserva: Reserva;
-  passageiros: PassageiroReserva[] | null | undefined;
   agora: Date;
   compacto: boolean;
   aoVerDetalhes: () => void;
@@ -54,7 +45,7 @@ export function CardReserva({ reserva, passageiros, agora, compacto, aoVerDetalh
         <dl className="reserva-passagens">
           <div>
             <dt>Passageiros</dt>
-            <dd><NomesPassageiros passageiros={passageiros} /></dd>
+            <dd>{reserva.passageiros.length ? formatarNomesPassageiros(reserva.passageiros) : "Não informados"}</dd>
           </div>
           <div>
             <dt>Assentos</dt>
@@ -69,7 +60,7 @@ export function CardReserva({ reserva, passageiros, agora, compacto, aoVerDetalh
           <BotoesReserva
             reserva={reserva}
             statusAtual={statusAtual}
-            semPassageiros={passageiros?.length === 0}
+            semPassageiros={reserva.passageiros.length === 0}
             aoVerDetalhes={aoVerDetalhes}
             aoAtualizar={aoAtualizar}
           />

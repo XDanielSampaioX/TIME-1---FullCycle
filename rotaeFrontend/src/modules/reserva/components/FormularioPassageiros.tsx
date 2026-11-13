@@ -7,6 +7,7 @@ import { Button } from "@/shared/components/Button";
 import { useDadosPassageiros } from "../hooks/useDadosPassageiros";
 import type { DadosPassageiro } from "../types/dadosPassageiro";
 import type { Reserva } from "../types/reserva";
+import { ordenarAssentos } from "../utils/regrasReserva";
 import { ResumoReserva } from "./ResumoReserva";
 
 // Ordem do Figma: nome na linha inteira; CPF e nascimento; e-mail e celular.
@@ -19,9 +20,11 @@ const campos: { nome: keyof DadosPassageiro; titulo: string; tipo: string; place
 ];
 
 // O quadro "dados-passageiro" do Figma: um card por passagem e o resumo ao lado, com o botão de enviar.
-// O backend não liga o passageiro a uma poltrona, por isso os cards não mostram o assento de cada um.
-export function FormularioPassageiros({ reserva }: { reserva: Reserva }) {
+// Os passageiros vão na ordem dos cards e a regra combinada com o backend dá a menor poltrona
+// ao primeiro, então cada card mostra a poltrona daquela posição.
+export function FormularioPassageiros({ reserva }: { reserva: Omit<Reserva, "passageiros"> }) {
   const formulario = useRef<HTMLFormElement>(null);
+  const assentos = ordenarAssentos(reserva.assentos);
   const {
     passageiros, erros, erroGeral, enviando, podeUsarConta, compradorEntrePassageiros, alterarCampo, marcarComprador, enviar,
   } = useDadosPassageiros(reserva);
@@ -54,9 +57,13 @@ export function FormularioPassageiros({ reserva }: { reserva: Reserva }) {
           </label>
         )}
         {passageiros.map((passageiro, indice) => (
-          <fieldset className="reserva-passageiro" key={indice}>
+          <fieldset
+            className="reserva-passageiro"
+            key={indice}
+            aria-label={`Passageiro ${indice + 1}, poltrona ${assentos[indice]?.numero}`}
+          >
             <legend>Passageiro {indice + 1}</legend>
-            <span aria-hidden="true">Passagem {indice + 1}</span>
+            <span aria-hidden="true">Poltrona {assentos[indice]?.numero}</span>
             <div className="reserva-passageiro-campos">
               {campos.map((campo) => (
                 <CampoFormulario

@@ -1,8 +1,7 @@
 import type { Cidade } from "@/modules/cidade/types/cidade";
-import type { PassageiroReserva } from "../types/passageiroReserva";
 import type { Reserva } from "../types/reserva";
 
-// Exemplo: #ROT-2026-0087. O QR Code do bilhete guarda este mesmo código.
+// Exemplo: #ROT-2026-0087. O QR Code de cada passagem guarda este código com a poltrona (#ROT-2026-0087-45).
 export function formatarCodigoReserva({ id, criadoEm }: Pick<Reserva, "id" | "criadoEm">) {
   return `#ROT-${criadoEm.slice(0, 4)}-${String(id).padStart(4, "0")}`;
 }
@@ -13,8 +12,8 @@ export function formatarCidade({ nome, uf }: Pick<Cidade, "nome" | "uf">) {
 }
 
 // Exemplo: Mariana, Pedro e Ana.
-export function formatarNomesPassageiros(passageiros: PassageiroReserva[]) {
-  const nomes = passageiros.map((passageiro) => passageiro.nome);
+export function formatarNomesPassageiros(passageiros: string[]) {
+  const nomes = [...passageiros];
   const ultimo = nomes.pop() ?? "";
 
   return nomes.length ? `${nomes.join(", ")} e ${ultimo}` : ultimo;

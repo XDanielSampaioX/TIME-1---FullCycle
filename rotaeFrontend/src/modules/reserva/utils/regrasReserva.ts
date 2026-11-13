@@ -22,6 +22,24 @@ export function bilheteEmitido(reserva: Pick<ReservaDetalhe, "status" | "expiraE
   return statusAtual === "PAGO" || (statusAtual === "PAGAMENTO_PENDENTE" && reserva.passageiros.length > 0);
 }
 
+// Regra combinada com o backend, que não guarda qual poltrona é de qual passageiro: o primeiro
+// passageiro enviado fica com a menor poltrona, o segundo com a seguinte e assim por diante.
+export function ordenarAssentos<T extends { numero: number }>(assentos: T[]) {
+  return [...assentos].sort((a, b) => a.numero - b.numero);
+}
+
+// Uma passagem por passageiro e poltrona, pareados como o backend faz. A reserva cancelada perde
+// as poltronas e a ainda sem passageiros só tem as poltronas, por isso os dois lados podem faltar.
+export function montarPassagens(reserva: Pick<ReservaDetalhe, "assentos" | "passageiros">) {
+  const assentos = ordenarAssentos(reserva.assentos);
+  const total = Math.max(assentos.length, reserva.passageiros.length, 1);
+
+  return Array.from({ length: total }, (_, indice) => ({
+    passageiro: reserva.passageiros[indice] as ReservaDetalhe["passageiros"][number] | undefined,
+    assento: assentos[indice] as ReservaDetalhe["assentos"][number] | undefined,
+  }));
+}
+
 function estaNasProximas(reserva: Reserva, agora: Date) {
   const statusAtual = obterStatusAtualReserva(reserva, agora);
 
@@ -52,7 +70,7 @@ function formatarTempoRestante(expiraEm: string, agora: Date) {
 }
 
 // Textos do status mostrados no cartão e no modal.
-export function descreverStatusReserva(reserva: Reserva, agora: Date) {
+export function descreverStatusReserva(reserva: Pick<Reserva, "status" | "expiraEm" | "atualizadoEm">, agora: Date) {
   const statusAtual = obterStatusAtualReserva(reserva, agora);
   const textos: Record<StatusReserva, { titulo: string; descricao: string }> = {
     PAGAMENTO_PENDENTE: {

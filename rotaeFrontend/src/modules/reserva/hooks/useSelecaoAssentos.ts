@@ -1,117 +1,92 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { useAutenticacao } from "@/modules/autenticacao/hooks/useAutenticacao";
 import type { ViagemAssento } from "@/modules/viagem-assento/types/viagemAssento";
-import { cancelarReserva } from "../services/cancelarReserva";
 import { criarReserva } from "../services/criarReserva";
-import type { Reserva } from "../types/reserva";
 
 // Limite de assentos por reserva definido pelo backend (ReservaCriarSerializer).
 const LIMITE_DE_ASSENTOS = 10;
 
-// A única forma de segurar uma poltrona no backend é criar uma reserva, e ela não aceita
-// trocar assentos. Por isso a seleção é mantida como uma reserva que é refeita a cada clique.
-// Devolve o mesmo formato do hook de viagem-assento, que é o que o mapa e o resumo de lá recebem.
+// Exemplo: ?assentos=101,102 vira [101, 102]. É como a seleção volta depois do login.
+function lerAssentosDaUrl(valor: string | null) {
+  return [...new Set((valor ?? "").split(",").map(Number).filter((id) => Number.isSafeInteger(id) && id > 0))];
+}
+
+// A seleção fica só na tela, guardando o id da poltrona nesta viagem (o que o POST /reservas/ espera).
+// A reserva só é criada ao confirmar. Devolve o mesmo formato do hook de viagem-assento,
+// que é o que o mapa e o resumo de lá recebem.
 export function useSelecaoAssentos(viagemId: number, assentos: ViagemAssento[], atualizarMapa: () => void) {
   const { estado } = useAutenticacao();
   const router = useRouter();
-  const [reserva, setReserva] = useState<Reserva | null>(null);
-  const [assentosEmTroca, setAssentosEmTroca] = useState<number[] | null>(null);
+  const parametros = useSearchParams();
+  const [escolhidos, setSelecionados] = useState(() => lerAssentosDaUrl(parametros.get("assentos")));
+  // Um endereço editado à mão pode trazer ids que não são desta viagem ou passar do limite:
+  // eles ficariam presos na seleção, sem poltrona no mapa para desmarcar.
+  const selecionados = escolhidos
+    .filter((id) => assentos.some((assento) => assento.id === id))
+    .slice(0, LIMITE_DE_ASSENTOS);
+  const [verificando, setVerificando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const reservaAberta = useRef<Reserva | null>(null);
 
-  const selecionados = assentosEmTroca ?? reserva?.assentos.map((assento) => assento.assentoId) ?? [];
-  const verificando = assentosEmTroca !== null;
-
-  function definirReserva(novaReserva: Reserva | null) {
-    reservaAberta.current = novaReserva;
-    setReserva(novaReserva);
-  }
-
-  // Sair da tela sem confirmar devolve as poltronas. Não cobre uma queda do navegador:
-  // nesse caso a reserva fica em "Minhas viagens" até ser cancelada ou expirar no backend.
-  useEffect(() => {
-    function liberar() {
-      const aberta = reservaAberta.current;
-      if (!aberta) return;
-
-      reservaAberta.current = null;
-      setReserva(null);
-      void cancelarReserva(aberta.id, { keepalive: true }).catch(() => undefined);
-    }
-
-    window.addEventListener("pagehide", liberar);
-    return () => {
-      window.removeEventListener("pagehide", liberar);
-      liberar();
-    };
-  }, []);
-
-  async function refazerReserva(assentoIds: number[]) {
-    if (reservaAberta.current) {
-      await cancelarReserva(reservaAberta.current.id);
-      definirReserva(null);
-    }
-
-    // O mapa identifica a poltrona pelo assentoId; o backend espera o id dela nesta viagem.
-    let restantes = assentos.filter((assento) => assentoIds.includes(assento.assentoId)).map((assento) => assento.id);
-
-    while (restantes.length) {
-      const resultado = await criarReserva(viagemId, restantes);
-
-      if (!Array.isArray(resultado)) {
-        definirReserva(resultado);
-        return;
-      }
-
-      // O backend rejeita a reserva inteira: tenta de novo sem as poltronas perdidas.
-      restantes = restantes.filter((id) => !resultado.includes(id));
-      setErro("Outra pessoa acabou de escolher essa poltrona. Escolha outra.");
-    }
-  }
-
-  async function alternar(assentoId: number) {
+  function alternar(viagemAssentoId: number) {
     if (verificando) return;
+    setErro(null);
 
-    if (estado !== "autenticado") {
-      router.push("/login");
+    if (selecionados.includes(viagemAssentoId)) {
+      setSelecionados(selecionados.filter((id) => id !== viagemAssentoId));
       return;
     }
 
-    const selecionado = selecionados.includes(assentoId);
+    if (!assentos.some((assento) => assento.id === viagemAssentoId && assento.status === "DISPONIVEL")) return;
 
-    if (!selecionado && selecionados.length >= LIMITE_DE_ASSENTOS) {
+    if (selecionados.length >= LIMITE_DE_ASSENTOS) {
       setErro(`Você pode reservar até ${LIMITE_DE_ASSENTOS} poltronas.`);
       return;
     }
 
-    const proximos = selecionado ? selecionados.filter((id) => id !== assentoId) : [...selecionados, assentoId];
+    setSelecionados([...selecionados, viagemAssentoId]);
+  }
 
-    setAssentosEmTroca(proximos);
+  // Quem não entrou vai para o login e volta para esta tela com as mesmas poltronas.
+  function irParaLogin() {
+    const busca = new URLSearchParams(window.location.search);
+    busca.set("assentos", selecionados.join(","));
+    router.push(`/login?${new URLSearchParams({ retorno: `${window.location.pathname}?${busca}` })}`);
+  }
+
+  // Cria a reserva com as poltronas escolhidas e segue para os passageiros.
+  // Devolve sempre false porque, ao receber true, o resumo de viagem-assento navegaria para um endereço vazio.
+  async function confirmar() {
+    if (!selecionados.length || verificando || estado === "carregando") return false;
+
+    if (estado !== "autenticado") {
+      irParaLogin();
+      return false;
+    }
+
+    setVerificando(true);
     setErro(null);
 
     try {
-      await refazerReserva(proximos);
-    } catch (motivo) {
-      setErro(motivo instanceof Error ? motivo.message : "Não foi possível atualizar as poltronas. Tente novamente.");
-    } finally {
-      setAssentosEmTroca(null);
+      const resultado = await criarReserva(viagemId, selecionados);
+
+      // O botão continua desabilitado até a navegação terminar.
+      if (!Array.isArray(resultado)) {
+        router.push(`/reservas/${resultado.id}/passageiros`);
+        return false;
+      }
+
+      // 409: o backend recusa a reserva inteira e informa as poltronas que já foram ocupadas.
+      setSelecionados(selecionados.filter((id) => !resultado.includes(id)));
+      setErro("Outra pessoa acabou de escolher uma das poltronas. Escolha outra.");
       atualizarMapa();
-    }
-  }
-
-  // Daqui em diante a reserva é do usuário: sair da tela não pode mais cancelá-la.
-  // A próxima etapa do checkout é informar os passageiros da reserva.
-  // Devolve sempre false porque, ao receber true, o resumo de viagem-assento navegaria para um endereço vazio.
-  async function confirmar() {
-    if (reservaAberta.current && !verificando) {
-      const { id } = reservaAberta.current;
-      reservaAberta.current = null;
-      router.push(`/reservas/${id}/passageiros`);
+    } catch (motivo) {
+      setErro(motivo instanceof Error ? motivo.message : "Não foi possível reservar as poltronas. Tente novamente.");
     }
 
+    setVerificando(false);
     return false;
   }
 

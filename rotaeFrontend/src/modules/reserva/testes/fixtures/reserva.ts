@@ -19,9 +19,10 @@ export function criarReservaFalsa(dados: Partial<Reserva> = {}): Reserva {
     valorTotal: 24800,
     expiraEm: "2026-11-04T10:00:00-03:00",
     assentos: [
-      { id: 45, assentoId: 45, numero: 45, status: "SEGURADO" },
-      { id: 46, assentoId: 46, numero: 46, status: "SEGURADO" },
+      { id: 45, numero: 45, status: "SEGURADO" },
+      { id: 46, numero: 46, status: "SEGURADO" },
     ],
+    passageiros: [],
     totalAssentos: 2,
     criadoEm: "2026-11-03T10:00:00-03:00",
     atualizadoEm: "2026-11-03T10:00:00-03:00",
