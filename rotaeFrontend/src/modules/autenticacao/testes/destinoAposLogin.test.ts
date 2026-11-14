@@ -20,6 +20,10 @@ describe("destinoAposLogin", () => {
     ["javascript:", "javascript:alert(1)"],
     ["caminho relativo", "editar-perfil"],
     ["o próprio login", "/login?voltar=/login"],
+    ["o próprio login com barra no fim", "/login/"],
+    ["endereço malformado com colchete", "//["],
+    ["endereço malformado com espaço", "//a b"],
+    ["endereço malformado com IPv6 incompleto", "//[::1"],
   ])("volta para a página inicial quando o valor é %s", (_caso, voltar) => {
     expect(destinoAposLogin(voltar)).toBe("/");
   });

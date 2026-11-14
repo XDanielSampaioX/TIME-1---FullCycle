@@ -6,9 +6,12 @@ const ORIGEM_INTERNA = "http://rotae.interno";
 // Por isso só aceitamos caminhos deste site; o resto volta para a página inicial.
 export function destinoAposLogin(voltar: string | string[] | undefined) {
   if (typeof voltar !== "string" || !voltar.startsWith("/")) return "/";
+  // Endereço malformado (ex.: "//["): new URL lançaria erro e derrubaria a página no servidor.
+  if (!URL.canParse(voltar, ORIGEM_INTERNA)) return "/";
 
   const url = new URL(voltar, ORIGEM_INTERNA);
-  if (url.origin !== ORIGEM_INTERNA || url.pathname === "/login") return "/";
+  // Sem a barra final, para "/login/" também ser reconhecido como o próprio login.
+  if (url.origin !== ORIGEM_INTERNA || url.pathname.replace(/\/+$/, "") === "/login") return "/";
 
   return `${url.pathname}${url.search}${url.hash}`;
 }

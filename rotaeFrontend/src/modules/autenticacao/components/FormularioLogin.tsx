@@ -18,10 +18,10 @@ function IconeOlho({ riscado }: { riscado: boolean }) {
 }
 
 export function FormularioLogin({ destino }: { destino: string }) {
-  const { credenciais, lembrar, erros, erro, enviando, alterarCampo, setLembrar, enviar } = useLogin(destino);
+  const { credenciais, lembrar, erros, erro, enviando, tentativas, alterarCampo, setLembrar, enviar } = useLogin(destino);
   const [senhaVisivel, setSenhaVisivel] = useState(false);
   const formulario = useRef<HTMLFormElement>(null);
-  useFocoPrimeiroErro(formulario, erros);
+  useFocoPrimeiroErro(formulario, tentativas);
 
   return (
     <form

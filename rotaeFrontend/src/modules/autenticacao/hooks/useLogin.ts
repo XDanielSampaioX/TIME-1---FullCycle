@@ -18,6 +18,8 @@ export function useLogin(destino: string) {
   const [erros, setErros] = useState<ErrosValidacao<Credenciais>>({});
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  // Conta os envios: é o que dispara o foco no primeiro erro (os erros mudam também ao digitar).
+  const [tentativas, setTentativas] = useState(0);
 
   function alterarCampo(campo: keyof Credenciais, valor: string) {
     setCredenciais({ ...credenciais, [campo]: valor });
@@ -28,6 +30,7 @@ export function useLogin(destino: string) {
   async function enviar() {
     const errosDosCampos = regrasLogin.validar(credenciais);
     setErros(errosDosCampos);
+    setTentativas((n) => n + 1);
     setErro(null);
     if (Object.keys(errosDosCampos).length > 0) return;
 
@@ -49,5 +52,5 @@ export function useLogin(destino: string) {
     }
   }
 
-  return { credenciais, lembrar, erros, erro, enviando, alterarCampo, setLembrar, enviar };
+  return { credenciais, lembrar, erros, erro, enviando, tentativas, alterarCampo, setLembrar, enviar };
 }

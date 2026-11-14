@@ -87,6 +87,33 @@ describe("FormularioLogin", () => {
     expect(screen.getByText("Informe sua senha.")).toBeInTheDocument();
   });
 
+  it("depois de um envio com erro, o foco fica no campo em que a pessoa está digitando", () => {
+    render(<FormularioLogin destino="/" />);
+    const email = screen.getByLabelText("E-mail");
+    const senha = screen.getByLabelText("Senha");
+
+    fireEvent.change(email, { target: { value: "joao" } });
+    fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
+    expect(email).toHaveFocus();
+
+    senha.focus();
+    fireEvent.change(senha, { target: { value: "s" } });
+    fireEvent.change(senha, { target: { value: "se" } });
+
+    expect(document.activeElement).toBe(senha);
+  });
+
+  it("um novo envio com erro leva o foco de volta ao primeiro campo inválido", () => {
+    render(<FormularioLogin destino="/" />);
+    const email = screen.getByLabelText("E-mail");
+
+    fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
+    screen.getByLabelText("Senha").focus();
+    fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
+
+    expect(email).toHaveFocus();
+  });
+
   it("recusa e-mail com formato inválido e limpa o erro quando o envio seguinte é válido", async () => {
     jest.mocked(entrar).mockResolvedValue({ sessao });
     render(<FormularioLogin destino="/" />);
