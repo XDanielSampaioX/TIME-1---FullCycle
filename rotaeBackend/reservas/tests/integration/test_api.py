@@ -52,6 +52,8 @@ def test_criar_reserva_sucesso(cliente_autenticado, viagem):
     assert data["viagem"]["id"] == viagem.id
     assert data["valorTotal"] == 8990 * 2
     assert len(data["assentos"]) == 2
+    assert {"id", "numero", "status"} <= data["assentos"][0].keys()
+    assert "assentoId" not in data["assentos"][0]
 
     # Valida expira_em em torno de 24h a partir da criação
     expira_em = datetime.fromisoformat(data["expiraEm"].replace("Z", "+00:00"))
@@ -236,6 +238,8 @@ def test_detalhe_reserva_sucesso(cliente_autenticado, viagem):
     assert data["status"] == "PAGAMENTO_PENDENTE"
     assert data["valorTotal"] == 8990
     assert len(data["assentos"]) == 1
+    assert {"id", "numero", "status"} <= data["assentos"][0].keys()
+    assert "assentoId" not in data["assentos"][0]
     # Verifica que viagem é um objeto completo
     assert "viagem" in data
     assert data["viagem"]["id"] == viagem.id
