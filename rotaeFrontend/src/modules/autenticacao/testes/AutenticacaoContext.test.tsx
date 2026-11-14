@@ -24,8 +24,11 @@ function Estado() {
       <button onClick={sair} type="button">
         sair
       </button>
-      <button onClick={() => iniciarSessao(sessao)} type="button">
+      <button onClick={() => iniciarSessao(sessao, true)} type="button">
         entrar
+      </button>
+      <button onClick={() => iniciarSessao(sessao, false)} type="button">
+        entrar sem lembrar
       </button>
     </>
   );
@@ -43,6 +46,7 @@ describe("AutenticacaoProvider", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   it("informa o estado da sessão: anônimo, autenticado e depois anônimo de novo", async () => {
@@ -54,6 +58,20 @@ describe("AutenticacaoProvider", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "sair" }));
     expect(screen.getByText("estado: anonimo")).toBeInTheDocument();
+  });
+
+  it("sem Lembrar de mim, a sessão vale na aba atual e sai das duas guardas ao sair", async () => {
+    renderizar();
+    await screen.findByText("estado: anonimo");
+
+    fireEvent.click(screen.getByRole("button", { name: "entrar sem lembrar" }));
+    expect(screen.getByText("estado: autenticado")).toBeInTheDocument();
+    expect(localStorage.getItem("rotae.sessao")).toBeNull();
+    expect(sessionStorage.getItem("rotae.sessao")).not.toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "sair" }));
+    expect(screen.getByText("estado: anonimo")).toBeInTheDocument();
+    expect(sessionStorage.getItem("rotae.sessao")).toBeNull();
   });
 
   it("atualizarSessao troca o usuário sem derrubar a sessão", async () => {

@@ -21,7 +21,7 @@ export function AutenticacaoProvider({ children }: { children: ReactNode }) {
   const sessaoSalva = useSyncExternalStore(acompanharSessao, lerSessaoSalva, () => null);
   const sessao = sessaoSalva ? JSON.parse(sessaoSalva) as Sessao : null;
   const montado = useClienteMontado();
-  // O localStorage guarda a sessão, mas não guarda se o servidor respondeu: essa informação só existe
+  // O storage guarda a sessão, mas não guarda se o servidor respondeu: essa informação só existe
   // em memória e precisa fazer a tela se atualizar quando muda, por isso é um state.
   const [servidorSemResposta, setServidorSemResposta] = useState(false);
 
@@ -42,9 +42,9 @@ export function AutenticacaoProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Uma nova sessão (login) ou o fim dela zera o aviso: ele só vale para a sessão que falhou ao ser confirmada.
-  function iniciarSessao(novaSessao: Sessao) {
+  function iniciarSessao(novaSessao: Sessao, lembrar: boolean) {
     setServidorSemResposta(false);
-    salvarSessao(novaSessao);
+    salvarSessao(novaSessao, lembrar);
   }
 
   function sair() {
