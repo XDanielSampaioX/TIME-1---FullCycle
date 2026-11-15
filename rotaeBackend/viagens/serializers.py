@@ -50,7 +50,6 @@ class ViagemSerializer(serializers.ModelSerializer):
 
 class ViagemAssentoSerializer(serializers.ModelSerializer):
     viagem_id = serializers.IntegerField(read_only=True)
-    assento_id = serializers.IntegerField(read_only=True)
     numero = serializers.IntegerField(source="assento.numero", read_only=True)
 
     class Meta:
@@ -58,7 +57,6 @@ class ViagemAssentoSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "viagem_id",
-            "assento_id",
             "numero",
             "status",
         )
