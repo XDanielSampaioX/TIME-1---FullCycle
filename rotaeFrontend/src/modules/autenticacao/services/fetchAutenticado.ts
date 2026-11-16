@@ -23,6 +23,13 @@ function criarProxyAutenticado(requisicaoReal: Requisicao): Requisicao {
     const resposta = await enviarComToken(entrada, opcoes, sessao.access);
     if (resposta.status !== 401) return resposta;
 
+    // Outra requisição já renovou os tokens enquanto esta esperava a resposta: usa os novos.
+    // Renovar de novo com o refresh token antigo seria recusado (ele só vale uma vez) e encerraria a sessão.
+    const atual = lerSessao();
+    if (atual && atual.user.id === sessao.user.id && atual.access !== sessao.access) {
+      return enviarComToken(entrada, opcoes, atual.access);
+    }
+
     // O refresh token só vale uma vez: requisições simultâneas compartilham a mesma renovação.
     renovacao ??= renovarTokens(sessao.refresh).finally(() => {
       renovacao = null;
