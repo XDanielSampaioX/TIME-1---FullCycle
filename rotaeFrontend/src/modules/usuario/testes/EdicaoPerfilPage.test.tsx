@@ -53,6 +53,19 @@ describe("EdicaoPerfilPage", () => {
     expect(nome()).toHaveValue("João Silva");
   });
 
+  it("se a sessão mudar de usuário, o formulário recomeça com os dados do novo usuário", () => {
+    const outro = { ...usuario, id: 2, nome: "Outra Pessoa", email: "outra@email.com" };
+    useAutenticacao.mockReturnValue({ usuario, estado: "autenticado", sessaoIndisponivel: false, ...funcoes });
+    const { rerender } = render(<EdicaoPerfilPage />);
+    fireEvent.change(screen.getByLabelText("Nome completo"), { target: { value: "Digitado para o João" } });
+
+    useAutenticacao.mockReturnValue({ usuario: outro, estado: "autenticado", sessaoIndisponivel: false, ...funcoes });
+    rerender(<EdicaoPerfilPage />);
+
+    expect(screen.getByLabelText("Nome completo")).toHaveValue("Outra Pessoa");
+    expect(screen.getByLabelText("E-mail")).toHaveValue("outra@email.com");
+  });
+
   it("não mostra a tela de visitante enquanto a conta excluída sai da página", async () => {
     const anonimo = { usuario: null, estado: "anonimo", sessaoIndisponivel: false };
     // Como no app: sair() encerra a sessão na hora, antes de a rota mudar.

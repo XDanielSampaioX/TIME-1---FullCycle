@@ -9,7 +9,7 @@ export type AutenticacaoContextValue = {
   sessaoIndisponivel: boolean;
   // Login: começa uma sessão nova. Com "lembrar", ela continua salva ao fechar o navegador.
   iniciarSessao: (sessao: Sessao, lembrar: boolean) => void;
-  // Troca só parte da sessão já existente (tokens e/ou usuário).
-  atualizarSessao: (parcial: Partial<Sessao>) => void;
+  // Troca só parte da sessão já existente (tokens e/ou usuário), se ela ainda for do usuário idUsuario.
+  atualizarSessao: (parcial: Partial<Sessao>, idUsuario: number) => void;
   sair: () => void;
 };

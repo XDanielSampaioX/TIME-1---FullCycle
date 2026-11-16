@@ -18,7 +18,7 @@ function Estado() {
         {logado ? logado.nome : "anônimo"} | {sessaoIndisponivel ? "indisponível" : "ok"}
       </p>
       <p>estado: {estado}</p>
-      <button onClick={() => atualizarSessao({ user: { ...usuario, nome: "Outro nome" } })} type="button">
+      <button onClick={() => atualizarSessao({ user: { ...usuario, nome: "Outro nome" } }, usuario.id)} type="button">
         renomear
       </button>
       <button onClick={sair} type="button">
@@ -84,6 +84,20 @@ describe("AutenticacaoProvider", () => {
 
     expect(screen.getByText("Outro nome | ok")).toBeInTheDocument();
     expect(JSON.parse(localStorage.getItem("rotae.sessao")!)).toMatchObject({ access: "a", refresh: "r" });
+  });
+
+  it.each([
+    ["JSON inválido", "{x}"],
+    ["objeto vazio", "{}"],
+  ])("sessão corrompida (%s): a tela abre como visitante, sem quebrar, e o valor é descartado", async (_caso, valor) => {
+    sessionStorage.setItem("rotae.sessao", valor);
+
+    renderizar();
+
+    expect(await screen.findByText("estado: anonimo")).toBeInTheDocument();
+    expect(screen.getByText("anônimo | ok")).toBeInTheDocument();
+    await waitFor(() => expect(sessionStorage.getItem("rotae.sessao")).toBeNull());
+    expect(buscarUsuarioAutenticado).not.toHaveBeenCalled();
   });
 
   it("não consulta o servidor nem avisa indisponibilidade quando não há sessão", () => {

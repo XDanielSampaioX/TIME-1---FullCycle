@@ -24,6 +24,12 @@ describe("destinoAposLogin", () => {
     ["endereço malformado com colchete", "//["],
     ["endereço malformado com espaço", "//a b"],
     ["endereço malformado com IPv6 incompleto", "//[::1"],
+    ["outro site depois de normalizar /./", "/.//evil.com"],
+    ["outro site depois de normalizar /../", "/..//evil.com"],
+    ["outro site depois de normalizar /a/../", "/a/..//evil.com"],
+    ["outro site depois de normalizar %2e%2e", "/%2e%2e//evil.com"],
+    ["outro site com ./ e barra invertida", "/.\\/evil.com"],
+    ["o exemplo do Daniel", "/.//localhost:8000/api/v1/me/"],
   ])("volta para a página inicial quando o valor é %s", (_caso, voltar) => {
     expect(destinoAposLogin(voltar)).toBe("/");
   });

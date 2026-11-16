@@ -9,6 +9,7 @@ import type { Sessao } from "../types/sessao";
 import {
   acompanharSessao,
   atualizarSessao,
+  interpretarSessao,
   lerSessao,
   lerSessaoSalva,
   removerSessao,
@@ -19,20 +20,22 @@ export const AutenticacaoContext = createContext<AutenticacaoContextValue | unde
 
 export function AutenticacaoProvider({ children }: { children: ReactNode }) {
   const sessaoSalva = useSyncExternalStore(acompanharSessao, lerSessaoSalva, () => null);
-  const sessao = sessaoSalva ? JSON.parse(sessaoSalva) as Sessao : null;
+  // Sem efeito colateral na renderização: um valor corrompido vira visitante aqui e é apagado no efeito abaixo.
+  const sessao = interpretarSessao(sessaoSalva);
   const montado = useClienteMontado();
   // O storage guarda a sessão, mas não guarda se o servidor respondeu: essa informação só existe
   // em memória e precisa fazer a tela se atualizar quando muda, por isso é um state.
   const [servidorSemResposta, setServidorSemResposta] = useState(false);
 
   // Ao abrir ou recarregar a página, confirma no backend (/me/) se a sessão salva ainda vale.
+  // lerSessao também descarta uma sessão corrompida.
   useEffect(() => {
     if (!lerSessao()) return;
 
     buscarUsuarioAutenticado()
       .then((usuario) => {
         if (!usuario) removerSessao();
-        else atualizarSessao({ user: usuario });
+        else atualizarSessao({ user: usuario }, usuario.id);
       })
       .catch(() => {
         // Sem resposta do servidor não dá para saber se a sessão é válida; ela é mantida

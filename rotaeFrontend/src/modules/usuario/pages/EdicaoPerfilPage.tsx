@@ -58,7 +58,9 @@ export function EdicaoPerfilPage() {
         </header>
         <div className={classeCartao}>
           <FormularioEdicaoPerfil
-            key={versaoFormulario}
+            // O id na chave também recria o formulário se a sessão mudar de usuário (login lembrado em outra aba):
+            // o que foi digitado para um usuário nunca é enviado para a conta de outro.
+            key={`${usuario.id}-${versaoFormulario}`}
             usuario={usuario}
             aoCancelar={() => setVersaoFormulario(versaoFormulario + 1)}
           />

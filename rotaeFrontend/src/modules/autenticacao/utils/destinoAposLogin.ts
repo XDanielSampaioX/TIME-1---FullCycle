@@ -13,7 +13,11 @@ export function destinoAposLogin(voltar: string | string[] | undefined) {
   // Sem a barra final, para "/login/" também ser reconhecido como o próprio login.
   if (url.origin !== ORIGEM_INTERNA || url.pathname.replace(/\/+$/, "") === "/login") return "/";
 
-  return `${url.pathname}${url.search}${url.hash}`;
+  const destino = `${url.pathname}${url.search}${url.hash}`;
+  // Depois de normalizar ("/.//site.com" vira "//site.com"), o caminho não pode apontar para outro site.
+  if (destino.startsWith("//") || destino.startsWith("/\\")) return "/";
+
+  return destino;
 }
 
 // Link para o login que traz o usuário de volta a esta tela depois de entrar.

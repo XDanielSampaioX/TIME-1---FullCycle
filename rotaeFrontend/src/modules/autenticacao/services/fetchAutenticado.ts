@@ -34,7 +34,8 @@ function criarProxyAutenticado(requisicaoReal: Requisicao): Requisicao {
       return resposta;
     }
 
-    atualizarSessao(tokens);
+    // Os tokens novos são do usuário desta requisição: não valem se outra aba já trocou a sessão salva.
+    atualizarSessao(tokens, sessao.user.id);
     return enviarComToken(entrada, opcoes, tokens.access);
   };
 }
