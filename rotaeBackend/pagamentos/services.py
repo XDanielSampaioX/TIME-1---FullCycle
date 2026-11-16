@@ -3,6 +3,7 @@ from django.utils import timezone
 
 from reservas.exceptions import ReservaNaoEncontradaError
 from reservas.models import Reserva
+from reservas.services import emitir_passagens
 from viagens.models import Viagem, ViagemAssento
 
 from .exceptions import GatewayIndisponivelError, PagamentoNaoPermitidoError
@@ -111,6 +112,7 @@ def _concluir_pagamento(*, pagamento, aprovado, referencia_externa):
         reserva.status = Reserva.Status.PAGO
         _atualizar_assentos(reserva, status=ViagemAssento.Status.RESERVADO)
         reserva.save(update_fields=["status", "atualizado_em"])
+        emitir_passagens(reserva=reserva)
     elif (
         reserva.pagamentos.filter(status=Pagamento.Status.NEGADO).count()
         >= MAX_TENTATIVAS_PAGAMENTO

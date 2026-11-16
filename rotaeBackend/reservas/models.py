@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 
 from core.validators import validar_celular, validar_cpf, validar_data_nascimento
 from viagens.models import Viagem
@@ -77,3 +78,52 @@ class Passageiro(models.Model):
 
     def __str__(self):
         return f"{self.nome} ({self.cpf}) - Reserva #{self.reserva_id}"
+
+
+class Passagem(models.Model):
+    class Status(models.TextChoices):
+        CONFIRMADO = "CONFIRMADO", "Confirmado"
+        CANCELADO = "CANCELADO", "Cancelado"
+
+    reserva = models.ForeignKey(
+        Reserva,
+        on_delete=models.PROTECT,
+        related_name="passagens",
+    )
+    viagem_assento = models.ForeignKey(
+        "viagens.ViagemAssento",
+        on_delete=models.PROTECT,
+        related_name="passagens",
+    )
+    passageiro = models.ForeignKey(
+        Passageiro,
+        on_delete=models.PROTECT,
+        related_name="passagens",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.CONFIRMADO,
+    )
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Passagem"
+        verbose_name_plural = "Passagens"
+        ordering = ("-criado_em",)
+        constraints = (
+            models.UniqueConstraint(
+                fields=("viagem_assento",),
+                condition=Q(status="CONFIRMADO"),
+                name="passagem_confirmada_unica_por_assento",
+            ),
+            models.UniqueConstraint(
+                fields=("reserva", "passageiro"),
+                condition=Q(status="CONFIRMADO"),
+                name="passagem_confirmada_unica_por_passageiro_reserva",
+            ),
+        )
+
+    def __str__(self):
+        return f"Passagem #{self.pk} - Reserva #{self.reserva_id} ({self.status})"

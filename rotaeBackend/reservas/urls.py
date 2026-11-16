@@ -2,6 +2,8 @@ from django.urls import path
 
 from .views import (
     PassageirosCadastrarView,
+    PassagemDetalheView,
+    PassagemMinhasPassagensView,
     ReservaCancelarView,
     ReservaCriarView,
     ReservaDetalheView,
@@ -22,4 +24,10 @@ urlpatterns = [
         name="cadastrar_passageiros",
     ),
     path("me/reservas/", ReservaMinhasReservasView.as_view(), name="minhas_reservas"),
+    path(
+        "me/passagens/",
+        PassagemMinhasPassagensView.as_view(),
+        name="minhas_passagens",
+    ),
+    path("passagens/<int:pk>/", PassagemDetalheView.as_view(), name="detalhe_passagem"),
 ]

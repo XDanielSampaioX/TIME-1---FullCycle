@@ -3,7 +3,7 @@ from rest_framework import serializers
 from viagens.models import ViagemAssento
 from viagens.serializers import ViagemSerializer
 
-from .models import Passageiro, Reserva
+from .models import Passageiro, Passagem, Reserva
 
 
 class ReservaCriarSerializer(serializers.Serializer):
@@ -52,6 +52,34 @@ class PassageiroSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class PassagemViagemAssentoSerializer(serializers.ModelSerializer):
+    numero = serializers.IntegerField(source="assento.numero", read_only=True)
+
+    class Meta:
+        model = ViagemAssento
+        fields = ("id", "numero")
+        read_only_fields = fields
+
+
+class PassagemSerializer(serializers.ModelSerializer):
+    reserva_id = serializers.IntegerField(read_only=True)
+    viagem_assento = PassagemViagemAssentoSerializer(read_only=True)
+    passageiro = PassageiroSerializer(read_only=True)
+
+    class Meta:
+        model = Passagem
+        fields = (
+            "id",
+            "reserva_id",
+            "viagem_assento",
+            "passageiro",
+            "status",
+            "criado_em",
+            "atualizado_em",
+        )
+        read_only_fields = fields
+
+
 class ReservaViagemAssentoSerializer(serializers.ModelSerializer):
     numero = serializers.IntegerField(source="assento.numero", read_only=True)
 
@@ -93,3 +121,7 @@ class ReservaSerializer(serializers.ModelSerializer):
 
 class ReservaDetalheSerializer(ReservaSerializer):
     passageiros = PassageiroSerializer(many=True, read_only=True)
+    passagens = PassagemSerializer(many=True, read_only=True)
+
+    class Meta(ReservaSerializer.Meta):
+        fields = ReservaSerializer.Meta.fields + ("passagens",)

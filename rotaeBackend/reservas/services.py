@@ -14,7 +14,7 @@ from .exceptions import (
     ReservaNaoEncontradaError,
     ViagemNaoEncontradaError,
 )
-from .models import Passageiro, Reserva
+from .models import Passageiro, Passagem, Reserva
 
 
 @transaction.atomic
@@ -172,3 +172,29 @@ def cadastrar_passageiros(*, reserva_id, usuario, passageiros):
         )
         for dados in passageiros
     )
+
+
+def emitir_passagens(*, reserva):
+    """Emite uma passagem confirmada por passageiro e assento da reserva paga."""
+    if reserva.status != Reserva.Status.PAGO:
+        return
+
+    passageiros = list(reserva.passageiros.order_by("id"))
+    assentos = list(
+        reserva.viagem_assentos.select_related("assento").order_by("assento__numero")
+    )
+
+    if len(passageiros) != len(assentos) or any(
+        assento.viagem_id != reserva.viagem_id for assento in assentos
+    ):
+        raise ValueError(
+            "Reserva paga sem correspondência entre passageiros e assentos."
+        )
+
+    for passageiro, viagem_assento in zip(passageiros, assentos, strict=True):
+        Passagem.objects.get_or_create(
+            reserva=reserva,
+            passageiro=passageiro,
+            viagem_assento=viagem_assento,
+            status=Passagem.Status.CONFIRMADO,
+        )

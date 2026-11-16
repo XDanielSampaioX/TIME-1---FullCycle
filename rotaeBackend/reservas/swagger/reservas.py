@@ -88,7 +88,10 @@ reserva_detalhe_schema = extend_schema(
         ),
     },
     summary="Obter detalhes de uma reserva",
-    description="Retorna os detalhes completos de uma reserva pertencente ao usuário autenticado.",
+    description=(
+        "Retorna os detalhes completos de uma reserva pertencente ao usuário "
+        "autenticado, incluindo as passagens emitidas."
+    ),
     tags=["reservas"],
 )
 

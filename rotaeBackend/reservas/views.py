@@ -12,10 +12,11 @@ from .exceptions import (
     ReservaNaoEncontradaError,
     ViagemNaoEncontradaError,
 )
-from .models import Reserva
+from .models import Passagem, Reserva
 from .serializers import (
     PassageiroCriarSerializer,
     PassageiroSerializer,
+    PassagemSerializer,
     ReservaCriarSerializer,
     ReservaDetalheSerializer,
     ReservaSerializer,
@@ -23,6 +24,8 @@ from .serializers import (
 from .services import cadastrar_passageiros, cancelar_reserva, criar_reserva
 from .swagger import (
     passageiros_cadastrar_schema,
+    passagem_detalhe_schema,
+    passagem_minhas_passagens_schema,
     reserva_cancelar_schema,
     reserva_criar_schema,
     reserva_detalhe_schema,
@@ -79,7 +82,12 @@ class ReservaDetalheView(RetrieveAPIView):
         return (
             Reserva.objects.filter(usuario=self.request.user)
             .select_related("viagem__origem", "viagem__destino", "viagem__onibus")
-            .prefetch_related("viagem_assentos__assento", "passageiros")
+            .prefetch_related(
+                "viagem_assentos__assento",
+                "passageiros",
+                "passagens__passageiro",
+                "passagens__viagem_assento__assento",
+            )
         )
 
 
@@ -151,3 +159,27 @@ class ReservaMinhasReservasView(ListAPIView):
             .prefetch_related("viagem_assentos__assento", "passageiros")
             .order_by("-criado_em")
         )
+
+
+@passagem_minhas_passagens_schema
+class PassagemMinhasPassagensView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PassagemSerializer
+
+    def get_queryset(self):
+        return (
+            Passagem.objects.filter(reserva__usuario=self.request.user)
+            .select_related("passageiro", "viagem_assento__assento")
+            .order_by("-criado_em")
+        )
+
+
+@passagem_detalhe_schema
+class PassagemDetalheView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PassagemSerializer
+
+    def get_queryset(self):
+        return Passagem.objects.filter(
+            reserva__usuario=self.request.user
+        ).select_related("passageiro", "viagem_assento__assento")
