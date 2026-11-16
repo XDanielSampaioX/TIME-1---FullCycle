@@ -18,7 +18,7 @@ export function MapaAssentos({ assentos, selecionados, alternar, verificando }: 
         <div className="assento-grade" role="group" aria-label="Poltronas do ônibus">
           {assentos.map((assento) => {
             const disponivel = assento.status === "DISPONIVEL";
-            const selecionado = selecionados.includes(assento.assentoId);
+            const selecionado = selecionados.includes(assento.id);
             const posicao = (assento.numero - 1) % 4;
 
             return (
@@ -34,7 +34,7 @@ export function MapaAssentos({ assentos, selecionados, alternar, verificando }: 
                 data-ocupado={!disponivel}
                 aria-pressed={selecionado}
                 aria-label={`Poltrona ${assento.numero}, ${!disponivel ? "indisponível" : selecionado ? "selecionada" : "disponível"}`}
-                onClick={() => alternar(assento.assentoId)}
+                onClick={() => alternar(assento.id)}
               >
                 {assento.numero}
               </button>

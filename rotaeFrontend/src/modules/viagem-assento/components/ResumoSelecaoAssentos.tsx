@@ -14,7 +14,7 @@ export function ResumoSelecaoAssentos({ resultado, assentos, selecao }: {
   const viagem = resultado;
   const { origem, destino } = viagem;
   const moeda = (valor: number) => (valor / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  const numeros = assentos.filter((assento) => selecao.selecionados.includes(assento.assentoId)).map((assento) => assento.numero);
+  const numeros = assentos.filter((assento) => selecao.selecionados.includes(assento.id)).map((assento) => assento.numero);
 
   async function continuar() {
     if (!await selecao.confirmar()) return;

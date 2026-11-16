@@ -6,6 +6,13 @@ import { entrar } from "../services/entrar";
 import type { Credenciais } from "../types/credenciais";
 import { useAutenticacao } from "./useAutenticacao";
 
+// ?retorno= traz a tela que mandou para o login. Só aceita endereços deste site: a conferência
+// é feita pela origem, porque o navegador ignora tabulações e quebras de linha no endereço.
+function obterRetorno() {
+  const retorno = new URL(new URLSearchParams(window.location.search).get("retorno") ?? "/", window.location.origin);
+  return retorno.origin === window.location.origin ? `${retorno.pathname}${retorno.search}${retorno.hash}` : "/";
+}
+
 export function useLogin() {
   const { iniciarSessao } = useAutenticacao();
   const router = useRouter();
@@ -27,7 +34,7 @@ export function useLogin() {
         setErro(resultado.erro);
       } else {
         iniciarSessao(resultado.sessao);
-        router.push("/");
+        router.push(obterRetorno());
       }
     } catch {
       setErro("Não foi possível entrar. Tente novamente.");
