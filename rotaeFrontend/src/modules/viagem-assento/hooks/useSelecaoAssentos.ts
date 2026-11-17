@@ -10,13 +10,13 @@ export function useSelecaoAssentos(viagemId: number, disponiveis: ViagemAssento[
   const [verificando, setVerificando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  function alternar(assentoId: number) {
-    if (verificando || !disponiveis.some((item) => item.assentoId === assentoId && item.status === "DISPONIVEL")) return;
+  function alternar(viagemAssentoId: number) {
+    if (verificando || !disponiveis.some((item) => item.id === viagemAssentoId && item.status === "DISPONIVEL")) return;
     setConfirmada(false);
     setErro(null);
-    setSelecionados((atuais) => atuais.includes(assentoId)
-      ? atuais.filter((id) => id !== assentoId)
-      : [...atuais, assentoId]);
+    setSelecionados((atuais) => atuais.includes(viagemAssentoId)
+      ? atuais.filter((id) => id !== viagemAssentoId)
+      : [...atuais, viagemAssentoId]);
   }
 
   async function confirmar() {
@@ -26,7 +26,7 @@ export function useSelecaoAssentos(viagemId: number, disponiveis: ViagemAssento[
 
     try {
       const atuais = await listarViagensAssentos(viagemId);
-      const livres = selecionados.filter((id) => atuais.some((item) => item.viagemId === viagemId && item.assentoId === id && item.status === "DISPONIVEL"));
+      const livres = selecionados.filter((id) => atuais.some((item) => item.viagemId === viagemId && item.id === id && item.status === "DISPONIVEL"));
 
       if (livres.length !== selecionados.length) {
         setSelecionados(livres);
