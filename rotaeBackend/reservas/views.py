@@ -174,7 +174,12 @@ class PassagemMinhasPassagensView(ListAPIView):
     def get_queryset(self):
         return (
             Passagem.objects.filter(reserva__usuario=self.request.user)
-            .select_related("passageiro", "viagem_assento__assento")
+            .select_related(
+                "passageiro",
+                "viagem_assento__assento",
+                "reserva__viagem__origem",
+                "reserva__viagem__destino",
+            )
             .order_by("-criado_em")
         )
 
@@ -187,4 +192,9 @@ class PassagemDetalheView(RetrieveAPIView):
     def get_queryset(self):
         return Passagem.objects.filter(
             reserva__usuario=self.request.user
-        ).select_related("passageiro", "viagem_assento__assento")
+        ).select_related(
+            "passageiro",
+            "viagem_assento__assento",
+            "reserva__viagem__origem",
+            "reserva__viagem__destino",
+        )

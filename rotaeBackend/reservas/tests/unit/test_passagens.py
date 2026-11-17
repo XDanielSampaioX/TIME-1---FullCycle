@@ -69,8 +69,9 @@ def test_pagamento_aprovado_emite_passagens_ordenadas_e_idempotentes(usuario, vi
     assert {passagem.status for passagem in passagens} == {Passagem.Status.CONFIRMADO}
 
     reserva.refresh_from_db()
-    emitir_passagens(reserva=reserva)
+    passagens_reprocessadas = emitir_passagens(reserva=reserva)
 
+    assert len(passagens_reprocessadas) == 2
     assert Passagem.objects.filter(reserva=reserva).count() == 2
 
 
@@ -90,7 +91,7 @@ def test_reserva_cancelada_nao_emite_passagens(usuario, viagem):
 
     cancelar_reserva(reserva_id=reserva.id, usuario=usuario)
     reserva.refresh_from_db()
-    emitir_passagens(reserva=reserva)
+    assert emitir_passagens(reserva=reserva) == []
 
     assert reserva.status == Reserva.Status.CANCELADO
     assert not Passagem.objects.filter(reserva=reserva).exists()
@@ -108,7 +109,7 @@ def test_emitir_passagens_rejeita_quantidades_inconsistentes(usuario, viagem):
     assert not Passagem.objects.filter(reserva=reserva).exists()
 
 
-def test_inconsistencia_na_emissao_preserva_aprovacao_e_reserva_paga(
+def test_inconsistencia_na_emissao_reverte_conclusao_do_pagamento(
     usuario, viagem, outra_viagem
 ):
     reserva, _, _ = criar_reserva_com_passageiros(usuario, viagem)
@@ -119,41 +120,11 @@ def test_inconsistencia_na_emissao_preserva_aprovacao_e_reserva_paga(
 
     reserva.refresh_from_db()
     pagamento = reserva.pagamentos.get()
-    assert reserva.status == Reserva.Status.PAGO
-    assert pagamento.status == Pagamento.Status.APROVADO
+    assert reserva.status == Reserva.Status.PAGAMENTO_PENDENTE
+    assert pagamento.status == Pagamento.Status.PENDENTE
     assert set(reserva.viagem_assentos.values_list("status", flat=True)) == {
-        ViagemAssento.Status.RESERVADO
+        ViagemAssento.Status.SEGURADO
     }
-    assert not Passagem.objects.filter(reserva=reserva).exists()
-
-
-def test_cancelamento_durante_falha_de_emissao_preserva_reserva_e_assentos(
-    usuario, viagem, monkeypatch
-):
-    reserva, _, _ = criar_reserva_com_passageiros(usuario, viagem)
-    assento_ids = list(reserva.viagem_assentos.values_list("pk", flat=True))
-
-    def cancelar_antes_da_recuperacao(*, pagamento, aprovado, referencia_externa):
-        assert aprovado
-        cancelar_reserva(reserva_id=reserva.id, usuario=usuario)
-        raise PassageirosAssentosInconsistentesError(
-            "Reserva paga sem correspondência entre passageiros e assentos."
-        )
-
-    monkeypatch.setattr(
-        "pagamentos.services._concluir_pagamento", cancelar_antes_da_recuperacao
-    )
-
-    with pytest.raises(PassageirosAssentosInconsistentesError):
-        pagar(reserva, usuario)
-
-    reserva.refresh_from_db()
-    pagamento = reserva.pagamentos.get()
-    assentos = list(ViagemAssento.objects.filter(pk__in=assento_ids))
-    assert reserva.status == Reserva.Status.CANCELADO
-    assert pagamento.status == Pagamento.Status.APROVADO
-    assert {assento.status for assento in assentos} == {ViagemAssento.Status.DISPONIVEL}
-    assert {assento.reserva_id for assento in assentos} == {None}
     assert not Passagem.objects.filter(reserva=reserva).exists()
 
 

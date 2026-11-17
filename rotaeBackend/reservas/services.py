@@ -175,10 +175,11 @@ def cadastrar_passageiros(*, reserva_id, usuario, passageiros):
     )
 
 
+@transaction.atomic
 def emitir_passagens(*, reserva):
     """Emite uma passagem confirmada por passageiro e assento da reserva paga."""
     if reserva.status != Reserva.Status.PAGO:
-        return
+        return []
 
     passageiros = list(reserva.passageiros.order_by("id"))
     assentos = list(
@@ -192,10 +193,14 @@ def emitir_passagens(*, reserva):
             "Reserva paga sem correspondência entre passageiros e assentos."
         )
 
+    passagens = []
     for passageiro, viagem_assento in zip(passageiros, assentos, strict=True):
-        Passagem.objects.get_or_create(
+        passagem, _ = Passagem.objects.get_or_create(
             reserva=reserva,
             passageiro=passageiro,
             viagem_assento=viagem_assento,
             status=Passagem.Status.CONFIRMADO,
         )
+        passagens.append(passagem)
+
+    return passagens

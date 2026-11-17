@@ -51,6 +51,12 @@ def test_listar_minhas_passagens_e_detalhar_reserva_inclui_passagens(
     passagem = data["results"][0]
     assert passagem["reservaId"] == reserva.id
     assert passagem["status"] == "CONFIRMADO"
+    assert set(passagem["viagem"]) == {
+        "origem",
+        "destino",
+        "partidaEm",
+        "chegadaEm",
+    }
     assert set(passagem["viagemAssento"]) == {"id", "numero"}
     assert passagem["passageiro"]["nome"].startswith("Passageiro")
 
@@ -60,7 +66,14 @@ def test_listar_minhas_passagens_e_detalhar_reserva_inclui_passagens(
         )
 
     assert detalhe.status_code == 200
-    assert len(detalhe.json()["passagens"]) == 2
+    passagens_reserva = detalhe.json()["passagens"]
+    assert len(passagens_reserva) == 2
+    assert set(passagens_reserva[0]) == {
+        "id",
+        "viagemAssentoId",
+        "passageiroId",
+        "status",
+    }
 
 
 def test_detalhe_passagem_isola_usuario_e_exige_autenticacao(

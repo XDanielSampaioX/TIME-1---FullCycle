@@ -6,6 +6,11 @@ from core.validators import validar_celular, validar_cpf, validar_data_nasciment
 from viagens.models import Viagem
 
 
+class PassagemStatus(models.TextChoices):
+    CONFIRMADO = "CONFIRMADO", "Confirmado"
+    CANCELADO = "CANCELADO", "Cancelado"
+
+
 class Reserva(models.Model):
     class Status(models.TextChoices):
         PAGAMENTO_PENDENTE = "PAGAMENTO_PENDENTE", "Pagamento Pendente"
@@ -81,9 +86,7 @@ class Passageiro(models.Model):
 
 
 class Passagem(models.Model):
-    class Status(models.TextChoices):
-        CONFIRMADO = "CONFIRMADO", "Confirmado"
-        CANCELADO = "CANCELADO", "Cancelado"
+    Status = PassagemStatus
 
     reserva = models.ForeignKey(
         Reserva,
@@ -115,12 +118,12 @@ class Passagem(models.Model):
         constraints = (
             models.UniqueConstraint(
                 fields=("viagem_assento",),
-                condition=Q(status="CONFIRMADO"),
+                condition=Q(status=PassagemStatus.CONFIRMADO),
                 name="passagem_confirmada_unica_por_assento",
             ),
             models.UniqueConstraint(
                 fields=("reserva", "passageiro"),
-                condition=Q(status="CONFIRMADO"),
+                condition=Q(status=PassagemStatus.CONFIRMADO),
                 name="passagem_confirmada_unica_por_passageiro_reserva",
             ),
         )
