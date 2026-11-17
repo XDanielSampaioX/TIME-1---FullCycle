@@ -46,3 +46,12 @@ export function apenasDigitos(valor: string) {
 export function formatarPoltronas(assentos: Reserva["assentos"]) {
   return assentos.map((assento) => assento.numero).join(", ") || "—";
 }
+
+// Tempo até o prazo da reserva. Exemplos: 14:58 e, acima de uma hora, 1:05:00.
+export function formatarContagem(expiraEm: string, agora: Date) {
+  const total = Math.max(Math.floor((Date.parse(expiraEm) - agora.getTime()) / 1000), 0);
+  const horas = Math.floor(total / 3600);
+  const minutosESegundos = [Math.floor(total / 60) % 60, total % 60].map((parte) => String(parte).padStart(2, "0")).join(":");
+
+  return horas ? `${horas}:${minutosESegundos}` : minutosESegundos;
+}

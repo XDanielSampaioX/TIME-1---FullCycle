@@ -53,7 +53,8 @@
   --status-texto: var(--reserva-alerta);
 }
 
-[data-status="PAGO"] {
+[data-status="PAGO"],
+[data-status="RECUSADO"] {
   --status-cor: var(--viagem-verde);
   --status-fundo: var(--viagem-suave);
   --status-texto: var(--viagem-verde);
@@ -426,7 +427,8 @@
   font-weight: 700;
 }
 
-.reserva-modal-titulo h2 {
+/* h2 no modal; h1 nas páginas de confirmação e de resultado do pagamento. */
+.reserva-modal-titulo :is(h1, h2) {
   font-size: 2rem;
   font-weight: 700;
 }
@@ -752,7 +754,7 @@
     padding: 1.25rem;
   }
 
-  .reserva-modal-titulo h2 {
+  .reserva-modal-titulo :is(h1, h2) {
     font-size: 1.5rem;
   }
 
@@ -783,5 +785,129 @@
 
   .reserva-resumo {
     flex-basis: auto;
+  }
+}
+
+/* Quadro "pagamento" do Figma. O card e a grade vêm da etapa de passageiros. */
+.reserva-pagamento-prazo {
+  justify-self: start;
+  padding: .375rem .75rem;
+  border-radius: 1.25rem;
+  background: var(--reserva-perigo);
+  color: var(--color-surface-card);
+  font-size: .75rem;
+  font-weight: 700;
+}
+
+.reserva-pagamento-metodos {
+  display: grid;
+  gap: .75rem;
+}
+
+.reserva-pagamento-metodos > div {
+  display: flex;
+  gap: 1rem;
+}
+
+.reserva-pagamento-metodos button {
+  flex: 1;
+  padding: .75rem 1.5rem;
+  /* Borda de 2px nos dois estados para o botão não pular ao trocar de método. */
+  border: 2px solid var(--viagem-borda);
+  border-radius: .5rem;
+  background: var(--color-surface-card);
+  color: var(--viagem-texto);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reserva-pagamento-metodos button[aria-pressed="true"] {
+  border-color: var(--viagem-verde);
+  background: var(--viagem-suave);
+  color: var(--viagem-verde);
+  font-weight: 700;
+}
+
+.reserva-pagamento-metodos p,
+.reserva-pagamento-detalhe [role="alert"],
+.reserva-resumo > small {
+  color: var(--viagem-texto);
+  font-size: .75rem;
+}
+
+.reserva-pagamento-detalhe {
+  display: grid;
+  justify-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border-radius: .5rem;
+  background: var(--color-surface-page);
+  text-align: center;
+}
+
+.reserva-pagamento-detalhe > div:first-child {
+  display: grid;
+  gap: .375rem;
+}
+
+.reserva-pagamento-detalhe strong {
+  font-size: .9375rem;
+}
+
+.reserva-pagamento-detalhe p {
+  color: var(--viagem-texto);
+  font-size: .8125rem;
+}
+
+.reserva-pagamento-detalhe small {
+  color: var(--viagem-texto);
+  font-size: .75rem;
+}
+
+.reserva-pagamento-qr {
+  display: grid;
+  width: 160px;
+  height: 160px;
+  place-items: center;
+  border: 2px solid var(--viagem-borda);
+  border-radius: .5rem;
+  background: var(--color-surface-card);
+}
+
+/* Quadros "pagamento-pendente" e "pagamento-negado": o mesmo molde da confirmação. */
+.reserva-pagamento-resultado {
+  display: grid;
+  width: min(100%, 40rem);
+  gap: 2rem;
+  margin-inline: auto;
+  padding-top: 1.25rem;
+}
+
+.reserva-pagamento-resultado .reserva-modal-acoes > .shared-button-secondary {
+  color: var(--color-surface-card);
+}
+
+.reserva-pagamento-aviso {
+  display: grid;
+  gap: .5rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--viagem-borda);
+  border-radius: .75rem;
+  background: var(--color-surface-card);
+}
+
+.reserva-pagamento-aviso strong {
+  font-size: .875rem;
+}
+
+.reserva-pagamento-aviso p {
+  color: var(--viagem-texto);
+  font-size: .8125rem;
+}
+
+@media (max-width: 640px) {
+  .reserva-pagamento-metodos > div {
+    flex-direction: column;
   }
 }

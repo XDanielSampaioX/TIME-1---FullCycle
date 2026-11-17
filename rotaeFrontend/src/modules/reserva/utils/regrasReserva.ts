@@ -13,13 +13,9 @@ export function obterStatusAtualReserva(reserva: Pick<Reserva, "status" | "expir
   return reserva.status;
 }
 
-// Mostra o bilhete com QR Code. O backend ainda não tem pagamento (issue #23) e o checkout pula
-// essa etapa, então a reserva pendente que já tem passageiros também conta como emitida.
-// Quando o pagamento existir, basta deixar só o status PAGO.
-export function bilheteEmitido(reserva: Pick<ReservaDetalhe, "status" | "expiraEm" | "passageiros">, agora: Date) {
-  const statusAtual = obterStatusAtualReserva(reserva, agora);
-
-  return statusAtual === "PAGO" || (statusAtual === "PAGAMENTO_PENDENTE" && reserva.passageiros.length > 0);
+// Mostra o bilhete com QR Code. Só a reserva paga tem bilhete; a pendente ainda passa pela etapa de pagamento.
+export function bilheteEmitido(reserva: Pick<ReservaDetalhe, "status" | "expiraEm">, agora: Date) {
+  return obterStatusAtualReserva(reserva, agora) === "PAGO";
 }
 
 // Regra combinada com o backend, que não guarda qual poltrona é de qual passageiro: o primeiro
@@ -79,7 +75,7 @@ export function descreverStatusReserva(reserva: Pick<Reserva, "status" | "expira
     },
     PAGO: { titulo: "Reserva confirmada", descricao: "Bilhetes prontos para o embarque" },
     EXPIRADO: { titulo: "Prazo expirado", descricao: "O pagamento não foi concluído a tempo" },
-    FALHA: { titulo: "Pagamento não aprovado", descricao: "Você pode tentar outra forma de pagamento" },
+    FALHA: { titulo: "Pagamento não aprovado", descricao: "A reserva foi encerrada e as poltronas foram liberadas" },
     CANCELADO: { titulo: "Reserva cancelada", descricao: `Cancelada por você em ${formatarDataHora(reserva.atualizadoEm)}` },
   };
 

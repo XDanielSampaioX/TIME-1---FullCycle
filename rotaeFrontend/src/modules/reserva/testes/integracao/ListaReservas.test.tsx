@@ -47,20 +47,33 @@ describe("ListaReservas", () => {
     expect(buscarReserva).not.toHaveBeenCalled();
   });
 
-  it("pula o pagamento e mostra o bilhete da confirmação na reserva pendente com passageiros", async () => {
+  it("oferece cancelar ou pagar agora na reserva pendente com passageiros", () => {
     montar([criarReservaFalsa({ passageiros: ["Mariana Oliveira", "Pedro Souza"] })]);
     const card = screen.getByRole("article", { name: "Reserva #ROT-2026-5087" });
 
-    // O cartão continua com o status do backend; o detalhe é o mesmo da tela de confirmação.
     expect(within(card).getByText("Aguardando pagamento")).toBeInTheDocument();
-    expect(within(card).queryByRole("button", { name: "Pagar agora" })).not.toBeInTheDocument();
+    expect(within(card).getByRole("button", { name: "Cancelar" })).toBeInTheDocument();
+    expect(within(card).getByRole("link", { name: "Pagar agora" })).toHaveAttribute("href", "/reservas/5087/pagamento");
+    expect(within(card).queryByRole("button", { name: "Ver 2 bilhetes" })).not.toBeInTheDocument();
+  });
+
+  it("mostra o bilhete da confirmação na reserva paga", async () => {
+    montar([criarReservaFalsa({ status: "PAGO", passageiros: ["Mariana Oliveira", "Pedro Souza"] })]);
+    const card = screen.getByRole("article", { name: "Reserva #ROT-2026-5087" });
+
+    jest.mocked(buscarReserva).mockResolvedValue({
+      ...criarReservaFalsa({ status: "PAGO" }),
+      passageiros: [passageiro, outroPassageiro],
+    });
+
+    // O detalhe é o mesmo da tela de confirmação.
     fireEvent.click(within(card).getByRole("button", { name: "Ver 2 bilhetes" }));
 
     expect(await screen.findByRole("heading", { name: "Reserva confirmada!", hidden: true })).toBeInTheDocument();
     // Um bilhete por passageiro, cada um com a sua poltrona e o seu QR Code.
     expect(screen.getByRole("img", { name: "QR Code da passagem #ROT-2026-5087-45", hidden: true })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "QR Code da passagem #ROT-2026-5087-46", hidden: true })).toBeInTheDocument();
-    expect(screen.getAllByText("VALOR")).toHaveLength(2);
+    expect(screen.getAllByText("VALOR PAGO")).toHaveLength(2);
   });
 
   it("leva para os passageiros a reserva pendente que ainda não tem nenhum", async () => {
@@ -83,7 +96,7 @@ describe("ListaReservas", () => {
     expect(cancelarReserva).toHaveBeenCalledWith(5087);
   });
 
-  it("exibe a recusa do backend ao cancelar", async () => {
+  it("exibe a recusa do backend ao cancelar e atualiza a lista", async () => {
     jest.mocked(cancelarReserva).mockRejectedValue(new Error("Reserva não pode ser cancelada (status: PAGO)."));
     const { aoAtualizar } = montar([reservaComPassageiro()]);
 
@@ -91,7 +104,8 @@ describe("ListaReservas", () => {
     fireEvent.click(screen.getByRole("button", { name: "Sim, cancelar" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Reserva não pode ser cancelada (status: PAGO).");
-    expect(aoAtualizar).not.toHaveBeenCalled();
+    // A reserva pode ter sido paga em outra aba: a lista é buscada de novo para mostrar o status certo.
+    expect(aoAtualizar).toHaveBeenCalledTimes(1);
   });
 
   it("mostra as ações do Figma para cada situação", () => {

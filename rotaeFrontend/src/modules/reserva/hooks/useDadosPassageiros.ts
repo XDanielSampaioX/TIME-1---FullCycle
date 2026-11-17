@@ -79,9 +79,8 @@ export function useDadosPassageiros(reserva: Pick<Reserva, "id" | "totalAssentos
         return;
       }
 
-      // O pagamento ainda não existe no backend (issue #23): o checkout pula direto para a confirmação.
-      // O botão continua desabilitado até a navegação terminar.
-      router.push(`/reservas/${reserva.id}/confirmacao`);
+      // Próxima etapa do checkout: o pagamento. O botão continua desabilitado até a navegação terminar.
+      router.push(`/reservas/${reserva.id}/pagamento`);
     } catch (motivo) {
       setErroGeral(motivo instanceof Error ? motivo.message : "Não foi possível salvar os passageiros.");
       setEnviando(false);

@@ -112,7 +112,7 @@ describe("EtapaPassageiros", () => {
     expect(cadastrarPassageiros).not.toHaveBeenCalled();
   });
 
-  it("envia os passageiros e pula o pagamento, indo para a confirmação", async () => {
+  it("envia os passageiros e segue para o pagamento", async () => {
     jest.mocked(cadastrarPassageiros).mockResolvedValue(null);
     render(<EtapaPassageiros reservaId={5087} />);
     await passageiro(1);
@@ -126,7 +126,7 @@ describe("EtapaPassageiros", () => {
       { nome: "Mariana Oliveira", cpf: "52998224725", dataNasc: "1995-04-20", celular: "85999990000", email: "mariana@email.com" },
       pedro,
     ]);
-    expect(push).toHaveBeenCalledWith("/reservas/5087/confirmacao");
+    expect(push).toHaveBeenCalledWith("/reservas/5087/pagamento");
   });
 
   it("mostra no passageiro certo o campo recusado pelo backend", async () => {
@@ -152,13 +152,14 @@ describe("EtapaPassageiros", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Reserva expirada.");
   });
 
-  it("não abre o formulário quando a reserva já tem passageiros", async () => {
+  it("não abre o formulário quando a reserva já tem passageiros e leva ao pagamento", async () => {
     jest.mocked(buscarReserva).mockResolvedValue(reservaCom({ passageiros: [{ ...usuario, usuarioId: 3 }] }));
     render(<EtapaPassageiros reservaId={5087} />);
 
     expect(await screen.findByText("Passageiros já informados")).toBeInTheDocument();
     expect(screen.queryByRole("group", { name: /^Passageiro/ })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Ver minhas viagens" })).toHaveAttribute("href", "/minhas-viagens");
+    // Quem volta do pagamento pelo navegador não fica sem saída.
+    expect(screen.getByRole("link", { name: "Ir para o pagamento" })).toHaveAttribute("href", "/reservas/5087/pagamento");
   });
 
   it("não abre o formulário quando o prazo da reserva acabou", async () => {
@@ -167,5 +168,12 @@ describe("EtapaPassageiros", () => {
 
     expect(await screen.findByText("Prazo expirado")).toBeInTheDocument();
     expect(screen.queryByRole("group", { name: /^Passageiro/ })).not.toBeInTheDocument();
+  });
+
+  it("com a reserva já paga, leva ao bilhete", async () => {
+    jest.mocked(buscarReserva).mockResolvedValue(reservaCom({ status: "PAGO", passageiros: [{ ...usuario, usuarioId: 3 }] }));
+    render(<EtapaPassageiros reservaId={5087} />);
+
+    expect(await screen.findByRole("link", { name: "Ver bilhete" })).toHaveAttribute("href", "/reservas/5087/confirmacao");
   });
 });

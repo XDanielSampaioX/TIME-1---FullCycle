@@ -4,7 +4,8 @@ import { useState } from "react";
 import { cancelarReserva } from "../services/cancelarReserva";
 
 // Cancela a reserva e informa se o pedido está em andamento ou se deu erro.
-export function useCancelarReserva(aoCancelar: () => void) {
+// aoFalhar: a recusa pode vir de a reserva ter mudado (ex.: paga em outra aba), então a lista é atualizada.
+export function useCancelarReserva(aoCancelar: () => void, aoFalhar?: () => void) {
   const [cancelando, setCancelando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -17,6 +18,7 @@ export function useCancelarReserva(aoCancelar: () => void) {
       aoCancelar();
     } catch (motivo) {
       setErro(motivo instanceof Error ? motivo.message : "Não foi possível cancelar a reserva.");
+      aoFalhar?.();
     } finally {
       setCancelando(false);
     }
