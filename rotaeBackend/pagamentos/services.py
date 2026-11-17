@@ -1,7 +1,10 @@
 from django.db import transaction
 from django.utils import timezone
 
-from reservas.exceptions import ReservaNaoEncontradaError
+from reservas.exceptions import (
+    PassageirosAssentosInconsistentesError,
+    ReservaNaoEncontradaError,
+)
 from reservas.models import Reserva
 from reservas.services import emitir_passagens
 from viagens.models import Viagem, ViagemAssento
@@ -127,6 +130,24 @@ def _concluir_pagamento(*, pagamento, aprovado, referencia_externa):
     return pagamento, True
 
 
+@transaction.atomic
+def _registrar_aprovacao_sem_passagens(*, pagamento_id, referencia_externa):
+    """Preserva a aprovação e ocupa os assentos quando a emissão falha."""
+    pagamento_atual = Pagamento.objects.get(pk=pagamento_id)
+    reserva = Reserva.objects.select_for_update().get(pk=pagamento_atual.reserva_id)
+    pagamento_atual = Pagamento.objects.select_for_update().get(pk=pagamento_id)
+    if pagamento_atual.status == Pagamento.Status.PENDENTE:
+        pagamento_atual.status = Pagamento.Status.APROVADO
+        pagamento_atual.referencia_externa = referencia_externa
+        pagamento_atual.save(
+            update_fields=["status", "referencia_externa", "atualizado_em"]
+        )
+        if reserva.status == Reserva.Status.PAGAMENTO_PENDENTE:
+            reserva.status = Reserva.Status.PAGO
+            _atualizar_assentos(reserva, status=ViagemAssento.Status.RESERVADO)
+            reserva.save(update_fields=["status", "atualizado_em"])
+
+
 def processar_pagamento(*, reserva_id, usuario, metodo_pagamento, gateway=None):
     """
     Processa o pagamento de uma reserva do usuário autenticado em 3 etapas,
@@ -154,11 +175,19 @@ def processar_pagamento(*, reserva_id, usuario, metodo_pagamento, gateway=None):
             "Provedor de pagamento indisponível. Tente novamente."
         ) from erro
 
-    pagamento, aplicado = _concluir_pagamento(
-        pagamento=pagamento,
-        aprovado=resultado.aprovado,
-        referencia_externa=resultado.referencia_externa,
-    )
+    try:
+        pagamento, aplicado = _concluir_pagamento(
+            pagamento=pagamento,
+            aprovado=resultado.aprovado,
+            referencia_externa=resultado.referencia_externa,
+        )
+    except PassageirosAssentosInconsistentesError:
+        # A confirmação foi revertida; registre a aprovação e mantenha os assentos ocupados.
+        _registrar_aprovacao_sem_passagens(
+            pagamento_id=pagamento.pk,
+            referencia_externa=resultado.referencia_externa,
+        )
+        raise
     if not aplicado:
         raise PagamentoNaoPermitidoError(
             "Reserva mudou de status durante o pagamento "

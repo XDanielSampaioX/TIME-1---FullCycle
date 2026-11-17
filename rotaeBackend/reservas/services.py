@@ -9,6 +9,7 @@ from viagens.models import Viagem, ViagemAssento
 from .exceptions import (
     AssentoIndisponivelError,
     AssentoOutraViagemError,
+    PassageirosAssentosInconsistentesError,
     QuantidadePassageirosError,
     ReservaInvalidaError,
     ReservaNaoEncontradaError,
@@ -187,7 +188,7 @@ def emitir_passagens(*, reserva):
     if len(passageiros) != len(assentos) or any(
         assento.viagem_id != reserva.viagem_id for assento in assentos
     ):
-        raise ValueError(
+        raise PassageirosAssentosInconsistentesError(
             "Reserva paga sem correspondência entre passageiros e assentos."
         )
 

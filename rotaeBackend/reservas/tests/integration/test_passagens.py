@@ -38,7 +38,7 @@ def criar_passagens(usuario, viagem):
 
 
 def test_listar_minhas_passagens_e_detalhar_reserva_inclui_passagens(
-    cliente_autenticado, usuario, viagem
+    cliente_autenticado, usuario, viagem, django_assert_num_queries
 ):
     reserva = criar_passagens(usuario, viagem)
 
@@ -54,9 +54,10 @@ def test_listar_minhas_passagens_e_detalhar_reserva_inclui_passagens(
     assert set(passagem["viagemAssento"]) == {"id", "numero"}
     assert passagem["passageiro"]["nome"].startswith("Passageiro")
 
-    detalhe = cliente_autenticado.get(
-        reverse("detalhe_reserva", kwargs={"pk": reserva.id})
-    )
+    with django_assert_num_queries(6):
+        detalhe = cliente_autenticado.get(
+            reverse("detalhe_reserva", kwargs={"pk": reserva.id})
+        )
 
     assert detalhe.status_code == 200
     assert len(detalhe.json()["passagens"]) == 2

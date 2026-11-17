@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from rest_framework import status
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -85,8 +86,12 @@ class ReservaDetalheView(RetrieveAPIView):
             .prefetch_related(
                 "viagem_assentos__assento",
                 "passageiros",
-                "passagens__passageiro",
-                "passagens__viagem_assento__assento",
+                Prefetch(
+                    "passagens",
+                    queryset=Passagem.objects.select_related(
+                        "passageiro", "viagem_assento__assento"
+                    ),
+                ),
             )
         )
 
