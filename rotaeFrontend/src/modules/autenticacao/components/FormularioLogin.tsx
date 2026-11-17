@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useRef, useState } from "react";
 import { Button } from "@/shared/components/Button";
 import { useFocoPrimeiroErro } from "@/modules/usuario/hooks/useFocoPrimeiroErro";
 import { CampoFormulario } from "@/shared/components/CampoFormulario";
 import { useLogin } from "../hooks/useLogin";
+import { RodapeAcesso } from "./RodapeAcesso";
+import { caminhoDoCadastro } from "../utils/destinoAposLogin";
 
 function IconeOlho({ riscado }: { riscado: boolean }) {
   return (
@@ -83,21 +84,11 @@ export function FormularioLogin({ destino }: { destino: string }) {
       <Button className="w-full" type="submit" variant="secondary" disabled={enviando}>
         {enviando ? "Entrando..." : "Entrar"}
       </Button>
-      <p className={`
-        m-0 flex items-center gap-3 text-xs text-(--color-text-muted)
-        before:h-px before:flex-1 before:bg-(--color-border) after:h-px after:flex-1 after:bg-(--color-border)
-      `}>
-        ou
-      </p>
-      <p className="m-0 text-center text-sm text-(--color-text-secondary)">
-        Ainda não tem uma conta?{" "}
-        <Link className="font-bold text-(--color-brand-800)" href="/cadastro">
-          Criar conta
-        </Link>
-      </p>
-      <p className="m-0 text-center text-xs text-(--color-text-muted)">
-        Ao entrar, você concorda com nossos Termos de Uso e Política de Privacidade.
-      </p>
+      <RodapeAcesso
+        pergunta="Ainda não tem uma conta?"
+        link={{ texto: "Criar conta", href: caminhoDoCadastro(destino) }}
+        acao="Ao entrar"
+      />
     </form>
   );
 }

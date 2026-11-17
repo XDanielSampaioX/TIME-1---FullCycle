@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 import { Brand } from "@/shared/components/Header";
 
-type PainelBoasVindasProps = {
+export type PainelBoasVindasProps = {
   selo: string;
   titulo: ReactNode;
   texto: string;
 };
 
-// Painel verde das telas de acesso (login e, depois, cadastro), como no protótipo.
+// Painel verde das telas de acesso (login e cadastro), como no protótipo.
 export function PainelBoasVindas({ selo, titulo, texto }: PainelBoasVindasProps) {
   return (
     <aside className="flex flex-col gap-12 bg-(--color-brand-950) p-6 text-(--color-text-on-dark) md:p-12">
