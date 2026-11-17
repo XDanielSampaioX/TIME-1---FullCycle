@@ -1,42 +1,38 @@
 "use client";
 
 import Link from "next/link";
+import { useRef, type ChangeEvent } from "react";
+import { RodapeAcesso } from "@/modules/autenticacao/components/RodapeAcesso";
+import { caminhoDoLogin } from "@/modules/autenticacao/utils/destinoAposLogin";
 import { Button } from "@/shared/components/Button";
+import { CampoFormulario } from "@/shared/components/CampoFormulario";
 import { useCadastroUsuario } from "../hooks/useCadastroUsuario";
-import type { CadastroUsuario } from "../types/cadastroUsuario";
+import { useFocoPrimeiroErro } from "../hooks/useFocoPrimeiroErro";
+import type { CamposCadastro } from "../types/camposCadastro";
 
-const grupos: {
-  titulo: string;
-  campos: { nome: keyof CadastroUsuario; titulo: string; tipo: string; autoComplete: string; placeholder?: string }[];
-}[] = [
-  {
-    titulo: "Dados pessoais",
-    campos: [
-      { nome: "nome", titulo: "Nome completo", tipo: "text", autoComplete: "name" },
-      { nome: "cpf", titulo: "CPF", tipo: "text", autoComplete: "off", placeholder: "000.000.000-00" },
-      { nome: "dataNasc", titulo: "Data de nascimento", tipo: "date", autoComplete: "bday" },
-      { nome: "celular", titulo: "Celular", tipo: "tel", autoComplete: "tel-national", placeholder: "(85) 99999-0000" },
-    ],
-  },
-  {
-    titulo: "Dados de acesso",
-    campos: [
-      { nome: "email", titulo: "E-mail", tipo: "email", autoComplete: "email" },
-      { nome: "senha", titulo: "Senha", tipo: "password", autoComplete: "new-password" },
-    ],
-  },
-];
+export function FormularioCadastroUsuario({ destino }: { destino: string }) {
+  const {
+    campos, erros, erroGeral, enviando, tentativas, contaCriada, alterarCampo, enviar,
+  } = useCadastroUsuario(destino);
+  const formulario = useRef<HTMLFormElement>(null);
+  useFocoPrimeiroErro(formulario, tentativas);
 
-export function FormularioCadastroUsuario() {
-  const { dados, erros, erroGeral, enviando, usuario, alterarCampo, enviar } = useCadastroUsuario();
+  // O que todo campo do formulário recebe: nome, valor, erro e como avisar que mudou.
+  function campo(nome: keyof CamposCadastro) {
+    return {
+      nome,
+      required: true,
+      erro: erros[nome],
+      value: campos[nome],
+      onChange: (event: ChangeEvent<HTMLInputElement>) => alterarCampo(nome, event.target.value),
+    };
+  }
 
-  if (usuario) {
+  if (contaCriada) {
     return (
-      <div className="grid gap-4" role="status">
-        <p className="m-0">
-          Conta criada com sucesso, {usuario.nome}!
-        </p>
-        <Link className="font-bold" href="/login">
+      <div className="grid gap-3" role="status">
+        <p className="m-0">Conta criada com sucesso! Entre para continuar.</p>
+        <Link className="font-bold text-(--color-brand-800)" href={caminhoDoLogin(destino)}>
           Entrar na minha conta
         </Link>
       </div>
@@ -45,63 +41,63 @@ export function FormularioCadastroUsuario() {
 
   return (
     <form
-      className="grid gap-6"
+      className="grid gap-4"
       method="post"
       noValidate
+      ref={formulario}
       onSubmit={(event) => {
         event.preventDefault();
         enviar();
       }}
     >
-      {grupos.map((grupo) => (
-        <fieldset className="m-0 grid gap-4 border-0 p-0" key={grupo.titulo}>
-          <legend className={`
-            mb-3 p-0 text-xs font-extrabold
-            tracking-widest text-(--color-text-secondary) uppercase
-          `}>
-            {grupo.titulo}
-          </legend>
-          {grupo.campos.map((campo) => (
-            <label className="grid gap-1 text-sm font-bold" key={campo.nome}>
-              {campo.titulo}
-              <input
-                className={`
-                  min-h-11 rounded-(--radius-sm) border border-(--color-border)
-                  bg-(--color-surface-card) px-3 font-normal
-                  aria-invalid:border-red-700
-                `}
-                type={campo.tipo}
-                name={campo.nome}
-                autoComplete={campo.autoComplete}
-                placeholder={campo.placeholder}
-                value={dados[campo.nome]}
-                aria-invalid={Boolean(erros[campo.nome])}
-                aria-describedby={erros[campo.nome] ? `erro-${campo.nome}` : undefined}
-                onChange={(event) => alterarCampo(campo.nome, event.target.value)}
-              />
-              {erros[campo.nome] && (
-                <span className="font-normal text-red-700" id={`erro-${campo.nome}`}>
-                  {erros[campo.nome]}
-                </span>
-              )}
-            </label>
-          ))}
-        </fieldset>
-      ))}
+      <CampoFormulario {...campo("nome")} titulo="Nome completo" autoComplete="name" placeholder="Seu nome completo" />
+      <CampoFormulario {...campo("email")} titulo="E-mail" type="email" autoComplete="email" placeholder="seu@email.com" />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <CampoFormulario
+          {...campo("cpf")}
+          titulo="CPF"
+          inputMode="numeric"
+          autoComplete="off"
+          placeholder="000.000.000-00"
+        />
+        <CampoFormulario
+          {...campo("celular")}
+          titulo="Celular"
+          type="tel"
+          autoComplete="tel-national"
+          placeholder="(00) 00000-0000"
+        />
+      </div>
+      <CampoFormulario {...campo("dataNasc")} titulo="Data de nascimento" type="date" autoComplete="bday" />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <CampoFormulario
+          {...campo("senha")}
+          titulo="Senha"
+          type="password"
+          autoComplete="new-password"
+          placeholder="Mínimo de 8 caracteres"
+        />
+        <CampoFormulario
+          {...campo("confirmacaoSenha")}
+          titulo="Confirmar senha"
+          type="password"
+          autoComplete="new-password"
+          placeholder="Repita a senha"
+        />
+      </div>
       {erroGeral && (
         <p className="m-0 text-sm text-red-700" role="alert">
           {erroGeral}
         </p>
       )}
-      <Button type="submit" disabled={enviando}>
-        {enviando ? "Criando conta..." : "Criar conta"}
+      <Button className="w-full" type="submit" variant="secondary" disabled={enviando}>
+        {enviando ? "Criando conta..." : "Criar minha conta"}
       </Button>
-      <p className="m-0 text-sm">
-        Já tem conta?{" "}
-        <Link className="font-bold" href="/login">
-          Entrar
-        </Link>
-      </p>
+      <RodapeAcesso
+        pergunta="Já tem uma conta?"
+        link={{ texto: "Entrar", href: caminhoDoLogin(destino) }}
+        acao="Ao criar sua conta"
+      />
     </form>
   );
 }
