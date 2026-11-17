@@ -4,7 +4,7 @@ import type { ReservaDetalhe } from "../types/reservaDetalhe";
 import { bilheteEmitido, descreverStatusReserva } from "../utils/regrasReserva";
 import { BilheteReserva } from "./BilheteReserva";
 
-// O quadro "confirmacao" do Figma: título, bilhete e ações. Aparece depois dos passageiros
+// O quadro "confirmacao" do Figma: título, bilhete e ações. Aparece depois do pagamento
 // e também no modal de detalhes de "Minhas viagens", para as duas telas mostrarem o mesmo bilhete.
 export function ConfirmacaoReserva({ reserva, agora, dentroDoModal }: {
   reserva: ReservaDetalhe;
@@ -18,7 +18,7 @@ export function ConfirmacaoReserva({ reserva, agora, dentroDoModal }: {
 
   return (
     <>
-      {/* O bilhete emitido usa as cores de PAGO mesmo enquanto o pagamento é pulado. */}
+      {/* O bilhete emitido usa as cores de PAGO. */}
       <header className="reserva-modal-titulo" data-status={emitido ? "PAGO" : statusAtual}>
         <span aria-hidden="true">{emitido ? "✓" : "!"}</span>
         <Titulo>{emitido ? "Reserva confirmada!" : titulo}</Titulo>
@@ -33,6 +33,14 @@ export function ConfirmacaoReserva({ reserva, agora, dentroDoModal }: {
         </form>
       ) : (
         <div className="reserva-modal-acoes">
+          {/* Aberta com a reserva ainda pendente (favorito, Voltar), a página leva ao pagamento. */}
+          {statusAtual === "PAGAMENTO_PENDENTE" && reserva.passageiros.length > 0 && (
+            <Link className="shared-button shared-button-secondary" href={`/reservas/${reserva.id}/pagamento`}>Ir para o pagamento</Link>
+          )}
+          {/* Em FALHA o backend liberou as poltronas: o caminho é reservar de novo. */}
+          {statusAtual === "FALHA" && (
+            <Link className="shared-button shared-button-secondary" href={`/viagens/${reserva.viagem.id}/assentos`}>Escolher poltronas</Link>
+          )}
           <Link className="shared-button shared-button-secondary" href="/minhas-viagens">Ver minhas viagens</Link>
           {voltarAoInicio}
         </div>

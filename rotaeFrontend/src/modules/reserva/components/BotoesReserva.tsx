@@ -24,7 +24,7 @@ export function BotoesReserva({ reserva, statusAtual, semPassageiros, aoVerDetal
   const { cancelando, erro, cancelar } = useCancelarReserva(() => {
     setConfirmando(false);
     aoAtualizar();
-  });
+  }, aoAtualizar);
   const { viagem } = reserva;
   const busca = new URLSearchParams({ origem: String(viagem.origem.id), destino: String(viagem.destino.id) });
 
@@ -57,10 +57,10 @@ export function BotoesReserva({ reserva, statusAtual, semPassageiros, aoVerDetal
     PAGAMENTO_PENDENTE: (
       <>
         {botaoCancelar}
-        {/* Sem passageiros, falta essa etapa. Com eles, o checkout pula o pagamento (issue #23) e o bilhete já aparece. */}
+        {/* Sem passageiros, falta essa etapa. Com eles, falta o pagamento; o bilhete só aparece depois de pago. */}
         {semPassageiros
           ? <Link className={VERDE} href={`/reservas/${reserva.id}/passageiros`}>Informar passageiros</Link>
-          : botaoDetalhes(verBilhetes, VERDE)}
+          : <Link className={VERDE} href={`/reservas/${reserva.id}/pagamento`}>Pagar agora</Link>}
       </>
     ),
     PAGO: (

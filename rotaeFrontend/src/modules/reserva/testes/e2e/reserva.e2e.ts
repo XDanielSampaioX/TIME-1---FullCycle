@@ -10,7 +10,8 @@ const contas = {
   b: { email: process.env.E2E_EMAIL_B ?? "", senha: process.env.E2E_SENHA_B ?? "" },
 };
 
-type Sessao = { access: string; refresh: string; usuario: unknown };
+// Mesmo formato que o app guarda em "rotae.sessao" (interpretarSessao exige a chave user).
+type Sessao = { access: string; refresh: string; user: unknown };
 type AssentoDaViagem = { id: number; numero: number; status: string };
 type ReservaResumo = { id: number; status: string; assentos: { numero: number }[] };
 
@@ -21,7 +22,7 @@ async function entrar(request: APIRequestContext, conta: typeof contas.a): Promi
   const resposta = await request.post(`${API}/auth/login/`, { data: { email: conta.email, senha: conta.senha } });
   expect(resposta.ok()).toBeTruthy();
   const { access, refresh, user } = await resposta.json();
-  return { access, refresh, usuario: user };
+  return { access, refresh, user };
 }
 
 async function abrirComo(browser: Browser, sessao: Sessao) {
@@ -168,7 +169,7 @@ test("respeita o limite de 10, confirma e cancela pela tela", async ({ browser, 
   expect(await abertas(request, sessaoA)).toHaveLength(0);
 });
 
-test("informa os passageiros depois de escolher as poltronas", async ({ browser, request }) => {
+test("informa os passageiros, paga e recebe o bilhete", async ({ browser, request }) => {
   const pagina = await abrirComo(browser, sessaoB);
   await pagina.goto(`/viagens/${viagemId}/assentos`);
 
@@ -197,8 +198,24 @@ test("informa os passageiros depois de escolher as poltronas", async ({ browser,
     await bloco.getByLabel("E-mail").fill(pessoa.email);
   }
 
-  // O pagamento é pulado por enquanto: depois dos passageiros vem a confirmação com o bilhete.
+  // Depois dos passageiros vem o pagamento. Em Minhas viagens a reserva pendente oferece cancelar ou pagar.
   await pagina.getByRole("button", { name: "Confirmar reserva" }).click();
+  await expect(pagina).toHaveURL(/\/reservas\/\d+\/pagamento$/);
+  await expect(pagina.getByRole("heading", { level: 1, name: "Forma de pagamento" })).toBeVisible();
+
+  const [reserva] = await abertas(request, sessaoB);
+  const codigo = `Reserva #ROT-${new Date().getFullYear()}-${String(reserva.id).padStart(4, "0")}`;
+  await pagina.goto("/minhas-viagens");
+  const cartao = pagina.getByRole("article", { name: codigo });
+  await expect(cartao).toContainText("Joana Teste e Pedro Teste");
+  await expect(cartao.getByRole("button", { name: "Cancelar" })).toBeVisible();
+  await expect(cartao.getByRole("button", { name: "Ver 2 bilhetes" })).toHaveCount(0);
+  await cartao.getByRole("link", { name: "Pagar agora" }).click();
+
+  // O gateway simulado do backend aprova na hora: a reserva vira PAGO e o bilhete é emitido.
+  await expect(pagina).toHaveURL(/\/reservas\/\d+\/pagamento$/);
+  await pagina.getByRole("button", { name: "Cartão de Crédito" }).click();
+  await pagina.getByRole("button", { name: "Confirmar pagamento" }).click();
   await expect(pagina).toHaveURL(/\/reservas\/\d+\/confirmacao$/);
   await expect(pagina.getByRole("heading", { level: 1, name: "Reserva confirmada!" })).toBeVisible();
   // Um bilhete por passageiro, cada um com o seu QR Code.
@@ -206,14 +223,9 @@ test("informa os passageiros depois de escolher as poltronas", async ({ browser,
   await expect(pagina.getByText("Joana Teste")).toBeVisible();
   await expect(pagina.getByText("Pedro Teste")).toBeVisible();
 
-  // Em Minhas viagens, o detalhe da reserva é o mesmo bilhete da confirmação.
+  // Em Minhas viagens, o detalhe da reserva paga é o mesmo bilhete da confirmação.
   await pagina.getByRole("link", { name: "Ver minhas viagens" }).click();
   await expect(pagina).toHaveURL(/\/minhas-viagens$/);
-  const [reserva] = await abertas(request, sessaoB);
-  const codigo = `Reserva #ROT-${new Date().getFullYear()}-${String(reserva.id).padStart(4, "0")}`;
-  const cartao = pagina.getByRole("article", { name: codigo });
-  await expect(cartao).toContainText("Joana Teste e Pedro Teste");
-
   await cartao.getByRole("button", { name: "Ver 2 bilhetes" }).click();
   const modal = pagina.getByRole("dialog", { name: "Detalhes da reserva" });
   await expect(modal.getByRole("heading", { name: "Reserva confirmada!" })).toBeVisible();

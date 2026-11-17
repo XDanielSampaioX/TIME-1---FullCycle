@@ -1,5 +1,5 @@
 import { formatarDataHora } from "@/shared/utils/formatarDataHora";
-import { formatarCodigoReserva, formatarHorariosDaViagem, formatarPoltronas } from "../../utils/formatarReserva";
+import { formatarCodigoReserva, formatarContagem, formatarHorariosDaViagem, formatarPoltronas } from "../../utils/formatarReserva";
 import { bilheteEmitido, descreverStatusReserva, obterStatusAtualReserva, separarReservas } from "../../utils/regrasReserva";
 import { criarReservaFalsa } from "../fixtures/reserva";
 
@@ -58,15 +58,22 @@ describe("regras de reserva", () => {
     expect(historico.map((reserva) => reserva.id)).toEqual([3, 4]);
   });
 
-  it("emite o bilhete da reserva paga e, enquanto o pagamento é pulado, da pendente com passageiros", () => {
-    const passageiro = { id: 1, usuarioId: null, nome: "Ana", email: "", celular: "", dataNasc: "", cpf: "", criadoEm: "", atualizadoEm: "" };
+  it("emite o bilhete só da reserva paga", () => {
     const pendente = criarReservaFalsa();
 
-    expect(bilheteEmitido({ ...pendente, status: "PAGO", passageiros: [] }, agora)).toBe(true);
-    expect(bilheteEmitido({ ...pendente, passageiros: [passageiro] }, agora)).toBe(true);
-    expect(bilheteEmitido({ ...pendente, passageiros: [] }, agora)).toBe(false);
-    expect(bilheteEmitido({ ...pendente, passageiros: [passageiro] }, new Date("2026-11-05T12:00:00-03:00"))).toBe(false);
-    expect(bilheteEmitido({ ...pendente, status: "CANCELADO", passageiros: [passageiro] }, agora)).toBe(false);
+    expect(bilheteEmitido({ ...pendente, status: "PAGO" }, agora)).toBe(true);
+    expect(bilheteEmitido(pendente, agora)).toBe(false);
+    expect(bilheteEmitido(pendente, new Date("2026-11-05T12:00:00-03:00"))).toBe(false);
+    expect(bilheteEmitido({ ...pendente, status: "CANCELADO" }, agora)).toBe(false);
+    expect(bilheteEmitido({ ...pendente, status: "FALHA" }, agora)).toBe(false);
+  });
+
+  it("conta o prazo em minutos e segundos e, acima de uma hora, com as horas", () => {
+    const expiraEm = "2026-11-04T10:00:00-03:00";
+
+    expect(formatarContagem(expiraEm, new Date("2026-11-04T09:45:02-03:00"))).toBe("14:58");
+    expect(formatarContagem(expiraEm, new Date("2026-11-04T08:55:00-03:00"))).toBe("1:05:00");
+    expect(formatarContagem(expiraEm, new Date("2026-11-04T10:00:05-03:00"))).toBe("00:00");
   });
 
   it("formata os horários e avisa quando a chegada é no dia seguinte", () => {

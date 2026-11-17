@@ -24,9 +24,10 @@ export function useSelecaoAssentos(viagemId: number, assentos: ViagemAssento[], 
   const parametros = useSearchParams();
   const [escolhidos, setSelecionados] = useState(() => lerAssentosDaUrl(parametros.get("assentos")));
   // Um endereço editado à mão pode trazer ids que não são desta viagem ou passar do limite:
-  // eles ficariam presos na seleção, sem poltrona no mapa para desmarcar.
+  // eles ficariam presos na seleção, sem poltrona no mapa para desmarcar. O mesmo vale para a
+  // poltrona que outra pessoa reservou enquanto estava escolhida: o mapa a mostra ocupada.
   const selecionados = escolhidos
-    .filter((id) => assentos.some((assento) => assento.id === id))
+    .filter((id) => assentos.some((assento) => assento.id === id && assento.status === "DISPONIVEL"))
     .slice(0, LIMITE_DE_ASSENTOS);
   const [verificando, setVerificando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);

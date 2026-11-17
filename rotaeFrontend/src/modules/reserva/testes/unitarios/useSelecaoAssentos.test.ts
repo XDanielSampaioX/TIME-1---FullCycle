@@ -51,6 +51,18 @@ describe("useSelecaoAssentos", () => {
     expect(result.current.selecionados).toEqual([]);
   });
 
+  it("solta a poltrona escolhida que o mapa atualizado mostra ocupada por outra pessoa", () => {
+    const { result, rerender } = renderHook(({ assentos }) => useSelecaoAssentos(7, assentos, jest.fn()), {
+      initialProps: { assentos: mapa },
+    });
+
+    act(() => result.current.alternar(105));
+    act(() => result.current.alternar(106));
+    rerender({ assentos: mapa.map((assento) => assento.id === 106 ? { ...assento, status: "SEGURADO" as const } : assento) });
+
+    expect(result.current.selecionados).toEqual([105]);
+  });
+
   it("não aceita mais poltronas depois do limite do backend e avisa", () => {
     const { result } = montar();
 

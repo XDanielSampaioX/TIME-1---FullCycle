@@ -10,9 +10,9 @@ const passageiro = { id: 1, usuarioId: 3, nome: "Mariana Oliveira", email: "", c
 describe("EtapaConfirmacao", () => {
   beforeEach(() => jest.resetAllMocks());
 
-  it("mostra o quadro de confirmação do Figma depois dos passageiros", async () => {
+  it("mostra o quadro de confirmação do Figma depois do pagamento", async () => {
     jest.mocked(buscarReserva).mockResolvedValue({
-      ...criarReservaFalsa({ expiraEm: "2099-01-01T10:00:00-03:00" }),
+      ...criarReservaFalsa({ expiraEm: "2099-01-01T10:00:00-03:00", status: "PAGO" }),
       passageiros: [passageiro, { ...passageiro, id: 2, usuarioId: null, nome: "Pedro Souza" }],
     });
     render(<EtapaConfirmacao reservaId={5087} />);
@@ -36,5 +36,23 @@ describe("EtapaConfirmacao", () => {
 
     expect(await screen.findByRole("heading", { level: 1, name: "Aguardando pagamento" })).toBeInTheDocument();
     expect(screen.queryByRole("img", { name: /QR Code/ })).not.toBeInTheDocument();
+  });
+
+  it("leva ao pagamento quando a página é aberta com a reserva ainda pendente", async () => {
+    jest.mocked(buscarReserva).mockResolvedValue({
+      ...criarReservaFalsa({ expiraEm: "2099-01-01T10:00:00-03:00" }),
+      passageiros: [passageiro],
+    });
+    render(<EtapaConfirmacao reservaId={5087} />);
+
+    expect(await screen.findByRole("link", { name: "Ir para o pagamento" })).toHaveAttribute("href", "/reservas/5087/pagamento");
+    expect(screen.queryByText("BILHETE DIGITAL EMITIDO")).not.toBeInTheDocument();
+  });
+
+  it("leva a reserva em FALHA a escolher as poltronas de novo", async () => {
+    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa({ status: "FALHA" }), passageiros: [passageiro] });
+    render(<EtapaConfirmacao reservaId={5087} />);
+
+    expect(await screen.findByRole("link", { name: "Escolher poltronas" })).toHaveAttribute("href", "/viagens/7/assentos");
   });
 });

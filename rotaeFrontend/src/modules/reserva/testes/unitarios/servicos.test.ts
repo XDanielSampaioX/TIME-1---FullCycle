@@ -1,9 +1,11 @@
 import { fetchAutenticado } from "@/modules/autenticacao/services/fetchAutenticado";
+import { PagamentoRecusadoError } from "../../classes/PagamentoRecusadoError";
 import { buscarReserva } from "../../services/buscarReserva";
 import { cadastrarPassageiros } from "../../services/cadastrarPassageiros";
 import { cancelarReserva } from "../../services/cancelarReserva";
 import { criarReserva } from "../../services/criarReserva";
 import { listarMinhasReservas } from "../../services/listarMinhasReservas";
+import { pagarReserva } from "../../services/pagarReserva";
 
 jest.mock("@/modules/autenticacao/services/fetchAutenticado");
 
@@ -59,6 +61,28 @@ describe("serviços de reserva", () => {
 
     await expect(cancelarReserva(9)).rejects.toThrow("Reserva não pode ser cancelada (status: PAGO).");
     expect(fetchAutenticado).toHaveBeenCalledWith(expect.stringContaining("/api/v1/reservas/9/cancelar/"), { method: "POST" });
+  });
+
+  it("pagarReserva envia só o método e devolve a tentativa do backend", async () => {
+    jest.mocked(fetchAutenticado).mockResolvedValue(resposta(201, { id: 3, status: "APROVADO", reservaStatus: "PAGO" }));
+
+    await expect(pagarReserva(9, "PIX")).resolves.toEqual({ id: 3, status: "APROVADO", reservaStatus: "PAGO" });
+    expect(fetchAutenticado).toHaveBeenCalledWith(
+      expect.stringContaining("/api/v1/reservas/9/pagamentos/"),
+      expect.objectContaining({ method: "POST", body: JSON.stringify({ metodoPagamento: "PIX" }) }),
+    );
+  });
+
+  it("pagarReserva devolve null quando o provedor falha (502)", async () => {
+    jest.mocked(fetchAutenticado).mockResolvedValue(resposta(502, { detail: "Provedor de pagamento indisponível. Tente novamente." }));
+
+    await expect(pagarReserva(9, "CARTAO")).resolves.toBeNull();
+  });
+
+  it("pagarReserva repassa a recusa do backend", async () => {
+    jest.mocked(fetchAutenticado).mockResolvedValue(resposta(409, { detail: "Reserva expirada." }));
+
+    await expect(pagarReserva(9, "PIX")).rejects.toThrow(new PagamentoRecusadoError("Reserva expirada."));
   });
 
   it("cancelarReserva aceita keepalive para quando a página está fechando", async () => {
