@@ -10,7 +10,7 @@ const contas = {
   b: { email: process.env.E2E_EMAIL_B ?? "", senha: process.env.E2E_SENHA_B ?? "" },
 };
 
-type Sessao = { access: string; refresh: string; usuario: unknown };
+type Sessao = { access: string; refresh: string; user: unknown };
 type AssentoDaViagem = { id: number; numero: number; status: string };
 type ReservaResumo = { id: number; status: string; assentos: { numero: number }[] };
 
@@ -21,7 +21,7 @@ async function entrar(request: APIRequestContext, conta: typeof contas.a): Promi
   const resposta = await request.post(`${API}/auth/login/`, { data: { email: conta.email, senha: conta.senha } });
   expect(resposta.ok()).toBeTruthy();
   const { access, refresh, user } = await resposta.json();
-  return { access, refresh, usuario: user };
+  return { access, refresh, user };
 }
 
 async function abrirComo(browser: Browser, sessao: Sessao) {
