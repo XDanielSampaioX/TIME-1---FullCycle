@@ -1,7 +1,7 @@
 # Rotaê — Frontend
 
 Interface web do Rotaê, um site de passagens de ônibus: buscar viagens, escolher a poltrona,
-informar os passageiros e acompanhar as reservas.
+informar os passageiros, pagar (checkout simulado) e acompanhar as reservas.
 
 É uma das três aplicações do repositório `TIME-1---FullCycle`, ao lado de `rotaeBackend`
 (API Django) e `rotaeNginx`. Este frontend não tem banco nem regra de negócio própria:
@@ -17,7 +17,7 @@ tudo que ele mostra vem da API.
 | Tailwind CSS | 4.x | via `@tailwindcss/postcss`, importado em `src/app/globals.css` |
 | Jest + Testing Library | 30.x | `src/modules/**/testes/` |
 | Playwright | 1.64.1 | `src/modules/**/testes/e2e/` |
-| qrcode.react | 4.2.0 | QR Code do bilhete |
+| qrcode.react | 4.2.0 | QR Code do bilhete e do PIX fictício |
 
 O React Compiler está ligado em `next.config.ts` (`reactCompiler: true`), por isso não há
 `useMemo`/`useCallback` espalhados pelos componentes.
@@ -104,6 +104,8 @@ Requisições que precisam de login usam `fetchAutenticado` (ver o módulo
 ```
 src/
 ├── app/            rotas do App Router (cada page.tsx só delega para um módulo)
+│   ├── (app)/      telas com Header e Footer
+│   └── (auth)/     login e cadastro, sem Header e Footer
 ├── lib/            api.ts: montagem de URL e leitura de páginas do DRF
 ├── modules/        um módulo por assunto do produto
 │   ├── autenticacao/
@@ -133,7 +135,7 @@ Todos os módulos seguem as mesmas pastas, e só criam as que precisam:
 | `hooks/` | estado de tela | `reserva/hooks/useCarregarDados.ts` |
 | `components/` | pedaços de tela | `reserva/components/CardReserva.tsx` |
 | `pages/` | a tela inteira que a rota usa | `reserva/pages/MinhasViagensPage.tsx` |
-| `classes/` | regras em classes | `usuario/classes/validacao/RegraFormatoCampo.ts` |
+| `classes/` | regras e erros em classes | `usuario/classes/validacao/RegraFormatoCampo.ts`, `reserva/classes/PagamentoRecusadoError.ts` |
 | `utils/` | funções puras de formato e regra | `reserva/utils/regrasReserva.ts` |
 | `testes/` | testes do módulo | `reserva/testes/unitarios/` |
 
@@ -156,7 +158,7 @@ export async function buscarViagem(viagemId: number): Promise<Viagem | null> {
 E a rota só encaminha para a tela do módulo:
 
 ```tsx
-// src/app/minhas-viagens/page.tsx
+// src/app/(app)/minhas-viagens/page.tsx
 import { MinhasViagensPage } from "@/modules/reserva/pages/MinhasViagensPage";
 
 export default function Page() {
@@ -171,25 +173,27 @@ O apelido `@/` aponta para `src/` (configurado em `tsconfig.json` e repetido no
 
 | URL | Arquivo | Tela do módulo |
 | --- | --- | --- |
-| `/` | `src/app/page.tsx` | seções de `shared/components` (Hero, Destinos, Como funciona, Segurança) |
-| `/login` | `src/app/login/page.tsx` | `autenticacao/pages/LoginPage` |
-| `/cadastro` | `src/app/cadastro/page.tsx` | `usuario/pages/CadastroUsuarioPage` |
-| `/editar-perfil` | `src/app/editar-perfil/page.tsx` | `usuario/pages/EdicaoPerfilPage` |
-| `/viagens` | `src/app/viagens/page.tsx` | `viagem/pages/ConsultaViagensPage` |
-| `/viagens/[id]/assentos` | `src/app/viagens/[id]/assentos/page.tsx` | `reserva/pages/SelecaoAssentosPage` |
-| `/reservas/[id]/passageiros` | `src/app/reservas/[id]/passageiros/page.tsx` | `reserva/pages/DadosPassageirosPage` |
-| `/reservas/[id]/confirmacao` | `src/app/reservas/[id]/confirmacao/page.tsx` | `reserva/pages/ConfirmacaoReservaPage` |
-| `/minhas-viagens` | `src/app/minhas-viagens/page.tsx` | `reserva/pages/MinhasViagensPage` |
+| `/` | `src/app/(app)/page.tsx` | seções de `shared/components` (Hero, Destinos, Como funciona, Segurança) |
+| `/login` | `src/app/(auth)/login/page.tsx` | `autenticacao/pages/LoginPage` |
+| `/cadastro` | `src/app/(auth)/cadastro/page.tsx` | `usuario/pages/CadastroUsuarioPage` |
+| `/editar-perfil` | `src/app/(app)/editar-perfil/page.tsx` | `usuario/pages/EdicaoPerfilPage` |
+| `/viagens` | `src/app/(app)/viagens/page.tsx` | `viagem/pages/ConsultaViagensPage` |
+| `/viagens/[id]/assentos` | `src/app/(app)/viagens/[id]/assentos/page.tsx` | `reserva/pages/SelecaoAssentosPage` |
+| `/reservas/[id]/passageiros` | `src/app/(app)/reservas/[id]/passageiros/page.tsx` | `reserva/pages/DadosPassageirosPage` |
+| `/reservas/[id]/pagamento` | `src/app/(app)/reservas/[id]/pagamento/page.tsx` | `reserva/pages/PagamentoReservaPage` |
+| `/reservas/[id]/confirmacao` | `src/app/(app)/reservas/[id]/confirmacao/page.tsx` | `reserva/pages/ConfirmacaoReservaPage` |
+| `/minhas-viagens` | `src/app/(app)/minhas-viagens/page.tsx` | `reserva/pages/MinhasViagensPage` |
 
 As rotas com `[id]` rejeitam id inválido com `notFound()`:
 
 ```tsx
-// src/app/reservas/[id]/passageiros/page.tsx
+// src/app/(app)/reservas/[id]/passageiros/page.tsx
 const reservaId = Number(id);
 if (!Number.isSafeInteger(reservaId) || reservaId < 1) notFound();
 ```
 
-`src/app/layout.tsx` envolve todas as páginas com o `AutenticacaoProvider`, o `Header` e o `Footer`.
+`src/app/layout.tsx` envolve todas as páginas com o `AutenticacaoProvider`, e
+`src/app/(app)/layout.tsx` acrescenta o `Header` e o `Footer` às telas do site.
 
 ## Os módulos, um por um
 
@@ -303,6 +307,7 @@ O checkout e a tela "Minhas viagens". É o maior módulo.
 | `criarReserva` | `POST /api/v1/reservas/` |
 | `buscarReserva` | `GET /api/v1/reservas/{id}/` (traz os passageiros) |
 | `cadastrarPassageiros` | `POST /api/v1/reservas/{id}/passageiros/` |
+| `pagarReserva` | `POST /api/v1/reservas/{id}/pagamentos/` (`{ metodoPagamento: "PIX" \| "CARTAO" }`) |
 | `cancelarReserva` | `POST /api/v1/reservas/{id}/cancelar/` |
 | `listarMinhasReservas` | `GET /api/v1/me/reservas/` (todas as páginas) |
 
@@ -321,10 +326,27 @@ O caminho da compra, do jeito que está no código:
    a reserva ainda aceita passageiros: pagamento pendente, dentro do prazo e sem passageiros
    cadastrados. `useDadosPassageiros` cria um formulário por poltrona (`totalAssentos`), valida
    com `regrasPassageiro`, marca CPF repetido entre os passageiros e tem um atalho para copiar
-   os dados da conta.
-4. **Confirmação** (`/reservas/[id]/confirmacao`) — `ConfirmacaoReserva` mostra o bilhete, com
-   QR Code quando ele conta como emitido. O mesmo componente é reaproveitado dentro do modal
-   de "Minhas viagens" (`dentroDoModal`).
+   os dados da conta. Depois de salvar, segue para o pagamento.
+4. **Pagamento** (`/reservas/[id]/pagamento`) — checkout fictício: nenhum dado real é pedido e o
+   gateway do backend é simulado. `EtapaPagamento` só abre o formulário para reserva pendente,
+   dentro do prazo e com passageiros; nos outros casos mostra um aviso com o próximo passo
+   (`AvisoSemFormulario`). `FormularioPagamento` alterna entre PIX (QR Code e código fictícios)
+   e cartão e mostra a contagem do prazo. `usePagamento` envia o pedido uma vez só e decide a
+   tela pela resposta do backend:
+   - `APROVADO` — vai para a confirmação;
+   - `NEGADO` ou falha do provedor (502, que o backend conta como recusa) — `ResultadoPagamento`
+     mostra o pagamento não aprovado e deixa tentar de novo. Na terceira recusa a reserva vira
+     `FALHA`, as poltronas são liberadas e a tela leva de volta à escolha de poltronas;
+   - recusa do pedido (409) ou falta de resposta — a tela consulta a reserva, porque ela pode ter
+     sido paga, cancelada ou encerrada em outra aba, e mostra o estado atual.
+5. **Confirmação** (`/reservas/[id]/confirmacao`) — `ConfirmacaoReserva` mostra o bilhete, com
+   QR Code só para a reserva paga (`bilheteEmitido`). O mesmo componente é reaproveitado dentro
+   do modal de "Minhas viagens" (`dentroDoModal`).
+
+Nos cartões de "Minhas viagens", a reserva pendente mostra **Cancelar** e **Informar
+passageiros** ou **Pagar agora** (`BotoesReserva`); o modal com as passagens é para a reserva
+paga. Se o cancelamento for recusado (por exemplo, a reserva foi paga em outra aba), a lista é
+buscada de novo.
 
 Em "Minhas viagens", `separarReservas` divide a lista em **Próximas** (pendentes ou pagas com
 viagem futura) e **Histórico** (as demais dos últimos 90 dias), com 5 reservas por página.
@@ -333,7 +355,8 @@ reservas visíveis.
 
 As etapas do checkout aparecem na barra de `shared/components/EtapasCheckout.tsx`
 ("Seleção de assentos", "Dados dos passageiros", "Pagamento", "Confirmação"): assentos usa
-`atual={1}`, passageiros `atual={2}` e a tela de confirmação não mostra a barra.
+`atual={1}`, passageiros `atual={2}`, pagamento `atual={3}` e a tela de confirmação não mostra a
+barra.
 
 ### shared
 
@@ -414,8 +437,8 @@ npm run test:e2e
 
 O `playwright.config.ts` carrega o `.env`, sobe `npm run dev` se nada estiver na porta
 (`reuseExistingServer`) e usa o Chrome instalado na máquina (`channel: "chrome"`, trocável por
-`E2E_NAVEGADOR`). O teste atual precisa de duas contas já criadas no backend e se ignora sozinho
-se elas não estiverem definidas:
+`E2E_NAVEGADOR`). O teste de reserva percorre assentos, passageiros e pagamento; precisa de duas
+contas já criadas no backend e se ignora sozinho se elas não estiverem definidas:
 
 ```ini
 E2E_API_URL=http://localhost:8000
@@ -436,10 +459,9 @@ parte do CI.
 Pontos em que o frontend contorna algo que falta na API — os comentários no código citam as
 issues correspondentes:
 
-- **Não existe pagamento** (issue #23). O botão "Pagar agora" em `BotoesReserva` está
-  desabilitado, o checkout vai dos passageiros direto para a confirmação e `bilheteEmitido`
-  trata uma reserva pendente que já tem passageiros como bilhete emitido. Quando a rota de
-  pagamento existir, basta considerar só o status `PAGO`.
+- **O pagamento é simulado** (issue #30). O backend usa um gateway fictício que sempre aprova
+  e o frontend não coleta dado de cartão nem gera PIX real. A integração com o Mercado Pago
+  fica para quando o backend tiver o gateway real.
 - **O backend não muda o status quando o prazo acaba** (issue #20). `obterStatusAtualReserva`
   compara `expiraEm` com a hora atual para não oferecer pagamento de uma reserva vencida.
 - **Não há eventos em tempo real.** O mapa de assentos é consultado a cada 5 segundos.
