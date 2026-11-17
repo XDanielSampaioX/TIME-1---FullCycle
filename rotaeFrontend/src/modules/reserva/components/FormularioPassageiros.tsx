@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef } from "react";
-import { CampoFormulario } from "@/modules/usuario/components/CampoFormulario";
 import { useFocoPrimeiroErro } from "@/modules/usuario/hooks/useFocoPrimeiroErro";
 import { Button } from "@/shared/components/Button";
+import { CampoFormulario } from "@/shared/components/CampoFormulario";
 import { useDadosPassageiros } from "../hooks/useDadosPassageiros";
 import type { DadosPassageiro } from "../types/dadosPassageiro";
 import type { Reserva } from "../types/reserva";

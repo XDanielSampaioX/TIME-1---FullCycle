@@ -14,7 +14,10 @@ function tokenEnviado(chamada: number) {
 }
 
 describe("fetchAutenticado", () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
 
   it("repassa a requisição sem token quando não há sessão", async () => {
     global.fetch = jest.fn().mockResolvedValue(resposta(401));
@@ -25,7 +28,7 @@ describe("fetchAutenticado", () => {
   });
 
   it("envia o token da sessão", async () => {
-    salvarSessao(sessao);
+    salvarSessao(sessao, true);
     global.fetch = jest.fn().mockResolvedValue(resposta(200));
 
     await expect(fetchAutenticado("/api/v1/me/")).resolves.toMatchObject({ status: 200 });
@@ -33,7 +36,7 @@ describe("fetchAutenticado", () => {
   });
 
   it("renova os tokens e repete a requisição quando o access token expirou", async () => {
-    salvarSessao(sessao);
+    salvarSessao(sessao, true);
     global.fetch = jest.fn()
       .mockResolvedValueOnce(resposta(401))
       .mockResolvedValueOnce(resposta(200, { access: "access-novo", refresh: "refresh-novo" }))
@@ -45,7 +48,7 @@ describe("fetchAutenticado", () => {
   });
 
   it("encerra a sessão quando o refresh token também é recusado", async () => {
-    salvarSessao(sessao);
+    salvarSessao(sessao, true);
     global.fetch = jest.fn().mockResolvedValue(resposta(401));
 
     await expect(fetchAutenticado("/api/v1/me/")).resolves.toMatchObject({ status: 401 });
@@ -53,8 +56,42 @@ describe("fetchAutenticado", () => {
     expect(lerSessao()).toBeNull();
   });
 
+  it("não renova de novo quando outra requisição já renovou enquanto esta esperava a resposta", async () => {
+    salvarSessao(sessao, true);
+    const novos = { access: "access-novo", refresh: "refresh-novo" };
+    let renovacoes = 0;
+    let respostasComTokenAntigo = 0;
+    let liberarSegunda!: () => void;
+    const segundaAtrasada = new Promise<void>((liberar) => {
+      liberarSegunda = liberar;
+    });
+    // Como o backend: o refresh token só vale uma vez.
+    global.fetch = jest.fn(async (entrada: string, opcoes?: RequestInit) => {
+      if (entrada.includes("/auth/refresh/")) {
+        renovacoes += 1;
+        return renovacoes === 1 ? resposta(200, novos) : resposta(401);
+      }
+      if (new Headers(opcoes?.headers).get("Authorization") === "Bearer access-antigo") {
+        respostasComTokenAntigo += 1;
+        // A resposta da segunda requisição só chega depois que a primeira já renovou os tokens.
+        if (respostasComTokenAntigo === 2) await segundaAtrasada;
+        return resposta(401);
+      }
+      return resposta(200);
+    }) as unknown as typeof fetch;
+
+    const primeira = fetchAutenticado("/api/v1/me/");
+    const segunda = fetchAutenticado("/api/v1/me/");
+    await expect(primeira).resolves.toMatchObject({ status: 200 });
+    liberarSegunda();
+
+    await expect(segunda).resolves.toMatchObject({ status: 200 });
+    expect(renovacoes).toBe(1);
+    expect(lerSessao()).toEqual({ ...sessao, ...novos });
+  });
+
   it("faz uma única renovação para requisições simultâneas", async () => {
-    salvarSessao(sessao);
+    salvarSessao(sessao, true);
     global.fetch = jest.fn((url: string, opcoes?: RequestInit) => {
       if (url.includes("/auth/refresh/")) return Promise.resolve(resposta(200, { access: "access-novo", refresh: "refresh-novo" }));
       const token = new Headers(opcoes?.headers).get("Authorization");

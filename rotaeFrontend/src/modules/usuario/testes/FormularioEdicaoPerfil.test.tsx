@@ -196,7 +196,7 @@ describe("FormularioEdicaoPerfil", () => {
     salvar();
 
     await screen.findByText("Dados atualizados com sucesso.");
-    expect(atualizarSessao).toHaveBeenCalledWith({ user: atualizado });
+    expect(atualizarSessao).toHaveBeenCalledWith({ user: atualizado }, usuario.id);
   });
 
   it("grava na sessão os tokens novos depois de trocar a senha e limpa os campos de senha", async () => {
@@ -208,7 +208,7 @@ describe("FormularioEdicaoPerfil", () => {
     salvar();
 
     await screen.findByText("Senha alterada com sucesso.");
-    expect(atualizarSessao).toHaveBeenCalledWith(tokens);
+    expect(atualizarSessao).toHaveBeenCalledWith(tokens, usuario.id);
     expect(campo("senhaAtual")).toHaveValue("");
     expect(campo("novaSenha")).toHaveValue("");
     expect(campo("confirmacaoNovaSenha")).toHaveValue("");

@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useAutenticacao } from "@/modules/autenticacao/hooks/useAutenticacao";
+import { caminhoDoLogin } from "@/modules/autenticacao/utils/destinoAposLogin";
 import type { ViagemAssento } from "@/modules/viagem-assento/types/viagemAssento";
 import { criarReserva } from "../services/criarReserva";
 
@@ -53,7 +54,7 @@ export function useSelecaoAssentos(viagemId: number, assentos: ViagemAssento[], 
   function irParaLogin() {
     const busca = new URLSearchParams(window.location.search);
     busca.set("assentos", selecionados.join(","));
-    router.push(`/login?${new URLSearchParams({ retorno: `${window.location.pathname}?${busca}` })}`);
+    router.push(caminhoDoLogin(`${window.location.pathname}?${busca}`));
   }
 
   // Cria a reserva com as poltronas escolhidas e segue para os passageiros.

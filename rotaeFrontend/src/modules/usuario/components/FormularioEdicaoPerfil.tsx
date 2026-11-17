@@ -2,11 +2,11 @@
 
 import { useRef } from "react";
 import { Button } from "@/shared/components/Button";
+import { CampoFormulario } from "@/shared/components/CampoFormulario";
 import { useEdicaoPerfil } from "../hooks/useEdicaoPerfil";
 import { useFocoPrimeiroErro } from "../hooks/useFocoPrimeiroErro";
 import type { Usuario } from "../types/usuario";
 import { CabecalhoPerfil } from "./CabecalhoPerfil";
-import { CampoFormulario } from "./CampoFormulario";
 
 const linha = "grid gap-4 sm:grid-cols-2";
 const divisoria = "m-0 border-0 border-t border-(--color-border)";

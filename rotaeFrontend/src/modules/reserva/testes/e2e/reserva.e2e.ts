@@ -120,7 +120,7 @@ test("quem não entrou escolhe, faz login ao confirmar e volta com as mesmas pol
   await poltrona(pagina, livres[3]).click();
 
   await pagina.getByRole("button", { name: "Confirmar seleção" }).click();
-  await expect(pagina).toHaveURL(/\/login\?retorno=/);
+  await expect(pagina).toHaveURL(/\/login\?voltar=/);
 
   await pagina.locator('input[name="email"]').fill(contas.b.email);
   await pagina.locator('input[name="senha"]').fill(contas.b.senha);

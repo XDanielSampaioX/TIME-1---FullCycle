@@ -18,14 +18,17 @@ function Estado() {
         {logado ? logado.nome : "anônimo"} | {sessaoIndisponivel ? "indisponível" : "ok"}
       </p>
       <p>estado: {estado}</p>
-      <button onClick={() => atualizarSessao({ user: { ...usuario, nome: "Outro nome" } })} type="button">
+      <button onClick={() => atualizarSessao({ user: { ...usuario, nome: "Outro nome" } }, usuario.id)} type="button">
         renomear
       </button>
       <button onClick={sair} type="button">
         sair
       </button>
-      <button onClick={() => iniciarSessao(sessao)} type="button">
+      <button onClick={() => iniciarSessao(sessao, true)} type="button">
         entrar
+      </button>
+      <button onClick={() => iniciarSessao(sessao, false)} type="button">
+        entrar sem lembrar
       </button>
     </>
   );
@@ -43,6 +46,7 @@ describe("AutenticacaoProvider", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   it("informa o estado da sessão: anônimo, autenticado e depois anônimo de novo", async () => {
@@ -56,6 +60,20 @@ describe("AutenticacaoProvider", () => {
     expect(screen.getByText("estado: anonimo")).toBeInTheDocument();
   });
 
+  it("sem Lembrar de mim, a sessão vale na aba atual e sai das duas guardas ao sair", async () => {
+    renderizar();
+    await screen.findByText("estado: anonimo");
+
+    fireEvent.click(screen.getByRole("button", { name: "entrar sem lembrar" }));
+    expect(screen.getByText("estado: autenticado")).toBeInTheDocument();
+    expect(localStorage.getItem("rotae.sessao")).toBeNull();
+    expect(sessionStorage.getItem("rotae.sessao")).not.toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "sair" }));
+    expect(screen.getByText("estado: anonimo")).toBeInTheDocument();
+    expect(sessionStorage.getItem("rotae.sessao")).toBeNull();
+  });
+
   it("atualizarSessao troca o usuário sem derrubar a sessão", async () => {
     localStorage.setItem("rotae.sessao", JSON.stringify(sessao));
     jest.mocked(buscarUsuarioAutenticado).mockResolvedValue(usuario);
@@ -66,6 +84,20 @@ describe("AutenticacaoProvider", () => {
 
     expect(screen.getByText("Outro nome | ok")).toBeInTheDocument();
     expect(JSON.parse(localStorage.getItem("rotae.sessao")!)).toMatchObject({ access: "a", refresh: "r" });
+  });
+
+  it.each([
+    ["JSON inválido", "{x}"],
+    ["objeto vazio", "{}"],
+  ])("sessão corrompida (%s): a tela abre como visitante, sem quebrar, e o valor é descartado", async (_caso, valor) => {
+    sessionStorage.setItem("rotae.sessao", valor);
+
+    renderizar();
+
+    expect(await screen.findByText("estado: anonimo")).toBeInTheDocument();
+    expect(screen.getByText("anônimo | ok")).toBeInTheDocument();
+    await waitFor(() => expect(sessionStorage.getItem("rotae.sessao")).toBeNull());
+    expect(buscarUsuarioAutenticado).not.toHaveBeenCalled();
   });
 
   it("não consulta o servidor nem avisa indisponibilidade quando não há sessão", () => {

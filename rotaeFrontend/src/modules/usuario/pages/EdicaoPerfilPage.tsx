@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useAutenticacao } from "@/modules/autenticacao/hooks/useAutenticacao";
+import { caminhoDoLogin } from "@/modules/autenticacao/utils/destinoAposLogin";
 import { Container } from "@/shared/components/Container";
 import { AreaSeguranca } from "../components/AreaSeguranca";
 import { FormularioEdicaoPerfil } from "../components/FormularioEdicaoPerfil";
@@ -39,7 +40,7 @@ export function EdicaoPerfilPage() {
           <section className={`grid gap-4 ${classeCartao}`}>
             <h1 className="m-0 text-2xl font-extrabold">Meu perfil</h1>
             <p className="m-0">Entre na sua conta para ver e editar seus dados.</p>
-            <Link className="font-bold" href="/login">
+            <Link className="font-bold" href={caminhoDoLogin("/editar-perfil")}>
               Entrar
             </Link>
           </section>
@@ -57,7 +58,9 @@ export function EdicaoPerfilPage() {
         </header>
         <div className={classeCartao}>
           <FormularioEdicaoPerfil
-            key={versaoFormulario}
+            // O id na chave também recria o formulário se a sessão mudar de usuário (login lembrado em outra aba):
+            // o que foi digitado para um usuário nunca é enviado para a conta de outro.
+            key={`${usuario.id}-${versaoFormulario}`}
             usuario={usuario}
             aoCancelar={() => setVersaoFormulario(versaoFormulario + 1)}
           />

@@ -12,12 +12,12 @@ import type { ErrosValidacao } from "../types/errosValidacao";
 import type { Usuario } from "../types/usuario";
 
 // Os campos de dados e de senha têm nomes diferentes, então cabem num objeto só.
-export type CamposEdicao = AtualizacaoUsuario & AlteracaoSenha;
-export type ErrosEdicao = ErrosValidacao<CamposEdicao>;
+type CamposEdicao = AtualizacaoUsuario & AlteracaoSenha;
+type ErrosEdicao = ErrosValidacao<CamposEdicao>;
 
 // O que a tela mostra de resultado. Qualquer edição volta para "editando", e com isso
 // mensagens de uma tentativa anterior nunca ficam na tela.
-export type StatusEdicao =
+type StatusEdicao =
   | { tipo: "editando" }
   | { tipo: "enviando" }
   | { tipo: "semAlteracao" }
@@ -92,7 +92,7 @@ export function useEdicaoPerfil(usuario: Usuario) {
         }
 
         // Os tokens antigos deixam de valer assim que a senha muda: grava os novos de imediato.
-        atualizarSessao(resultado.tokens);
+        atualizarSessao(resultado.tokens, usuario.id);
         setCampos((atuais) => ({ ...atuais, ...senhaVazia }));
         senhaAlterada = true;
       }
@@ -106,7 +106,7 @@ export function useEdicaoPerfil(usuario: Usuario) {
           return;
         }
 
-        atualizarSessao({ user: resultado.usuario });
+        atualizarSessao({ user: resultado.usuario }, usuario.id);
       }
 
       setStatus({ tipo: "salvo", dados: alterado, senha: senhaAlterada });

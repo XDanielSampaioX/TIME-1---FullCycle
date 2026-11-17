@@ -7,9 +7,9 @@ export type AutenticacaoContextValue = {
   estado: EstadoSessao;
   // Há sessão salva, mas o servidor não respondeu para confirmá-la (ex.: sem rede).
   sessaoIndisponivel: boolean;
-  // Login: começa uma sessão nova.
-  iniciarSessao: (sessao: Sessao) => void;
-  // Troca só parte da sessão já existente (tokens e/ou usuário).
-  atualizarSessao: (parcial: Partial<Sessao>) => void;
+  // Login: começa uma sessão nova. Com "lembrar", ela continua salva ao fechar o navegador.
+  iniciarSessao: (sessao: Sessao, lembrar: boolean) => void;
+  // Troca só parte da sessão já existente (tokens e/ou usuário), se ela ainda for do usuário idUsuario.
+  atualizarSessao: (parcial: Partial<Sessao>, idUsuario: number) => void;
   sair: () => void;
 };

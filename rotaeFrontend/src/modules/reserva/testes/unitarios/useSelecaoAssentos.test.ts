@@ -123,7 +123,7 @@ describe("useSelecaoAssentos", () => {
     expect(criarReserva).not.toHaveBeenCalled();
     const destino = new URL(push.mock.calls[0][0], "http://localhost");
     expect(destino.pathname).toBe("/login");
-    expect(destino.searchParams.get("retorno")).toBe("/viagens/7/assentos?origem=1&destino=2&assentos=105%2C106");
+    expect(destino.searchParams.get("voltar")).toBe("/viagens/7/assentos?origem=1&destino=2&assentos=105%2C106");
   });
 
   it("recupera a seleção que voltou do login", () => {

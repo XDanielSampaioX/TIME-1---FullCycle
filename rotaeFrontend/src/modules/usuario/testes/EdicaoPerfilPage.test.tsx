@@ -26,7 +26,8 @@ describe("EdicaoPerfilPage", () => {
     useAutenticacao.mockReturnValue({ usuario: null, estado: "anonimo", sessaoIndisponivel: false, ...funcoes });
     render(<EdicaoPerfilPage />);
 
-    expect(screen.getByRole("link", { name: "Entrar" })).toHaveAttribute("href", "/login");
+    // Depois de entrar, o login traz o usuário de volta para o perfil.
+    expect(screen.getByRole("link", { name: "Entrar" })).toHaveAttribute("href", "/login?voltar=%2Feditar-perfil");
     expect(screen.queryByRole("button", { name: "Salvar alterações" })).not.toBeInTheDocument();
   });
 
@@ -50,6 +51,19 @@ describe("EdicaoPerfilPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
     expect(nome()).toHaveValue("João Silva");
+  });
+
+  it("se a sessão mudar de usuário, o formulário recomeça com os dados do novo usuário", () => {
+    const outro = { ...usuario, id: 2, nome: "Outra Pessoa", email: "outra@email.com" };
+    useAutenticacao.mockReturnValue({ usuario, estado: "autenticado", sessaoIndisponivel: false, ...funcoes });
+    const { rerender } = render(<EdicaoPerfilPage />);
+    fireEvent.change(screen.getByLabelText("Nome completo"), { target: { value: "Digitado para o João" } });
+
+    useAutenticacao.mockReturnValue({ usuario: outro, estado: "autenticado", sessaoIndisponivel: false, ...funcoes });
+    rerender(<EdicaoPerfilPage />);
+
+    expect(screen.getByLabelText("Nome completo")).toHaveValue("Outra Pessoa");
+    expect(screen.getByLabelText("E-mail")).toHaveValue("outra@email.com");
   });
 
   it("não mostra a tela de visitante enquanto a conta excluída sai da página", async () => {
