@@ -3,7 +3,7 @@ from django.contrib import admin
 from viagens.models import ViagemAssento
 
 from .exceptions import ReservaInvalidaError
-from .models import Passageiro, Reserva
+from .models import Passageiro, Passagem, Reserva
 from .services import cancelar_reserva
 
 
@@ -33,6 +33,64 @@ class PassageiroInline(admin.TabularInline):
         return False
 
     def has_change_permission(self, request, obj=None):
+        return False
+
+
+class PassagemInline(admin.TabularInline):
+    model = Passagem
+    extra = 0
+    fields = ("passageiro", "viagem_assento", "status", "criado_em")
+    readonly_fields = fields
+    can_delete = False
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("passageiro", "viagem_assento__assento")
+        )
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(Passagem)
+class PassagemAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "reserva",
+        "passageiro",
+        "viagem_assento",
+        "status",
+        "criado_em",
+    )
+    list_filter = ("status", "criado_em")
+    search_fields = ("reserva__id", "passageiro__nome", "passageiro__cpf")
+    list_select_related = (
+        "reserva__usuario",
+        "passageiro",
+        "viagem_assento__viagem",
+        "viagem_assento__assento",
+    )
+    readonly_fields = (
+        "reserva",
+        "passageiro",
+        "viagem_assento",
+        "status",
+        "criado_em",
+        "atualizado_em",
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
         return False
 
 
@@ -77,7 +135,7 @@ class ReservaAdmin(admin.ModelAdmin):
         "viagem__destino__nome",
     )
     list_select_related = ("usuario", "viagem__origem", "viagem__destino")
-    inlines = (ViagemAssentoInline, PassageiroInline)
+    inlines = (ViagemAssentoInline, PassageiroInline, PassagemInline)
     actions = ("cancelar_reservas",)
 
     def has_add_permission(self, request):
