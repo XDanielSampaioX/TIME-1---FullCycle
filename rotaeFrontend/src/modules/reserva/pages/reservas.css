@@ -20,7 +20,7 @@
   width: min(calc(100% - 2 * var(--page-gutter)), 45rem);
   max-height: calc(100dvh - 2rem);
   margin: auto;
-  padding: 2rem 2.5rem;
+  padding: 1.5rem 2rem;
   overflow-y: auto;
   border: 0;
   border-radius: var(--radius-lg);
@@ -38,22 +38,59 @@
 
 .reserva-dialogo[open] {
   display: grid;
-  gap: 1.25rem;
+  gap: .75rem;
 }
 
-/* No modal o título fica menor, para sobrar altura para o bilhete. */
+/* No modal tudo fica mais compacto, para o bilhete caber na tela sem rolar.
+   O título vira uma linha: ícone à esquerda, título e descrição à direita. */
 .reserva-dialogo .reserva-modal-titulo {
-  gap: .5rem;
+  grid-template-columns: auto 1fr;
+  justify-items: start;
+  column-gap: .875rem;
+  row-gap: .125rem;
+  text-align: left;
 }
 
 .reserva-dialogo .reserva-modal-titulo > span {
-  width: 48px;
-  height: 48px;
-  font-size: 1.375rem;
+  grid-row: span 2;
+  width: 40px;
+  height: 40px;
+  font-size: 1.125rem;
 }
 
 .reserva-dialogo .reserva-modal-titulo h2 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
+}
+
+.reserva-dialogo .reserva-modal-titulo p {
+  font-size: .875rem;
+}
+
+.reserva-dialogo .reserva-carrossel {
+  gap: .5rem;
+}
+
+.reserva-dialogo .reserva-bilhete-topo {
+  padding: .625rem 1.5rem;
+}
+
+.reserva-dialogo .reserva-bilhete-corpo {
+  gap: .875rem;
+  padding: 1rem 1.5rem;
+}
+
+.reserva-dialogo .reserva-bilhete-embarque > div {
+  width: 80px;
+  height: 80px;
+}
+
+.reserva-dialogo .reserva-bilhete-embarque svg {
+  width: 72px;
+  height: 72px;
+}
+
+.reserva-dialogo .reserva-modal-acoes > * {
+  padding: .625rem 1.5rem;
 }
 
 @media (max-width: 640px) {
