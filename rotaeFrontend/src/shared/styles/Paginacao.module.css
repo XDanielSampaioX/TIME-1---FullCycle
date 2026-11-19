@@ -16,3 +16,8 @@
   display: flex;
   gap: .75rem;
 }
+
+.controles button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}

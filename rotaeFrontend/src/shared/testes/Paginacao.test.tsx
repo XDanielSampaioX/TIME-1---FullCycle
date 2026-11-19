@@ -1,0 +1,29 @@
+import { render, screen } from "@testing-library/react";
+import { Paginacao } from "../components/Paginacao";
+
+describe("Paginacao", () => {
+  it("desabilita Anterior na primeira página e Próxima na última", () => {
+    const { rerender } = render(
+      <Paginacao resumo="1 de 2" anterior={null} proxima="2" onNavegar={jest.fn()} />,
+    );
+    expect(screen.getByRole("button", { name: "Anterior" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Próxima" })).toBeEnabled();
+
+    rerender(<Paginacao resumo="2 de 2" anterior="1" proxima={null} onNavegar={jest.fn()} />);
+    expect(screen.getByRole("button", { name: "Anterior" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Próxima" })).toBeDisabled();
+  });
+
+  it("usa o rótulo informado", () => {
+    render(
+      <Paginacao
+        rotulo="Passagens da reserva"
+        resumo="1 de 2"
+        anterior={null}
+        proxima="2"
+        onNavegar={jest.fn()}
+      />,
+    );
+    expect(screen.getByRole("navigation", { name: "Passagens da reserva" })).toBeInTheDocument();
+  });
+});

@@ -5,6 +5,7 @@ export type PaginacaoProps = {
   anterior: string | null;
   proxima: string | null;
   carregando?: boolean;
+  rotulo?: string;
   onNavegar: (url: string) => void;
 };
 
