@@ -34,11 +34,13 @@ export function BilhetePassagemSkeleton() {
             </div>
           </div>
           <div className="reserva-bilhete-embarque">
-            <Skeleton largura="108px" altura="108px" />
             <div>
+              <Skeleton largura="108px" altura="108px" />
+            </div>
+            <p>
               <Skeleton largura="14rem" />
               <Skeleton largura="18rem" altura=".875rem" />
-            </div>
+            </p>
           </div>
         </div>
       </div>
