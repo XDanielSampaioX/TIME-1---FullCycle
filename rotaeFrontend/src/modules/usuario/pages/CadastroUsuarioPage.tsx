@@ -1,20 +1,22 @@
-import { Container } from "@/shared/components/Container";
+import { TelaAcesso } from "@/modules/autenticacao/components/TelaAcesso";
 import { FormularioCadastroUsuario } from "../components/FormularioCadastroUsuario";
 
-export function CadastroUsuarioPage() {
+export function CadastroUsuarioPage({ destino }: { destino: string }) {
   return (
-    <main className="flex-1 py-12">
-      <Container className="max-w-md">
-        <section className={`
-          grid gap-6 rounded-(--radius-lg) bg-(--color-surface-card)
-          p-6 shadow-(--shadow-card)
-        `}>
-          <h1 className="m-0 text-2xl font-extrabold">
-            Criar conta
-          </h1>
-          <FormularioCadastroUsuario />
-        </section>
-      </Container>
-    </main>
+    <TelaAcesso
+      painel={{
+        selo: "Cadastre-se gratuitamente",
+        titulo: (
+          <>
+            Seu próximo <span className="block text-(--color-accent-500)">destino favorito</span> começa aqui.
+          </>
+        ),
+        texto: "Encontre os melhores horários, garanta sua poltrona preferida em minutos e planeje novas aventuras pelo Brasil.",
+      }}
+      titulo="Criar conta"
+      subtitulo="Preencha seus dados para começar a planejar suas viagens"
+    >
+      <FormularioCadastroUsuario destino={destino} />
+    </TelaAcesso>
   );
 }

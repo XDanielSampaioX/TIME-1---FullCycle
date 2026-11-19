@@ -1,4 +1,4 @@
-import { caminhoDoLogin, destinoAposLogin } from "../utils/destinoAposLogin";
+import { caminhoDoCadastro, caminhoDoLogin, destinoAposLogin } from "../utils/destinoAposLogin";
 
 describe("destinoAposLogin", () => {
   it.each([
@@ -21,6 +21,8 @@ describe("destinoAposLogin", () => {
     ["caminho relativo", "editar-perfil"],
     ["o próprio login", "/login?voltar=/login"],
     ["o próprio login com barra no fim", "/login/"],
+    ["o cadastro", "/cadastro?voltar=/editar-perfil"],
+    ["o cadastro com barra no fim", "/cadastro/"],
     ["endereço malformado com colchete", "//["],
     ["endereço malformado com espaço", "//a b"],
     ["endereço malformado com IPv6 incompleto", "//[::1"],
@@ -41,5 +43,14 @@ describe("caminhoDoLogin", () => {
 
     expect(link).toBe("/login?voltar=%2Fviagens%3Forigem%3D1%26destino%3D2");
     expect(destinoAposLogin(new URL(link, "http://localhost").searchParams.get("voltar")!)).toBe("/viagens?origem=1&destino=2");
+  });
+});
+
+describe("caminhoDoCadastro", () => {
+  it("monta o link do cadastro com o caminho de volta codificado, e o destino lê o mesmo caminho", () => {
+    const link = caminhoDoCadastro("/viagens/7/assentos?passageiros=2");
+
+    expect(link).toBe("/cadastro?voltar=%2Fviagens%2F7%2Fassentos%3Fpassageiros%3D2");
+    expect(destinoAposLogin(new URL(link, "http://localhost").searchParams.get("voltar")!)).toBe("/viagens/7/assentos?passageiros=2");
   });
 });

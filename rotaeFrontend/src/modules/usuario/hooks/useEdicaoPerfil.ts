@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAutenticacao } from "@/modules/autenticacao/hooks/useAutenticacao";
+import { mascararCampo, mascararCelular } from "@/shared/utils/mascaras";
 import { regrasAlteracaoSenha } from "../classes/validacao/regrasAlteracaoSenha";
 import { regrasAtualizacaoUsuario } from "../classes/validacao/regrasAtualizacaoUsuario";
 import { alterarSenha } from "../services/alterarSenha";
@@ -26,8 +27,15 @@ type StatusEdicao =
 
 const senhaVazia: AlteracaoSenha = { senhaAtual: "", novaSenha: "", confirmacaoNovaSenha: "" };
 
+// O backend devolve o celular só com números. Com a máscara também no valor inicial, a tela
+// não conta como "alteração" um celular que o usuário nem tocou.
 function dadosDoUsuario(usuario: Usuario): AtualizacaoUsuario {
-  return { nome: usuario.nome, email: usuario.email, celular: usuario.celular, dataNasc: usuario.dataNasc ?? "" };
+  return {
+    nome: usuario.nome,
+    email: usuario.email,
+    celular: mascararCelular(usuario.celular),
+    dataNasc: usuario.dataNasc ?? "",
+  };
 }
 
 // Um só botão "Salvar alterações" para a tela: edita os dados e troca a senha no mesmo fluxo.
@@ -54,7 +62,7 @@ export function useEdicaoPerfil(usuario: Usuario) {
   const querTrocarSenha = senha.novaSenha !== "" || senha.confirmacaoNovaSenha !== "";
 
   function alterarCampo(campo: keyof CamposEdicao, valor: string) {
-    setCampos((atuais) => ({ ...atuais, [campo]: valor }));
+    setCampos((atuais) => ({ ...atuais, [campo]: mascararCampo(campo, valor) }));
     setStatus({ tipo: "editando" });
   }
 

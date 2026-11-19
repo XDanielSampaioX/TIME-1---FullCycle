@@ -1,8 +1,8 @@
 import { apiUrl } from "@/lib/api";
 import { fetchAutenticado } from "@/modules/autenticacao/services/fetchAutenticado";
 import type { ErrosValidacao } from "@/modules/usuario/types/errosValidacao";
+import { apenasDigitos } from "@/shared/utils/mascaras";
 import type { DadosPassageiro } from "../types/dadosPassageiro";
-import { apenasDigitos } from "../utils/formatarReserva";
 
 type MensagensPorCampo = Record<string, string[]>;
 
