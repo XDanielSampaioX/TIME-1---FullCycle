@@ -1,6 +1,7 @@
 import { formatarDataHora } from "@/shared/utils/formatarDataHora";
 import type { Reserva } from "../types/reserva";
 import { formatarCidade } from "../utils/formatarReserva";
+import { TrajetoDoBilhete } from "./TrajetoDoBilhete";
 
 // Origem e destino do bilhete, cada um com o seu horário.
 export function RotaDoBilhete({ viagem }: { viagem: Pick<Reserva["viagem"], "origem" | "destino" | "partidaEm" | "chegadaEm"> }) {
@@ -11,7 +12,7 @@ export function RotaDoBilhete({ viagem }: { viagem: Pick<Reserva["viagem"], "ori
         <strong>{formatarCidade(viagem.origem)}</strong>
         <time dateTime={viagem.partidaEm}>{formatarDataHora(viagem.partidaEm)}</time>
       </div>
-      <span aria-hidden="true">➔</span>
+      <TrajetoDoBilhete />
       <div>
         <small>DESTINO</small>
         <strong>{formatarCidade(viagem.destino)}</strong>

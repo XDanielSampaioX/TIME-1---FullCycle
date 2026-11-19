@@ -1,24 +1,57 @@
 .paginacao {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-  padding: 1rem;
+  gap: .5rem;
+  padding: .375rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface-card);
   color: var(--color-text-secondary);
-  font-size: .875rem;
+  font-size: .8125rem;
 }
 
-.controles {
-  display: flex;
-  gap: .75rem;
+.resumo {
+  overflow: hidden;
+  color: var(--color-brand-950);
+  font-weight: 600;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.controles button:disabled {
+.botao {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2rem;
+  padding: .375rem .75rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-brand-950);
+  color: var(--color-text-on-dark);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s ease;
+}
+
+.botao:hover:not(:disabled) {
+  opacity: .9;
+}
+
+.botao:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+/* Sem página para ir: esmaecido e com o cursor de bloqueio. */
+.botao:disabled {
   cursor: not-allowed;
-  opacity: .55;
-  transform: none;
+  opacity: .45;
+}
+
+.botao > span {
+  font-size: 1rem;
+  line-height: 1;
 }

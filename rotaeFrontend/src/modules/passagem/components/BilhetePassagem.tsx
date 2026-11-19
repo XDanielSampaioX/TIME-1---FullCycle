@@ -48,8 +48,8 @@ export function BilhetePassagem({ passagem }: { passagem: Passagem }) {
                 />
               </div>
               <p>
-                <strong>Apresente este bilhete no embarque</strong>
-                Não é necessário imprimir. Tenha em mãos seu documento oficial com foto.
+                <strong>Apresente este QR Code no embarque</strong>
+                Mostre na tela do celular, junto com um documento oficial com foto. Não precisa imprimir.
               </p>
             </div>
           </>

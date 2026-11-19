@@ -1,6 +1,15 @@
 import { Skeleton } from "@/shared/components/Skeleton";
+import { DivisorBilhete } from "@/modules/reserva/components/DivisorBilhete";
+import { TrajetoDoBilhete } from "@/modules/reserva/components/TrajetoDoBilhete";
+
+// Uma linha de texto que ainda não chegou: "1lh" é a altura da linha da tag em volta,
+// então o esqueleto ocupa o mesmo espaço que o texto vai ocupar.
+function Linha({ largura }: { largura: string }) {
+  return <Skeleton largura={largura} altura="1lh" />;
+}
 
 // O formato do bilhete enquanto a passagem carrega, para a tela não ficar vazia ao trocar de página.
+// Segue a mesma marcação do BilhetePassagem (tags, trajeto e divisores) para ter o mesmo tamanho.
 export function BilhetePassagemSkeleton() {
   return (
     <div role="status">
@@ -8,38 +17,41 @@ export function BilhetePassagemSkeleton() {
       <div className="reserva-bilhete" aria-hidden="true">
         <div className="reserva-bilhete-topo">
           <strong>BILHETE DIGITAL EMITIDO</strong>
-          <Skeleton largura="7rem" />
+          <span><Linha largura="7rem" /></span>
         </div>
         <div className="reserva-bilhete-corpo">
           <div className="reserva-bilhete-rota">
             <div>
-              <Skeleton largura="4rem" altura=".75rem" />
-              <Skeleton largura="8rem" altura="1.25rem" />
-              <Skeleton largura="6rem" altura=".875rem" />
+              <small><Linha largura="4rem" /></small>
+              <strong><Linha largura="8rem" /></strong>
+              <time><Linha largura="6rem" /></time>
             </div>
+            <TrajetoDoBilhete />
             <div>
-              <Skeleton largura="4rem" altura=".75rem" />
-              <Skeleton largura="8rem" altura="1.25rem" />
-              <Skeleton largura="6rem" altura=".875rem" />
+              <small><Linha largura="4rem" /></small>
+              <strong><Linha largura="8rem" /></strong>
+              <time><Linha largura="6rem" /></time>
             </div>
           </div>
-          <div className="reserva-bilhete-dados">
+          <DivisorBilhete />
+          <dl className="reserva-bilhete-dados">
             <div>
-              <Skeleton largura="5rem" altura=".75rem" />
-              <Skeleton largura="9rem" altura="1.25rem" />
+              <dt><Linha largura="5rem" /></dt>
+              <dd><Linha largura="9rem" /></dd>
             </div>
             <div>
-              <Skeleton largura="4rem" altura=".75rem" />
-              <Skeleton largura="2rem" altura="1.25rem" />
+              <dt><Linha largura="4rem" /></dt>
+              <dd><Linha largura="2rem" /></dd>
             </div>
-          </div>
+          </dl>
+          <DivisorBilhete />
           <div className="reserva-bilhete-embarque">
             <div>
               <Skeleton largura="108px" altura="108px" />
             </div>
             <p>
-              <Skeleton largura="14rem" />
-              <Skeleton largura="18rem" altura=".875rem" />
+              <strong><Linha largura="14rem" /></strong>
+              <span><Linha largura="18rem" /></span>
             </p>
           </div>
         </div>

@@ -66,31 +66,103 @@
   font-size: .875rem;
 }
 
+/* Com o carrossel de bilhetes, o modal ocupa a altura da tela e o bilhete estica para preencher. */
+.reserva-dialogo[open]:has(.reserva-carrossel) {
+  height: calc(100dvh - 2rem);
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
 .reserva-dialogo .reserva-carrossel {
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: .5rem;
+}
+
+.reserva-dialogo .reserva-bilhete {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Atrás do modal já está "Minhas viagens": o único botão é o de fechar, no canto. */
+.reserva-modal-fechar {
+  position: absolute;
+  top: .75rem;
+  right: .75rem;
+}
+
+.reserva-modal-fechar button {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-brand-950);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.reserva-modal-fechar button:hover {
+  background: var(--viagem-suave);
+}
+
+.reserva-modal-fechar button:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
 }
 
 .reserva-dialogo .reserva-bilhete-topo {
   padding: .625rem 1.5rem;
 }
 
+/* No modal passageiro e poltrona ficam logo abaixo da rota, menores, e o conteúdo começa no topo.
+   O `order` muda só a posição na tela: a marcação do bilhete continua a mesma da página. */
 .reserva-dialogo .reserva-bilhete-corpo {
-  gap: .875rem;
-  padding: 1rem 1.5rem;
+  flex: 1;
+  align-content: start;
+  gap: 1rem;
+  padding: 1.25rem 2rem;
+}
+
+.reserva-dialogo .reserva-bilhete-corpo > * {
+  order: 4;
+}
+
+.reserva-dialogo .reserva-bilhete-rota {
+  order: 1;
+}
+
+.reserva-dialogo .reserva-bilhete-dados {
+  order: 2;
+}
+
+.reserva-dialogo .reserva-bilhete-rota + img {
+  order: 3;
+}
+
+/* O segundo divisor sobraria entre o primeiro e o QR Code. */
+.reserva-dialogo .reserva-bilhete-dados + img {
+  display: none;
+}
+
+.reserva-dialogo .reserva-bilhete-dados dt {
+  font-size: .625rem;
+}
+
+.reserva-dialogo .reserva-bilhete-dados dd {
+  margin-top: .125rem;
+  font-size: .875rem;
 }
 
 .reserva-dialogo .reserva-bilhete-embarque > div {
-  width: 80px;
-  height: 80px;
+  width: 140px;
+  height: 140px;
 }
 
 .reserva-dialogo .reserva-bilhete-embarque svg {
-  width: 72px;
-  height: 72px;
-}
-
-.reserva-dialogo .reserva-modal-acoes > * {
-  padding: .625rem 1.5rem;
+  width: 128px;
+  height: 128px;
 }
 
 @media (max-width: 640px) {
@@ -494,66 +566,8 @@
   gap: 1.5rem;
 }
 
-/* Carrossel de passagens: navegação compacta acima do bilhete, "‹ Anterior  Passagem 1 de 2  Próxima ›". */
 .reserva-carrossel {
   gap: .75rem;
-}
-
-/* O "nav" aumenta a especificidade sobre o estilo padrão da Paginacao (CSS module). */
-nav.reserva-carrossel-navegacao {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: .5rem;
-  padding: .5rem;
-  border-radius: 1rem;
-}
-
-/* Os botões e o resumo dividem a mesma linha, com o resumo no meio. */
-nav.reserva-carrossel-navegacao > div {
-  display: contents;
-}
-
-nav.reserva-carrossel-navegacao > span {
-  grid-row: 1;
-  grid-column: 2;
-  color: var(--color-brand-950);
-  font-weight: 600;
-  text-align: center;
-  white-space: nowrap;
-}
-
-nav.reserva-carrossel-navegacao button {
-  grid-row: 1;
-  min-height: 2.25rem;
-  padding: .5rem .875rem;
-}
-
-@media (max-width: 640px) {
-  nav.reserva-carrossel-navegacao {
-    font-size: .8125rem;
-  }
-
-  nav.reserva-carrossel-navegacao button {
-    padding: .5rem .625rem;
-  }
-}
-
-nav.reserva-carrossel-navegacao button:first-of-type {
-  grid-column: 1;
-}
-
-nav.reserva-carrossel-navegacao button:last-of-type {
-  grid-column: 3;
-}
-
-/* As setas são só visuais: o "/ ''" tira o texto delas do nome lido pelo leitor de tela. */
-nav.reserva-carrossel-navegacao button:first-of-type::before {
-  content: "‹" / "";
-}
-
-nav.reserva-carrossel-navegacao button:last-of-type::after {
-  content: "›" / "";
 }
 
 .reserva-bilhete {
@@ -597,9 +611,56 @@ nav.reserva-carrossel-navegacao button:last-of-type::after {
   gap: 1rem;
 }
 
-.reserva-bilhete-rota > span {
+/* Entre origem e destino, uma linha com um ônibus que vai de uma ponta à outra.
+   A linha estica com o espaço disponível. */
+.reserva-bilhete-trajeto {
+  position: relative;
+  flex: 1;
+  min-width: 4rem;
+  height: 1.25rem;
   color: var(--viagem-verde);
-  font-size: 1.5rem;
+}
+
+.reserva-bilhete-trajeto::before {
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  left: 3px;
+  border-top: 2px dashed var(--viagem-borda);
+  content: "";
+}
+
+.reserva-bilhete-trajeto svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 2rem;
+  height: 1.25rem;
+  animation: reserva-partida 3.5s ease-in-out infinite;
+}
+
+@keyframes reserva-partida {
+  0% {
+    left: 0;
+    opacity: 0;
+  }
+
+  10%,
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    left: calc(100% - 2rem);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reserva-bilhete-trajeto svg {
+    left: calc(50% - 1rem);
+    animation: none;
+  }
 }
 
 .reserva-bilhete-rota > div {
@@ -877,9 +938,9 @@ nav.reserva-carrossel-navegacao button:last-of-type::after {
     align-items: stretch;
   }
 
-  .reserva-bilhete-rota > span {
-    align-self: center;
-    transform: rotate(90deg);
+  /* Empilhado, o trajeto vira uma linha horizontal na largura toda, entre origem e destino. */
+  .reserva-bilhete-trajeto {
+    flex: none;
   }
 
   .reserva-passageiros-card {

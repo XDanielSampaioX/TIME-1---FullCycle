@@ -33,16 +33,14 @@ export function CarrosselPassagens({ passagens: resumos }: { passagens: Passagem
 
   return (
     <div className="reserva-bilhetes reserva-carrossel">
-      {/* A navegação fica acima do bilhete: no modal, embaixo dele ela só aparecia rolando. */}
+      <BilheteCarregado key={passagens[atual].id} passagemId={passagens[atual].id} />
       <Paginacao
-        className="reserva-carrossel-navegacao"
         resumo={`Passagem ${atual + 1} de ${passagens.length}`}
         anterior={atual > 0 ? String(atual - 1) : null}
         proxima={atual < passagens.length - 1 ? String(atual + 1) : null}
         rotulo="Passagens da reserva"
         onNavegar={(destino) => setIndice(Number(destino))}
       />
-      <BilheteCarregado key={passagens[atual].id} passagemId={passagens[atual].id} />
     </div>
   );
 }

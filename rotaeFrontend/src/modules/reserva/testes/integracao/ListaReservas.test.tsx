@@ -176,4 +176,15 @@ describe("ListaReservas", () => {
     expect(await screen.findByText("Passagem 1 de 2")).toBeInTheDocument();
     expect(screen.getAllByText("BILHETE DIGITAL EMITIDO")).toHaveLength(1);
   });
+
+  it("o modal só tem o botão de fechar, porque atrás dele já está Minhas viagens", async () => {
+    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa({ status: "PAGO" }), passageiros: [passageiro, outroPassageiro], passagens: passagensPagas });
+    montar([reservaComPassageiro({ status: "PAGO" })]);
+
+    fireEvent.click(screen.getByRole("button", { name: "Detalhes" }));
+
+    expect(await screen.findByRole("button", { name: "Fechar", hidden: true })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Ver minhas viagens", hidden: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Voltar ao início", hidden: true })).not.toBeInTheDocument();
+  });
 });
