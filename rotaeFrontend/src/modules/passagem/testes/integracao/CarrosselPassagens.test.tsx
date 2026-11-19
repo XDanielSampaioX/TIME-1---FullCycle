@@ -40,6 +40,15 @@ describe("CarrosselPassagens", () => {
     expect(screen.getByRole("button", { name: "Próxima" })).toBeDisabled();
   });
 
+  it("mostra a navegação acima do bilhete, para ficar visível sem rolar", async () => {
+    render(<CarrosselPassagens passagens={resumos} />);
+
+    const bilhete = (await screen.findByText("Mariana Oliveira")).closest("section");
+    const navegacao = screen.getByRole("navigation", { name: "Passagens da reserva" });
+    expect(navegacao.compareDocumentPosition(bilhete!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(navegacao).toHaveClass("reserva-carrossel-navegacao");
+  });
+
   it("mostra primeiro a passagem de menor id, mesmo com os resumos em ordem inversa", async () => {
     render(<CarrosselPassagens passagens={[resumos[1], resumos[0]]} />);
 

@@ -20,7 +20,7 @@
   width: min(calc(100% - 2 * var(--page-gutter)), 45rem);
   max-height: calc(100dvh - 2rem);
   margin: auto;
-  padding: 2.5rem;
+  padding: 2rem 2.5rem;
   overflow-y: auto;
   border: 0;
   border-radius: var(--radius-lg);
@@ -38,7 +38,22 @@
 
 .reserva-dialogo[open] {
   display: grid;
-  gap: 2rem;
+  gap: 1.25rem;
+}
+
+/* No modal o título fica menor, para sobrar altura para o bilhete. */
+.reserva-dialogo .reserva-modal-titulo {
+  gap: .5rem;
+}
+
+.reserva-dialogo .reserva-modal-titulo > span {
+  width: 48px;
+  height: 48px;
+  font-size: 1.375rem;
+}
+
+.reserva-dialogo .reserva-modal-titulo h2 {
+  font-size: 1.5rem;
 }
 
 @media (max-width: 640px) {
@@ -440,6 +455,68 @@
 .reserva-bilhetes {
   display: grid;
   gap: 1.5rem;
+}
+
+/* Carrossel de passagens: navegação compacta acima do bilhete, "‹ Anterior  Passagem 1 de 2  Próxima ›". */
+.reserva-carrossel {
+  gap: .75rem;
+}
+
+/* O "nav" aumenta a especificidade sobre o estilo padrão da Paginacao (CSS module). */
+nav.reserva-carrossel-navegacao {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: .5rem;
+  padding: .5rem;
+  border-radius: 1rem;
+}
+
+/* Os botões e o resumo dividem a mesma linha, com o resumo no meio. */
+nav.reserva-carrossel-navegacao > div {
+  display: contents;
+}
+
+nav.reserva-carrossel-navegacao > span {
+  grid-row: 1;
+  grid-column: 2;
+  color: var(--color-brand-950);
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+nav.reserva-carrossel-navegacao button {
+  grid-row: 1;
+  min-height: 2.25rem;
+  padding: .5rem .875rem;
+}
+
+@media (max-width: 640px) {
+  nav.reserva-carrossel-navegacao {
+    font-size: .8125rem;
+  }
+
+  nav.reserva-carrossel-navegacao button {
+    padding: .5rem .625rem;
+  }
+}
+
+nav.reserva-carrossel-navegacao button:first-of-type {
+  grid-column: 1;
+}
+
+nav.reserva-carrossel-navegacao button:last-of-type {
+  grid-column: 3;
+}
+
+/* As setas são só visuais: o "/ ''" tira o texto delas do nome lido pelo leitor de tela. */
+nav.reserva-carrossel-navegacao button:first-of-type::before {
+  content: "‹" / "";
+}
+
+nav.reserva-carrossel-navegacao button:last-of-type::after {
+  content: "›" / "";
 }
 
 .reserva-bilhete {

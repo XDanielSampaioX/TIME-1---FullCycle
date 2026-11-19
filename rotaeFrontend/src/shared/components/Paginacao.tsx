@@ -4,11 +4,11 @@ import { Button } from "./Button";
 import styles from "../styles/Paginacao.module.css";
 import { PaginacaoProps } from "../types/pagina";
 
-export function Paginacao({ resumo, anterior, proxima, carregando = false, rotulo = "Paginação dos resultados", onNavegar }: PaginacaoProps) {
+export function Paginacao({ resumo, anterior, proxima, carregando = false, rotulo = "Paginação dos resultados", className, onNavegar }: PaginacaoProps) {
   if (!anterior && !proxima) return null;
 
   return (
-    <nav className={styles.paginacao} aria-label={rotulo}>
+    <nav className={[styles.paginacao, className].filter(Boolean).join(" ")} aria-label={rotulo}>
       <span aria-live="polite">{resumo}</span>
       <div className={styles.controles}>
         <Button variant="secondary" disabled={!anterior || carregando} onClick={() => anterior && onNavegar(anterior)}>

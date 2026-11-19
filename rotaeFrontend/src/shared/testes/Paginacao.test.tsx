@@ -26,4 +26,12 @@ describe("Paginacao", () => {
     );
     expect(screen.getByRole("navigation", { name: "Passagens da reserva" })).toBeInTheDocument();
   });
+
+  it("acrescenta a classe informada sem perder a padrão", () => {
+    render(<Paginacao className="extra" resumo="1 de 2" anterior={null} proxima="2" onNavegar={jest.fn()} />);
+
+    const navegacao = screen.getByRole("navigation", { name: "Paginação dos resultados" });
+    expect(navegacao).toHaveClass("extra");
+    expect(navegacao.classList.length).toBe(2);
+  });
 });
