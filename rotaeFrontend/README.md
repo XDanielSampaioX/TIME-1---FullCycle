@@ -110,16 +110,17 @@ src/
 ├── modules/        um módulo por assunto do produto
 │   ├── autenticacao/
 │   ├── cidade/
+│   ├── passagem/
 │   ├── reserva/
 │   ├── usuario/
 │   ├── viagem/
 │   └── viagem-assento/
 └── shared/         o que não pertence a um assunto só
-    ├── components/ Button, Container, Header, Footer, Paginacao, Skeleton, EtapasCheckout…
+    ├── components/ Button, CampoFormulario, Container, Header, Footer, Paginacao, Skeleton, EtapasCheckout…
     ├── hooks/      useClienteMontado, useFecharMenuSuspenso
     ├── styles/     CSS Modules (EtapasCheckout, Paginacao, Skeleton)
     ├── types/      pagina.ts (Pagina<T>, PaginacaoProps)
-    └── utils/      formatarDataHora, formatarValorEmReais
+    └── utils/      formatarDataHora, formatarValorEmReais, mascaras (CPF e celular)
 ```
 
 `public/` tem as imagens da home e os SVGs usados nas telas de viagem e do bilhete.
@@ -224,30 +225,33 @@ const resposta = await fetchAutenticado(apiUrl("/api/v1/me/reservas/"));
 
 ### usuario
 
-Cadastro, edição de perfil, troca de senha e exclusão de conta. Também é dono dos componentes
-de formulário reaproveitados em outras telas (`CampoFormulario`, `MenuUsuario`,
-`AvatarUsuario`) e do hook `useFocoPrimeiroErro`, que leva o foco ao primeiro campo inválido.
+Cadastro, edição de perfil, troca de senha e exclusão de conta. Também é dono do `MenuUsuario`,
+do `AvatarUsuario` e do hook `useFocoPrimeiroErro`, que leva o foco ao primeiro campo inválido.
+O `CampoFormulario` fica em `shared/components`, porque login e passageiros também o usam.
 
 As validações de tela vivem em `classes/validacao/` no padrão Composite: uma regra e um grupo
 de regras se validam do mesmo jeito, então um grupo pode conter outros grupos.
+`regrasCampos.ts` tem uma fábrica por campo (`regrasNome`, `regrasEmail`, `regrasCpf`,
+`regrasCelular`, `regrasDataNasc`, `regrasNovaSenha`), com a regex e as mensagens escritas
+uma vez só; cada formulário só compõe as fábricas.
 
 ```ts
 // src/modules/usuario/classes/validacao/regrasAlteracaoSenha.ts
-const regrasNovaSenha = new GrupoRegrasValidacao<AlteracaoSenha>([
-  new RegraCampoObrigatorio("novaSenha", "Informe a nova senha."),
-  new RegraTamanhoMinimo("novaSenha", 8, "A senha deve ter pelo menos 8 caracteres."),
-  new RegraCamposIguais("confirmacaoNovaSenha", "novaSenha", "A confirmação não confere com a nova senha."),
+export const regrasAlteracaoSenha = new GrupoRegrasValidacao<AlteracaoSenha>([
+  new RegraCampoObrigatorio("senhaAtual", "Informe sua senha atual."),
+  regrasNovaSenha("novaSenha", "confirmacaoNovaSenha"),
 ]);
 
-regrasAlteracaoSenha.validar(dados); // { novaSenha: "Informe a nova senha." } ou {}
+regrasAlteracaoSenha.validar(dados); // { novaSenha: "Informe uma senha." } ou {}
 ```
 
 São checagens rápidas antes do envio; as regras definitivas (dígitos do CPF, força da senha,
-e-mail já cadastrado) são do backend, e `services/lerErrosPorCampo.ts` transforma a resposta
-400 em uma mensagem por campo.
+e-mail ou CPF já cadastrados) são do backend, e `services/lerErrosPorCampo.ts` transforma a
+resposta 400 em uma mensagem por campo.
 
-O cadastro tem um conjunto próprio de classes em `classes/` (`RegraCadastro` e companhia),
-anterior às de `classes/validacao/`, que são genéricas.
+`utils/camposPessoais.ts` descreve como cada campo pessoal aparece na tela (rótulo, tipo,
+preenchimento automático, exemplo), compartilhado entre cadastro e edição de perfil. CPF e
+celular ganham máscara enquanto a pessoa digita (`shared/utils/mascaras.ts`).
 
 | Serviço | Chamada |
 | --- | --- |
@@ -305,7 +309,7 @@ O checkout e a tela "Minhas viagens". É o maior módulo.
 | Serviço | Chamada |
 | --- | --- |
 | `criarReserva` | `POST /api/v1/reservas/` |
-| `buscarReserva` | `GET /api/v1/reservas/{id}/` (traz os passageiros) |
+| `buscarReserva` | `GET /api/v1/reservas/{id}/` (traz os passageiros e o resumo das passagens) |
 | `cadastrarPassageiros` | `POST /api/v1/reservas/{id}/passageiros/` |
 | `pagarReserva` | `POST /api/v1/reservas/{id}/pagamentos/` (`{ metodoPagamento: "PIX" \| "CARTAO" }`) |
 | `cancelarReserva` | `POST /api/v1/reservas/{id}/cancelar/` |
@@ -339,9 +343,12 @@ O caminho da compra, do jeito que está no código:
      `FALHA`, as poltronas são liberadas e a tela leva de volta à escolha de poltronas;
    - recusa do pedido (409) ou falta de resposta — a tela consulta a reserva, porque ela pode ter
      sido paga, cancelada ou encerrada em outra aba, e mostra o estado atual.
-5. **Confirmação** (`/reservas/[id]/confirmacao`) — `ConfirmacaoReserva` mostra o bilhete, com
-   QR Code só para a reserva paga (`bilheteEmitido`). O mesmo componente é reaproveitado dentro
-   do modal de "Minhas viagens" (`dentroDoModal`).
+5. **Confirmação** (`/reservas/[id]/confirmacao`) — `ConfirmacaoReserva` decide o bilhete pela
+   reserva. Paga (`bilheteEmitido`), ela mostra o `CarrosselPassagens` do módulo
+   [passagem](#passagem): um bilhete por passageiro. Antes do pagamento, a reserva continua um
+   bloco só (`BilheteReserva`), com todos os passageiros e poltronas e sem QR Code. O mesmo
+   componente é reaproveitado no modal de "Minhas viagens" (`dentroDoModal`), que só tem o botão
+   de fechar, ocupa a altura da tela e não rola.
 
 Nos cartões de "Minhas viagens", a reserva pendente mostra **Cancelar** e **Informar
 passageiros** ou **Pagar agora** (`BotoesReserva`); o modal com as passagens é para a reserva
@@ -350,8 +357,31 @@ buscada de novo.
 
 Em "Minhas viagens", `separarReservas` divide a lista em **Próximas** (pendentes ou pagas com
 viagem futura) e **Histórico** (as demais dos últimos 90 dias), com 5 reservas por página.
-`/me/reservas/` não traz os passageiros, então os nomes de cada cartão vêm do detalhe das
-reservas visíveis.
+`/me/reservas/` já traz o nome dos passageiros, então os cartões não buscam o detalhe; ele só é
+buscado ao abrir o modal.
+
+### passagem
+
+O bilhete de cada passageiro depois do pagamento. A reserva é uma só até ser paga; a partir daí
+o backend emite uma passagem por passageiro, com o assento dele. O frontend não divide a
+reserva: mostra as passagens que o backend devolve.
+
+| Serviço | Chamada |
+| --- | --- |
+| `buscarPassagem` | `GET /api/v1/passagens/{id}/` |
+
+O detalhe da reserva traz só o resumo de cada passagem (`PassagemResumo`: `id`,
+`viagemAssentoId`, `passageiroId`, `status`). `CarrosselPassagens` ordena os resumos por `id`
+(o backend devolve da mais nova para a mais antiga) e mostra um bilhete por vez, com a
+`Paginacao` abaixo dele. Cada página busca a sua passagem com `useCarregarDados`.
+
+`BilhetePassagem` mostra só o que a rota devolve: rota, passageiro, poltrona e QR Code (sem
+classe nem valor). Passagem `CANCELADO` não tem QR Code. Enquanto a passagem carrega,
+`BilhetePassagemSkeleton` repete a mesma marcação com altura de linha (`1lh`), então o bilhete
+não muda de tamanho ao trocar de página.
+
+`GET /api/v1/me/passagens/` existe, mas não é usado: ele lista todas as passagens do usuário, e
+o carrossel precisa só das passagens de uma reserva, que já vêm no detalhe dela.
 
 As etapas do checkout aparecem na barra de `shared/components/EtapasCheckout.tsx`
 ("Seleção de assentos", "Dados dos passageiros", "Pagamento", "Confirmação"): assentos usa
@@ -360,8 +390,10 @@ barra.
 
 ### shared
 
-O que não é de um assunto só: `Button`, `Container`, `Header`, `Footer`, `Paginacao`,
-`Skeleton`, `EtapasCheckout` e as seções da home. `useClienteMontado` devolve `false` no
+O que não é de um assunto só: `Button`, `CampoFormulario`, `Container`, `Header`, `Footer`,
+`Paginacao`, `Skeleton`, `EtapasCheckout` e as seções da home. Toda paginação usa `Paginacao`:
+"‹ Anterior", o resumo e "Próxima ›" numa linha; sem página para ir, o botão fica bloqueado
+(esmaecido, com cursor de bloqueio). Aceita `className` para quem chama acrescentar estilo. `useClienteMontado` devolve `false` no
 servidor e na primeira renderização do navegador, o que evita mostrar "faça login" por um
 instante a quem já está logado. `useFecharMenuSuspenso` fecha um `<details>` com Esc, clique
 fora ou Tab para fora.
@@ -412,9 +444,9 @@ Três coisas convivendo, cada uma com seu lugar:
 
 ## Testes
 
-Os testes ficam dentro do módulo que eles testam, em `testes/`. O módulo `reserva` separa por
-tipo (`unitarios/`, `integracao/`, `e2e/`); os outros deixam os arquivos direto em `testes/`,
-com as fixtures em `testes/fixtures/`.
+Os testes ficam dentro do módulo que eles testam, em `testes/`. Os módulos `reserva` e
+`passagem` separam por tipo (`unitarios/`, `integracao/` e, em `reserva`, `e2e/`); os outros
+deixam os arquivos direto em `testes/`, com as fixtures em `testes/fixtures/`.
 
 ```bash
 npm test
