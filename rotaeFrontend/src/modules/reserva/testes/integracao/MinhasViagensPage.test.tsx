@@ -15,7 +15,7 @@ describe("MinhasViagensPage", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     useAutenticacao.mockReturnValue({ estado: "autenticado" });
-    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa(), passageiros: [] });
+    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa(), passageiros: [], passagens: [] });
   });
 
   it("pede login a quem não está autenticado e não busca reservas", () => {

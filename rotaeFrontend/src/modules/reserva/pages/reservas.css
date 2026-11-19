@@ -20,7 +20,7 @@
   width: min(calc(100% - 2 * var(--page-gutter)), 45rem);
   max-height: calc(100dvh - 2rem);
   margin: auto;
-  padding: 2.5rem;
+  padding: 1.5rem 2rem;
   overflow-y: auto;
   border: 0;
   border-radius: var(--radius-lg);
@@ -38,7 +38,131 @@
 
 .reserva-dialogo[open] {
   display: grid;
-  gap: 2rem;
+  gap: .75rem;
+}
+
+/* No modal tudo fica mais compacto, para o bilhete caber na tela sem rolar.
+   O título vira uma linha: ícone à esquerda, título e descrição à direita. */
+.reserva-dialogo .reserva-modal-titulo {
+  grid-template-columns: auto 1fr;
+  justify-items: start;
+  column-gap: .875rem;
+  row-gap: .125rem;
+  text-align: left;
+}
+
+.reserva-dialogo .reserva-modal-titulo > span {
+  grid-row: span 2;
+  width: 40px;
+  height: 40px;
+  font-size: 1.125rem;
+}
+
+.reserva-dialogo .reserva-modal-titulo h2 {
+  font-size: 1.25rem;
+}
+
+.reserva-dialogo .reserva-modal-titulo p {
+  font-size: .875rem;
+}
+
+/* Com o carrossel de bilhetes, o modal ocupa a altura da tela e o bilhete estica para preencher. */
+.reserva-dialogo[open]:has(.reserva-carrossel) {
+  height: calc(100dvh - 2rem);
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.reserva-dialogo .reserva-carrossel {
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: .5rem;
+}
+
+.reserva-dialogo .reserva-bilhete {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Atrás do modal já está "Minhas viagens": o único botão é o de fechar, no canto. */
+.reserva-modal-fechar {
+  position: absolute;
+  top: .75rem;
+  right: .75rem;
+}
+
+.reserva-modal-fechar button {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-brand-950);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.reserva-modal-fechar button:hover {
+  background: var(--viagem-suave);
+}
+
+.reserva-modal-fechar button:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+.reserva-dialogo .reserva-bilhete-topo {
+  padding: .625rem 1.5rem;
+}
+
+/* No modal passageiro e poltrona ficam logo abaixo da rota, menores, e o conteúdo começa no topo.
+   O `order` muda só a posição na tela: a marcação do bilhete continua a mesma da página. */
+.reserva-dialogo .reserva-bilhete-corpo {
+  flex: 1;
+  align-content: start;
+  gap: 1rem;
+  padding: 1.25rem 2rem;
+}
+
+.reserva-dialogo .reserva-bilhete-corpo > * {
+  order: 4;
+}
+
+.reserva-dialogo .reserva-bilhete-rota {
+  order: 1;
+}
+
+.reserva-dialogo .reserva-bilhete-dados {
+  order: 2;
+}
+
+.reserva-dialogo .reserva-bilhete-rota + img {
+  order: 3;
+}
+
+/* O segundo divisor sobraria entre o primeiro e o QR Code. */
+.reserva-dialogo .reserva-bilhete-dados + img {
+  display: none;
+}
+
+.reserva-dialogo .reserva-bilhete-dados dt {
+  font-size: .625rem;
+}
+
+.reserva-dialogo .reserva-bilhete-dados dd {
+  margin-top: .125rem;
+  font-size: .875rem;
+}
+
+.reserva-dialogo .reserva-bilhete-embarque > div {
+  width: 140px;
+  height: 140px;
+}
+
+.reserva-dialogo .reserva-bilhete-embarque svg {
+  width: 128px;
+  height: 128px;
 }
 
 @media (max-width: 640px) {
@@ -442,6 +566,10 @@
   gap: 1.5rem;
 }
 
+.reserva-carrossel {
+  gap: .75rem;
+}
+
 .reserva-bilhete {
   overflow: hidden;
   border: 2px solid var(--color-accent-500);
@@ -483,9 +611,56 @@
   gap: 1rem;
 }
 
-.reserva-bilhete-rota > span {
+/* Entre origem e destino, uma linha com um ônibus que vai de uma ponta à outra.
+   A linha estica com o espaço disponível. */
+.reserva-bilhete-trajeto {
+  position: relative;
+  flex: 1;
+  min-width: 4rem;
+  height: 1.25rem;
   color: var(--viagem-verde);
-  font-size: 1.5rem;
+}
+
+.reserva-bilhete-trajeto::before {
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  left: 3px;
+  border-top: 2px dashed var(--viagem-borda);
+  content: "";
+}
+
+.reserva-bilhete-trajeto svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 2rem;
+  height: 1.25rem;
+  animation: reserva-partida 3.5s ease-in-out infinite;
+}
+
+@keyframes reserva-partida {
+  0% {
+    left: 0;
+    opacity: 0;
+  }
+
+  10%,
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    left: calc(100% - 2rem);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reserva-bilhete-trajeto svg {
+    left: calc(50% - 1rem);
+    animation: none;
+  }
 }
 
 .reserva-bilhete-rota > div {
@@ -763,9 +938,9 @@
     align-items: stretch;
   }
 
-  .reserva-bilhete-rota > span {
-    align-self: center;
-    transform: rotate(90deg);
+  /* Empilhado, o trajeto vira uma linha horizontal na largura toda, entre origem e destino. */
+  .reserva-bilhete-trajeto {
+    flex: none;
   }
 
   .reserva-passageiros-card {

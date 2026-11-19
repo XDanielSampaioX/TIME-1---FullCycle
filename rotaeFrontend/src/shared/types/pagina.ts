@@ -5,6 +5,9 @@ export type PaginacaoProps = {
   anterior: string | null;
   proxima: string | null;
   carregando?: boolean;
+  rotulo?: string;
+  // Classe extra para quem precisa de outro visual, como o carrossel de passagens.
+  className?: string;
   onNavegar: (url: string) => void;
 };
 

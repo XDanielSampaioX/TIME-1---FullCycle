@@ -24,18 +24,6 @@ export function ordenarAssentos<T extends { numero: number }>(assentos: T[]) {
   return [...assentos].sort((a, b) => a.numero - b.numero);
 }
 
-// Uma passagem por passageiro e poltrona, pareados como o backend faz. A reserva cancelada perde
-// as poltronas e a ainda sem passageiros só tem as poltronas, por isso os dois lados podem faltar.
-export function montarPassagens(reserva: Pick<ReservaDetalhe, "assentos" | "passageiros">) {
-  const assentos = ordenarAssentos(reserva.assentos);
-  const total = Math.max(assentos.length, reserva.passageiros.length, 1);
-
-  return Array.from({ length: total }, (_, indice) => ({
-    passageiro: reserva.passageiros[indice] as ReservaDetalhe["passageiros"][number] | undefined,
-    assento: assentos[indice] as ReservaDetalhe["assentos"][number] | undefined,
-  }));
-}
-
 function estaNasProximas(reserva: Reserva, agora: Date) {
   const statusAtual = obterStatusAtualReserva(reserva, agora);
 

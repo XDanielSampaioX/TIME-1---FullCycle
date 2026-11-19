@@ -1,17 +1,24 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { formatarDataHora } from "@/shared/utils/formatarDataHora";
 import { ListaReservas } from "../../components/ListaReservas";
+import { buscarPassagem } from "@/modules/passagem/services/buscarPassagem";
 import { buscarReserva } from "../../services/buscarReserva";
 import { cancelarReserva } from "../../services/cancelarReserva";
 import type { Reserva } from "../../types/reserva";
+import { criarPassagemFalsa } from "@/modules/passagem/testes/fixtures/passagem";
 import { criarReservaFalsa } from "../fixtures/reserva";
 
 jest.mock("../../services/buscarReserva");
+jest.mock("@/modules/passagem/services/buscarPassagem");
 jest.mock("../../services/cancelarReserva");
 
 const agora = new Date("2026-11-03T12:00:00-03:00");
 const passageiro = { id: 1, usuarioId: null, nome: "Mariana Oliveira", email: "", celular: "", dataNasc: "", cpf: "", criadoEm: "", atualizadoEm: "" };
 const outroPassageiro = { ...passageiro, id: 2, nome: "Pedro Souza" };
+const passagensPagas = [
+  { id: 12, viagemAssentoId: 45, passageiroId: 1, status: "CONFIRMADO" as const },
+  { id: 13, viagemAssentoId: 46, passageiroId: 2, status: "CONFIRMADO" as const },
+];
 
 // A listagem /me/reservas/ já traz o nome dos passageiros.
 function reservaComPassageiro(dados: Partial<Reserva> = {}) {
@@ -27,7 +34,8 @@ function montar(reservas: Reserva[]) {
 describe("ListaReservas", () => {
   beforeEach(() => {
     jest.resetAllMocks();
-    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa(), passageiros: [passageiro, outroPassageiro] });
+    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa(), passageiros: [passageiro, outroPassageiro], passagens: [] });
+    jest.mocked(buscarPassagem).mockResolvedValue(criarPassagemFalsa());
     HTMLDialogElement.prototype.showModal = jest.fn(function mostrar(this: HTMLDialogElement) {
       this.open = true;
     });
@@ -63,17 +71,17 @@ describe("ListaReservas", () => {
 
     jest.mocked(buscarReserva).mockResolvedValue({
       ...criarReservaFalsa({ status: "PAGO" }),
-      passageiros: [passageiro, outroPassageiro],
+      passageiros: [passageiro, outroPassageiro], passagens: passagensPagas,
     });
 
     // O detalhe é o mesmo da tela de confirmação.
     fireEvent.click(within(card).getByRole("button", { name: "Ver 2 bilhetes" }));
 
     expect(await screen.findByRole("heading", { name: "Reserva confirmada!", hidden: true })).toBeInTheDocument();
-    // Um bilhete por passageiro, cada um com a sua poltrona e o seu QR Code.
-    expect(screen.getByRole("img", { name: "QR Code da passagem #ROT-2026-5087-45", hidden: true })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "QR Code da passagem #ROT-2026-5087-46", hidden: true })).toBeInTheDocument();
-    expect(screen.getAllByText("VALOR PAGO")).toHaveLength(2);
+    // Um bilhete por vez, vindo das passagens do backend.
+    expect(await screen.findByText("Passagem 1 de 2")).toBeInTheDocument();
+    expect(await screen.findAllByRole("img", { name: /^QR Code da passagem/, hidden: true })).toHaveLength(1);
+    expect(screen.getByRole("img", { name: "QR Code da passagem #ROT-2026-0012", hidden: true })).toBeInTheDocument();
   });
 
   it("leva para os passageiros a reserva pendente que ainda não tem nenhum", async () => {
@@ -158,14 +166,25 @@ describe("ListaReservas", () => {
   });
 
   it("abre o modal com os detalhes da reserva", async () => {
-    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa({ status: "PAGO" }), passageiros: [passageiro, outroPassageiro] });
+    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa({ status: "PAGO" }), passageiros: [passageiro, outroPassageiro], passagens: passagensPagas });
     montar([reservaComPassageiro({ status: "PAGO" })]);
 
     fireEvent.click(screen.getByRole("button", { name: "Detalhes" }));
 
     expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalled();
     expect(await screen.findByRole("heading", { name: "Reserva confirmada!", hidden: true })).toBeInTheDocument();
-    expect(screen.getAllByText("BILHETE DIGITAL EMITIDO")).toHaveLength(2);
-    expect(screen.getAllByText("VALOR PAGO")).toHaveLength(2);
+    expect(await screen.findByText("Passagem 1 de 2")).toBeInTheDocument();
+    expect(screen.getAllByText("BILHETE DIGITAL EMITIDO")).toHaveLength(1);
+  });
+
+  it("o modal só tem o botão de fechar, porque atrás dele já está Minhas viagens", async () => {
+    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa({ status: "PAGO" }), passageiros: [passageiro, outroPassageiro], passagens: passagensPagas });
+    montar([reservaComPassageiro({ status: "PAGO" })]);
+
+    fireEvent.click(screen.getByRole("button", { name: "Detalhes" }));
+
+    expect(await screen.findByRole("button", { name: "Fechar", hidden: true })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Ver minhas viagens", hidden: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Voltar ao início", hidden: true })).not.toBeInTheDocument();
   });
 });

@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { Button } from "@/shared/components/Button";
 import type { ReservaDetalhe } from "../types/reservaDetalhe";
 import { bilheteEmitido, descreverStatusReserva } from "../utils/regrasReserva";
 import { BilheteReserva } from "./BilheteReserva";
+import { CarrosselPassagens } from "@/modules/passagem/components/CarrosselPassagens";
 
 // O quadro "confirmacao" do Figma: título, bilhete e ações. Aparece depois do pagamento
 // e também no modal de detalhes de "Minhas viagens", para as duas telas mostrarem o mesmo bilhete.
@@ -14,7 +14,6 @@ export function ConfirmacaoReserva({ reserva, agora, dentroDoModal }: {
   const { statusAtual, titulo, descricao } = descreverStatusReserva(reserva, agora);
   const emitido = bilheteEmitido(reserva, agora);
   const Titulo = dentroDoModal ? "h2" : "h1";
-  const voltarAoInicio = <Link className="shared-button shared-button-ghost" href="/">Voltar ao início</Link>;
 
   return (
     <>
@@ -24,12 +23,11 @@ export function ConfirmacaoReserva({ reserva, agora, dentroDoModal }: {
         <Titulo>{emitido ? "Reserva confirmada!" : titulo}</Titulo>
         <p>{emitido ? "Seu bilhete digital está pronto para embarque." : descricao}</p>
       </header>
-      <BilheteReserva reserva={reserva} emitido={emitido} />
+      {emitido ? <CarrosselPassagens passagens={reserva.passagens} /> : <BilheteReserva reserva={reserva} />}
       {dentroDoModal ? (
-        // O method="dialog" faz o botão fechar o modal, que já está em "Minhas viagens".
-        <form className="reserva-modal-acoes" method="dialog">
-          <Button variant="secondary">Ver minhas viagens</Button>
-          {voltarAoInicio}
+        // Atrás do modal já está "Minhas viagens": basta fechar. O method="dialog" faz o botão fechar o modal.
+        <form className="reserva-modal-fechar" method="dialog">
+          <button type="submit" aria-label="Fechar">✕</button>
         </form>
       ) : (
         <div className="reserva-modal-acoes">
@@ -42,7 +40,7 @@ export function ConfirmacaoReserva({ reserva, agora, dentroDoModal }: {
             <Link className="shared-button shared-button-secondary" href={`/viagens/${reserva.viagem.id}/assentos`}>Escolher poltronas</Link>
           )}
           <Link className="shared-button shared-button-secondary" href="/minhas-viagens">Ver minhas viagens</Link>
-          {voltarAoInicio}
+          <Link className="shared-button shared-button-ghost" href="/">Voltar ao início</Link>
         </div>
       )}
     </>
