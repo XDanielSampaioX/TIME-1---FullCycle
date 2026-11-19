@@ -40,6 +40,18 @@ describe("CarrosselPassagens", () => {
     expect(screen.getByRole("button", { name: "Próxima" })).toBeDisabled();
   });
 
+  it("mostra primeiro a passagem de menor id, mesmo com os resumos em ordem inversa", async () => {
+    render(<CarrosselPassagens passagens={[resumos[1], resumos[0]]} />);
+
+    expect(await screen.findByText("Mariana Oliveira")).toBeInTheDocument();
+    expect(buscarPassagem).toHaveBeenCalledWith(12);
+
+    fireEvent.click(screen.getByRole("button", { name: "Próxima" }));
+
+    expect(await screen.findByText("Pedro Souza")).toBeInTheDocument();
+    expect(buscarPassagem).toHaveBeenLastCalledWith(13);
+  });
+
   it("não mostra classe nem valor no bilhete pago", async () => {
     render(<CarrosselPassagens passagens={resumos} />);
 
@@ -68,6 +80,21 @@ describe("CarrosselPassagens", () => {
     expect(await screen.findByText("Mariana Oliveira")).toBeInTheDocument();
     expect(buscarPassagem).toHaveBeenCalledTimes(2);
     expect(buscarPassagem).toHaveBeenLastCalledWith(12);
+  });
+
+  it("o erro de uma passagem fica na página dela", async () => {
+    jest.mocked(buscarPassagem).mockImplementation(async (id) => {
+      if (id === 12) throw new Error("falhou");
+      return segunda;
+    });
+    render(<CarrosselPassagens passagens={resumos} />);
+
+    expect(await screen.findByRole("button", { name: "Tentar novamente" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Próxima" }));
+
+    expect(await screen.findByText("Pedro Souza")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Tentar novamente" })).not.toBeInTheDocument();
+    expect(buscarPassagem).toHaveBeenLastCalledWith(13);
   });
 
   it("sem navegação com uma passagem só", async () => {

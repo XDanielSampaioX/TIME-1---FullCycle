@@ -220,9 +220,14 @@ test("informa os passageiros, paga e recebe o bilhete", async ({ browser, reques
   await expect(pagina.getByRole("heading", { level: 1, name: "Reserva confirmada!" })).toBeVisible();
   // Um bilhete por vez: o carrossel das passagens, cada uma com o seu QR Code.
   await expect(pagina.getByRole("img", { name: /^QR Code da passagem/ })).toHaveCount(1);
+  const bilhete = pagina.locator(".reserva-bilhete");
   await expect(pagina.getByText("Passagem 1 de 2")).toBeVisible();
+  await expect(bilhete.getByText("Joana Teste", { exact: true })).toBeVisible();
+  await expect(bilhete.getByText(String(escolhidas[0]), { exact: true })).toBeVisible();
   await pagina.getByRole("button", { name: "Próxima" }).click();
   await expect(pagina.getByText("Passagem 2 de 2")).toBeVisible();
+  await expect(bilhete.getByText("Pedro Teste", { exact: true })).toBeVisible();
+  await expect(bilhete.getByText(String(escolhidas[1]), { exact: true })).toBeVisible();
   await expect(pagina.getByRole("img", { name: /^QR Code da passagem/ })).toHaveCount(1);
 
   // Em Minhas viagens, o detalhe da reserva paga é o mesmo bilhete da confirmação.
@@ -233,6 +238,10 @@ test("informa os passageiros, paga e recebe o bilhete", async ({ browser, reques
   await expect(modal.getByRole("heading", { name: "Reserva confirmada!" })).toBeVisible();
   await expect(modal.getByRole("img", { name: /^QR Code da passagem/ })).toHaveCount(1);
   await expect(modal.getByText("Passagem 1 de 2")).toBeVisible();
+  await expect(modal.getByText("Joana Teste", { exact: true })).toBeVisible();
+  await expect(modal.getByText(String(escolhidas[0]), { exact: true })).toBeVisible();
   await modal.getByRole("button", { name: "Próxima" }).click();
   await expect(modal.getByText("Passagem 2 de 2")).toBeVisible();
+  await expect(modal.getByText("Pedro Teste", { exact: true })).toBeVisible();
+  await expect(modal.getByText(String(escolhidas[1]), { exact: true })).toBeVisible();
 });

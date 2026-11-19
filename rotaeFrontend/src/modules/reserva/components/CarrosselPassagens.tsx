@@ -20,7 +20,9 @@ function BilheteCarregado({ passagemId }: { passagemId: number }) {
 }
 
 // Mostra um bilhete por vez, com paginação entre as passagens da reserva.
-export function CarrosselPassagens({ passagens }: { passagens: PassagemResumo[] }) {
+export function CarrosselPassagens({ passagens: resumos }: { passagens: PassagemResumo[] }) {
+  // O backend devolve da mais nova para a mais antiga, mas as passagens saem na ordem dos passageiros e poltronas.
+  const passagens = [...resumos].sort((a, b) => a.id - b.id);
   const [indice, setIndice] = useState(0);
 
   if (!passagens.length) return <p role="status">Nenhuma passagem emitida para esta reserva.</p>;
