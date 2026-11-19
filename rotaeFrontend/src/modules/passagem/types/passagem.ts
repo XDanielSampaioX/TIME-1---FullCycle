@@ -1,6 +1,6 @@
 import type { ViagemAssento } from "@/modules/viagem-assento/types/viagemAssento";
-import type { PassageiroReserva } from "./passageiroReserva";
-import type { Reserva } from "./reserva";
+import type { PassageiroReserva } from "@/modules/reserva/types/passageiroReserva";
+import type { Reserva } from "@/modules/reserva/types/reserva";
 import type { StatusPassagem } from "./statusPassagem";
 
 export type Passagem = {

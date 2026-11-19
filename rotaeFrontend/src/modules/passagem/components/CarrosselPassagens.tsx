@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Paginacao } from "@/shared/components/Paginacao";
-import { useCarregarDados } from "../hooks/useCarregarDados";
+import { useCarregarDados } from "@/modules/reserva/hooks/useCarregarDados";
 import { buscarPassagem } from "../services/buscarPassagem";
 import type { PassagemResumo } from "../types/passagemResumo";
-import { AvisoDeErro } from "./AvisoDeErro";
+import { AvisoDeErro } from "@/modules/reserva/components/AvisoDeErro";
 import { BilhetePassagem } from "./BilhetePassagem";
 import { BilhetePassagemSkeleton } from "./BilhetePassagemSkeleton";
 

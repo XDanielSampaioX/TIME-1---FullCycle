@@ -1,15 +1,15 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { formatarDataHora } from "@/shared/utils/formatarDataHora";
 import { ListaReservas } from "../../components/ListaReservas";
-import { buscarPassagem } from "../../services/buscarPassagem";
+import { buscarPassagem } from "@/modules/passagem/services/buscarPassagem";
 import { buscarReserva } from "../../services/buscarReserva";
 import { cancelarReserva } from "../../services/cancelarReserva";
 import type { Reserva } from "../../types/reserva";
-import { criarPassagemFalsa } from "../fixtures/passagem";
+import { criarPassagemFalsa } from "@/modules/passagem/testes/fixtures/passagem";
 import { criarReservaFalsa } from "../fixtures/reserva";
 
 jest.mock("../../services/buscarReserva");
-jest.mock("../../services/buscarPassagem");
+jest.mock("@/modules/passagem/services/buscarPassagem");
 jest.mock("../../services/cancelarReserva");
 
 const agora = new Date("2026-11-03T12:00:00-03:00");

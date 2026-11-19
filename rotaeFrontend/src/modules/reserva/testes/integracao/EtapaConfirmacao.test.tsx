@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { EtapaConfirmacao } from "../../components/EtapaConfirmacao";
-import { buscarPassagem } from "../../services/buscarPassagem";
+import { buscarPassagem } from "@/modules/passagem/services/buscarPassagem";
 import { buscarReserva } from "../../services/buscarReserva";
-import { criarPassagemFalsa } from "../fixtures/passagem";
+import { criarPassagemFalsa } from "@/modules/passagem/testes/fixtures/passagem";
 import { criarReservaFalsa } from "../fixtures/reserva";
 
 jest.mock("../../services/buscarReserva");
-jest.mock("../../services/buscarPassagem");
+jest.mock("@/modules/passagem/services/buscarPassagem");
 
 const passageiro = { id: 1, usuarioId: 3, nome: "Mariana Oliveira", email: "", celular: "", dataNasc: "", cpf: "", criadoEm: "", atualizadoEm: "" };
 

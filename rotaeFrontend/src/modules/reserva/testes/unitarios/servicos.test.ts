@@ -1,6 +1,5 @@
 import { fetchAutenticado } from "@/modules/autenticacao/services/fetchAutenticado";
 import { PagamentoRecusadoError } from "../../classes/PagamentoRecusadoError";
-import { buscarPassagem } from "../../services/buscarPassagem";
 import { buscarReserva } from "../../services/buscarReserva";
 import { cadastrarPassageiros } from "../../services/cadastrarPassageiros";
 import { cancelarReserva } from "../../services/cancelarReserva";
@@ -30,19 +29,6 @@ describe("serviços de reserva", () => {
     jest.mocked(fetchAutenticado).mockResolvedValue(resposta(404, { detail: "Não encontrado." }));
 
     await expect(buscarReserva(9)).rejects.toThrow("Não foi possível carregar os detalhes da reserva.");
-  });
-
-  it("buscarPassagem traz a passagem da rota do backend", async () => {
-    jest.mocked(fetchAutenticado).mockResolvedValue(resposta(200, { id: 12, status: "CONFIRMADO" }));
-
-    await expect(buscarPassagem(12)).resolves.toEqual({ id: 12, status: "CONFIRMADO" });
-    expect(fetchAutenticado).toHaveBeenCalledWith(expect.stringContaining("/api/v1/passagens/12/"));
-  });
-
-  it("buscarPassagem avisa quando o backend não devolve a passagem", async () => {
-    jest.mocked(fetchAutenticado).mockResolvedValue(resposta(404, { detail: "Não encontrado." }));
-
-    await expect(buscarPassagem(12)).rejects.toThrow("Não foi possível carregar a passagem.");
   });
 
   it("criarReserva envia os ids dos assentos da viagem", async () => {

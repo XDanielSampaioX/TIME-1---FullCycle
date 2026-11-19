@@ -1,4 +1,4 @@
-import type { PassagemResumo } from "./passagemResumo";
+import type { PassagemResumo } from "@/modules/passagem/types/passagemResumo";
 import type { PassageiroReserva } from "./passageiroReserva";
 import type { Reserva } from "./reserva";
 

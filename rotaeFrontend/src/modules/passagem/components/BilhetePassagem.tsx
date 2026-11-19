@@ -1,8 +1,8 @@
 import { QRCodeSVG } from "qrcode.react";
 import type { Passagem } from "../types/passagem";
-import { formatarCodigoReserva } from "../utils/formatarReserva";
-import { DivisorBilhete } from "./DivisorBilhete";
-import { RotaDoBilhete } from "./RotaDoBilhete";
+import { formatarCodigoReserva } from "@/modules/reserva/utils/formatarReserva";
+import { DivisorBilhete } from "@/modules/reserva/components/DivisorBilhete";
+import { RotaDoBilhete } from "@/modules/reserva/components/RotaDoBilhete";
 
 // O bilhete de uma passagem de reserva paga. O QR Code de embarque só aparece se a passagem estiver confirmada.
 export function BilhetePassagem({ passagem }: { passagem: Passagem }) {

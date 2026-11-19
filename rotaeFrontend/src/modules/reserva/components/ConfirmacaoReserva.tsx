@@ -3,7 +3,7 @@ import { Button } from "@/shared/components/Button";
 import type { ReservaDetalhe } from "../types/reservaDetalhe";
 import { bilheteEmitido, descreverStatusReserva } from "../utils/regrasReserva";
 import { BilheteReserva } from "./BilheteReserva";
-import { CarrosselPassagens } from "./CarrosselPassagens";
+import { CarrosselPassagens } from "@/modules/passagem/components/CarrosselPassagens";
 
 // O quadro "confirmacao" do Figma: título, bilhete e ações. Aparece depois do pagamento
 // e também no modal de detalhes de "Minhas viagens", para as duas telas mostrarem o mesmo bilhete.
