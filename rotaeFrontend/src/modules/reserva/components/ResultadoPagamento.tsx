@@ -21,7 +21,7 @@ export function ResultadoPagamento({ reserva, negado, reservaFalhou, aoTentarNov
           <h1>Pagamento em processamento</h1>
           <p>Aguarde a resposta do pagamento. Não feche esta página.</p>
         </header>
-        <BilheteReserva reserva={reserva} emitido={false} />
+        <BilheteReserva reserva={reserva} />
       </div>
     );
   }
@@ -38,7 +38,7 @@ export function ResultadoPagamento({ reserva, negado, reservaFalhou, aoTentarNov
             : "Não foi registrada nenhuma cobrança. Seus assentos continuam disponíveis por pouco tempo."}
         </p>
       </header>
-      <BilheteReserva reserva={reserva} emitido={false} />
+      <BilheteReserva reserva={reserva} />
       <div className="reserva-pagamento-aviso">
         <strong>Nenhuma cobrança foi registrada</strong>
         <p>

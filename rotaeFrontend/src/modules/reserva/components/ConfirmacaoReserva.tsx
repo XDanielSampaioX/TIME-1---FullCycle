@@ -3,6 +3,7 @@ import { Button } from "@/shared/components/Button";
 import type { ReservaDetalhe } from "../types/reservaDetalhe";
 import { bilheteEmitido, descreverStatusReserva } from "../utils/regrasReserva";
 import { BilheteReserva } from "./BilheteReserva";
+import { CarrosselPassagens } from "./CarrosselPassagens";
 
 // O quadro "confirmacao" do Figma: título, bilhete e ações. Aparece depois do pagamento
 // e também no modal de detalhes de "Minhas viagens", para as duas telas mostrarem o mesmo bilhete.
@@ -24,7 +25,7 @@ export function ConfirmacaoReserva({ reserva, agora, dentroDoModal }: {
         <Titulo>{emitido ? "Reserva confirmada!" : titulo}</Titulo>
         <p>{emitido ? "Seu bilhete digital está pronto para embarque." : descricao}</p>
       </header>
-      <BilheteReserva reserva={reserva} emitido={emitido} />
+      {emitido ? <CarrosselPassagens passagens={reserva.passagens} /> : <BilheteReserva reserva={reserva} />}
       {dentroDoModal ? (
         // O method="dialog" faz o botão fechar o modal, que já está em "Minhas viagens".
         <form className="reserva-modal-acoes" method="dialog">
