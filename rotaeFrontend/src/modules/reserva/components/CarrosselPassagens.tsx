@@ -7,6 +7,7 @@ import { buscarPassagem } from "../services/buscarPassagem";
 import type { PassagemResumo } from "../types/passagemResumo";
 import { AvisoDeErro } from "./AvisoDeErro";
 import { BilhetePassagem } from "./BilhetePassagem";
+import { BilhetePassagemSkeleton } from "./BilhetePassagemSkeleton";
 
 const MENSAGEM_DE_ERRO = "Não foi possível carregar a passagem.";
 
@@ -15,7 +16,7 @@ function BilheteCarregado({ passagemId }: { passagemId: number }) {
   const { dados, erro, recarregar } = useCarregarDados(buscarPassagem, passagemId, MENSAGEM_DE_ERRO);
 
   if (erro) return <AvisoDeErro mensagem={erro} aoTentarNovamente={recarregar} />;
-  if (!dados) return <p role="status">Carregando bilhete…</p>;
+  if (!dados) return <BilhetePassagemSkeleton />;
   return <BilhetePassagem passagem={dados} />;
 }
 

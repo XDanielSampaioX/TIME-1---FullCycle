@@ -71,6 +71,17 @@ describe("CarrosselPassagens", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Carregando bilhete");
   });
 
+  it("mostra o esqueleto do bilhete enquanto a passagem carrega", () => {
+    jest.mocked(buscarPassagem).mockReturnValue(new Promise<Passagem>(() => {}));
+    render(<CarrosselPassagens passagens={resumos} />);
+
+    // O formato do bilhete continua na tela, com a paginação, em vez de sumir.
+    const carregando = screen.getByRole("status");
+    expect(carregando.querySelector(".reserva-bilhete-topo")).toBeInTheDocument();
+    expect(carregando.querySelector(".reserva-bilhete-rota")).toBeInTheDocument();
+    expect(screen.getByText("Passagem 1 de 2")).toBeInTheDocument();
+  });
+
   it("mostra erro só da passagem que falhou", async () => {
     jest.mocked(buscarPassagem).mockRejectedValueOnce(new Error("falhou")).mockResolvedValue(primeira);
     render(<CarrosselPassagens passagens={resumos} />);
