@@ -204,3 +204,30 @@ describe("FormularioCadastroUsuario", () => {
     expect(iniciarSessao).not.toHaveBeenCalled();
   });
 });
+
+describe("FormularioCadastroUsuario: máscaras", () => {
+  beforeEach(() => jest.resetAllMocks());
+
+  it("formata CPF e celular enquanto a pessoa digita só os números", () => {
+    render(<FormularioCadastroUsuario destino="/" />);
+
+    preencher({ cpf: "52998224725", celular: "85999990000" });
+
+    expect(campo("cpf")).toHaveValue("529.982.247-25");
+    expect(campo("celular")).toHaveValue("(85) 99999-0000");
+  });
+
+  it("envia o CPF e o celular com máscara, que o backend normaliza para números", async () => {
+    jest.mocked(cadastrarUsuario).mockResolvedValue({ usuario });
+    jest.mocked(entrar).mockResolvedValue({ sessao });
+    render(<FormularioCadastroUsuario destino="/" />);
+
+    preencher({ ...preenchido, cpf: "52998224725", celular: "85999990000" });
+    criarConta();
+
+    await waitFor(() => expect(cadastrarUsuario).toHaveBeenCalledWith(expect.objectContaining({
+      cpf: "529.982.247-25",
+      celular: "(85) 99999-0000",
+    })));
+  });
+});

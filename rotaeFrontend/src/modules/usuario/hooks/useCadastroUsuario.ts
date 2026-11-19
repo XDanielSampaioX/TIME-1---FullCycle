@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAutenticacao } from "@/modules/autenticacao/hooks/useAutenticacao";
 import { entrar } from "@/modules/autenticacao/services/entrar";
+import { mascararCampo } from "@/shared/utils/mascaras";
 import { regrasCadastroUsuario } from "../classes/validacao/regrasCadastroUsuario";
 import { cadastrarUsuario } from "../services/cadastrarUsuario";
 import type { CadastroUsuario } from "../types/cadastroUsuario";
@@ -35,8 +36,9 @@ export function useCadastroUsuario(destino: string) {
   // A conta foi criada, mas o login automático falhou: a pessoa entra pela tela de login.
   const [contaCriada, setContaCriada] = useState(false);
 
+  // CPF e celular ganham a máscara enquanto a pessoa digita; o backend aceita o valor com máscara.
   function alterarCampo(campo: keyof CamposCadastro, valor: string) {
-    setCampos({ ...campos, [campo]: valor });
+    setCampos({ ...campos, [campo]: mascararCampo(campo, valor) });
     // O erro do campo some assim que a pessoa volta a digitar nele. A confirmação depende da senha:
     // mudar a senha também tira o "não confere" da confirmação, que seria um erro antigo na tela.
     setErros({ ...erros, [campo]: undefined, ...(campo === "senha" && { confirmacaoSenha: undefined }) });

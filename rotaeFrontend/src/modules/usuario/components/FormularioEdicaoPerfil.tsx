@@ -3,9 +3,11 @@
 import { useRef } from "react";
 import { Button } from "@/shared/components/Button";
 import { CampoFormulario } from "@/shared/components/CampoFormulario";
+import { mascararCpf } from "@/shared/utils/mascaras";
 import { useEdicaoPerfil } from "../hooks/useEdicaoPerfil";
 import { useFocoPrimeiroErro } from "../hooks/useFocoPrimeiroErro";
 import type { Usuario } from "../types/usuario";
+import { CAMPOS_PESSOAIS } from "../utils/camposPessoais";
 import { CabecalhoPerfil } from "./CabecalhoPerfil";
 
 const linha = "grid gap-4 sm:grid-cols-2";
@@ -46,30 +48,20 @@ export function FormularioEdicaoPerfil({ usuario, aoCancelar }: FormularioEdicao
 
       <div className="grid gap-4">
         <CampoFormulario
-          nome="nome"
-          titulo="Nome completo"
-          type="text"
-          autoComplete="name"
+          {...CAMPOS_PESSOAIS.nome}
           value={campos.nome}
           erro={erros.nome}
           onChange={(event) => alterarCampo("nome", event.target.value)}
         />
         <div className={linha}>
           <CampoFormulario
-            nome="email"
-            titulo="E-mail"
-            type="email"
-            autoComplete="email"
+            {...CAMPOS_PESSOAIS.email}
             value={campos.email}
             erro={erros.email}
             onChange={(event) => alterarCampo("email", event.target.value)}
           />
           <CampoFormulario
-            nome="celular"
-            titulo="Celular"
-            type="tel"
-            autoComplete="tel-national"
-            placeholder="(85) 99999-0000"
+            {...CAMPOS_PESSOAIS.celular}
             value={campos.celular}
             erro={erros.celular}
             onChange={(event) => alterarCampo("celular", event.target.value)}
@@ -77,19 +69,14 @@ export function FormularioEdicaoPerfil({ usuario, aoCancelar }: FormularioEdicao
         </div>
         <div className={linha}>
           <CampoFormulario
-            nome="cpf"
-            titulo="CPF"
-            type="text"
-            value={usuario.cpf}
+            {...CAMPOS_PESSOAIS.cpf}
+            value={mascararCpf(usuario.cpf)}
             ajuda="O CPF não pode ser alterado."
             disabled
             icone={<IconeCadeado />}
           />
           <CampoFormulario
-            nome="dataNasc"
-            titulo="Data de nascimento"
-            type="date"
-            autoComplete="bday"
+            {...CAMPOS_PESSOAIS.dataNasc}
             value={campos.dataNasc}
             erro={erros.dataNasc}
             onChange={(event) => alterarCampo("dataNasc", event.target.value)}

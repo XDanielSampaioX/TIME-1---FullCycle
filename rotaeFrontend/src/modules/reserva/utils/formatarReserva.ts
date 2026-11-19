@@ -37,11 +37,6 @@ export function formatarHorariosDaViagem({ partidaEm, chegadaEm }: Pick<Reserva[
   return `${partidaEm.slice(11, 16)} ➔ ${chegadaEm.slice(11, 16)}${outroDia}`;
 }
 
-// Exemplo: 123.456.789-09 vira 12345678909. O backend guarda CPF e celular só com números.
-export function apenasDigitos(valor: string) {
-  return valor.replace(/\D/g, "");
-}
-
 // Exemplo: 45, 46. Ao cancelar, o backend desvincula os assentos e a reserva volta sem nenhum.
 export function formatarPoltronas(assentos: Reserva["assentos"]) {
   return assentos.map((assento) => assento.numero).join(", ") || "—";

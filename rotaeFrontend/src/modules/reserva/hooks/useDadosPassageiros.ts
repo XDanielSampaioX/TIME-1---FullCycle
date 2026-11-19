@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAutenticacao } from "@/modules/autenticacao/hooks/useAutenticacao";
 import type { ErrosValidacao } from "@/modules/usuario/types/errosValidacao";
+import { apenasDigitos, mascararCampo, mascararCelular, mascararCpf } from "@/shared/utils/mascaras";
 import { cadastrarPassageiros } from "../services/cadastrarPassageiros";
 import type { DadosPassageiro } from "../types/dadosPassageiro";
 import type { Reserva } from "../types/reserva";
-import { apenasDigitos } from "../utils/formatarReserva";
 import { regrasPassageiro } from "../utils/regrasPassageiro";
 
 const PASSAGEIRO_VAZIO: DadosPassageiro = { nome: "", cpf: "", dataNasc: "", celular: "", email: "" };
@@ -39,8 +39,9 @@ export function useDadosPassageiros(reserva: Pick<Reserva, "id" | "totalAssentos
     setPassageiros((atuais) => atuais.map((passageiro, posicao) => (posicao === indice ? dados : passageiro)));
   }
 
+  // CPF e celular ganham a máscara enquanto a pessoa digita.
   function alterarCampo(indice: number, campo: keyof DadosPassageiro, valor: string) {
-    trocarPassageiro(indice, { ...passageiros[indice], [campo]: valor });
+    trocarPassageiro(indice, { ...passageiros[indice], [campo]: mascararCampo(campo, valor) });
   }
 
   // Marcar copia os dados da conta, que continuam editáveis, para o primeiro passageiro ainda vazio
@@ -56,9 +57,9 @@ export function useDadosPassageiros(reserva: Pick<Reserva, "id" | "totalAssentos
     const vazio = passageiros.findIndex((passageiro) => Object.values(passageiro).every((valor) => !valor.trim()));
     trocarPassageiro(Math.max(vazio, 0), {
       nome: usuario.nome,
-      cpf: usuario.cpf,
+      cpf: mascararCpf(usuario.cpf),
       dataNasc: usuario.dataNasc ?? "",
-      celular: usuario.celular,
+      celular: mascararCelular(usuario.celular),
       email: usuario.email,
     });
   }

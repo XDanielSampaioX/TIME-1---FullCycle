@@ -1,12 +1,11 @@
 import type { AtualizacaoUsuario } from "../../types/atualizacaoUsuario";
 import { GrupoRegrasValidacao } from "./GrupoRegrasValidacao";
-import { regrasDadosPessoais } from "./regrasDadosPessoais";
-import { regrasEmail } from "./regrasEmail";
+import { regrasCelular, regrasDataNasc, regrasEmail, regrasNome } from "./regrasCampos";
 
-// Checagens rápidas antes do envio. As regras definitivas (e-mail já usado, data futura)
-// são do backend, que devolve a mensagem de cada campo.
-// Para validar algo novo, crie uma classe que estenda RegraValidacao e adicione-a aqui.
+// A edição dos dados do perfil, montada com as regras de cada campo (regrasCampos.ts).
 export const regrasAtualizacaoUsuario = new GrupoRegrasValidacao<AtualizacaoUsuario>([
-  regrasDadosPessoais<AtualizacaoUsuario>(),
-  regrasEmail<AtualizacaoUsuario>(),
+  regrasNome(),
+  regrasDataNasc(),
+  regrasCelular(),
+  regrasEmail(),
 ]);

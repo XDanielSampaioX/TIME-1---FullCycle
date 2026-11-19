@@ -9,6 +9,7 @@ import { CampoFormulario } from "@/shared/components/CampoFormulario";
 import { useCadastroUsuario } from "../hooks/useCadastroUsuario";
 import { useFocoPrimeiroErro } from "../hooks/useFocoPrimeiroErro";
 import type { CamposCadastro } from "../types/camposCadastro";
+import { CAMPOS_PESSOAIS } from "../utils/camposPessoais";
 
 export function FormularioCadastroUsuario({ destino }: { destino: string }) {
   const {
@@ -50,25 +51,13 @@ export function FormularioCadastroUsuario({ destino }: { destino: string }) {
         enviar();
       }}
     >
-      <CampoFormulario {...campo("nome")} titulo="Nome completo" autoComplete="name" placeholder="Seu nome completo" />
-      <CampoFormulario {...campo("email")} titulo="E-mail" type="email" autoComplete="email" placeholder="seu@email.com" />
+      <CampoFormulario {...CAMPOS_PESSOAIS.nome} {...campo("nome")} />
+      <CampoFormulario {...CAMPOS_PESSOAIS.email} {...campo("email")} />
       <div className="grid gap-4 sm:grid-cols-2">
-        <CampoFormulario
-          {...campo("cpf")}
-          titulo="CPF"
-          inputMode="numeric"
-          autoComplete="off"
-          placeholder="000.000.000-00"
-        />
-        <CampoFormulario
-          {...campo("celular")}
-          titulo="Celular"
-          type="tel"
-          autoComplete="tel-national"
-          placeholder="(00) 00000-0000"
-        />
+        <CampoFormulario {...CAMPOS_PESSOAIS.cpf} {...campo("cpf")} />
+        <CampoFormulario {...CAMPOS_PESSOAIS.celular} {...campo("celular")} />
       </div>
-      <CampoFormulario {...campo("dataNasc")} titulo="Data de nascimento" type="date" autoComplete="bday" />
+      <CampoFormulario {...CAMPOS_PESSOAIS.dataNasc} {...campo("dataNasc")} />
       <div className="grid gap-4 sm:grid-cols-2">
         <CampoFormulario
           {...campo("senha")}

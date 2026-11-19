@@ -379,3 +379,36 @@ describe("FormularioEdicaoPerfil", () => {
     expect(atualizarUsuario).not.toHaveBeenCalled();
   });
 });
+
+describe("FormularioEdicaoPerfil: máscaras", () => {
+  // O backend devolve CPF e celular só com números.
+  const doBackend = { ...usuario, cpf: "52998224725", celular: "85999990000" };
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+    jest.mocked(atualizarUsuario).mockResolvedValue({ usuario: doBackend });
+  });
+
+  it("mostra CPF e celular com máscara, e isso não conta como alteração", () => {
+    render(<FormularioEdicaoPerfil usuario={doBackend} aoCancelar={jest.fn()} />);
+
+    expect(campo("cpf")).toHaveValue("529.982.247-25");
+    expect(campo("celular")).toHaveValue("(85) 99999-0000");
+
+    salvar();
+
+    expect(screen.getByRole("status")).toHaveTextContent("Nenhuma alteração para salvar.");
+    expect(atualizarUsuario).not.toHaveBeenCalled();
+  });
+
+  it("formata o celular enquanto a pessoa digita", async () => {
+    render(<FormularioEdicaoPerfil usuario={doBackend} aoCancelar={jest.fn()} />);
+
+    preencher({ celular: "85988887777" });
+    expect(campo("celular")).toHaveValue("(85) 98888-7777");
+
+    salvar();
+
+    await waitFor(() => expect(atualizarUsuario).toHaveBeenCalledWith(expect.objectContaining({ celular: "(85) 98888-7777" })));
+  });
+});
