@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "frontend-wt-passagem",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--prefix", "C:/Projects/wt-passagem/teste/rotaeFrontend", "next", "dev", "C:/Projects/wt-passagem/teste/rotaeFrontend", "-p", "3100"],
+      "port": 3100
+    }
+  ]
+}
