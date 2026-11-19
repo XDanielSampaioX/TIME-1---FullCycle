@@ -79,7 +79,9 @@ describe("EtapaPassageiros", () => {
     // O Passageiro 1 já tinha dados, então a conta vai para o primeiro passageiro vazio.
     expect(primeiro.getByLabelText("Nome completo")).toHaveValue("Pedro Souza");
     expect(segundo.getByLabelText("Nome completo")).toHaveValue("Mariana Oliveira");
-    expect(segundo.getByLabelText("CPF")).toHaveValue("52998224725");
+    // Os dados da conta chegam só com números e entram no formulário já com máscara.
+    expect(segundo.getByLabelText("CPF")).toHaveValue("529.982.247-25");
+    expect(segundo.getByLabelText("Celular")).toHaveValue("(85) 99999-0000");
     expect(comprador).toBeChecked();
 
     fireEvent.click(comprador);
@@ -123,7 +125,7 @@ describe("EtapaPassageiros", () => {
 
     expect(await screen.findByRole("button", { name: "Salvando…" })).toBeDisabled();
     expect(cadastrarPassageiros).toHaveBeenCalledWith(5087, [
-      { nome: "Mariana Oliveira", cpf: "52998224725", dataNasc: "1995-04-20", celular: "85999990000", email: "mariana@email.com" },
+      { nome: "Mariana Oliveira", cpf: "529.982.247-25", dataNasc: "1995-04-20", celular: "(85) 99999-0000", email: "mariana@email.com" },
       pedro,
     ]);
     expect(push).toHaveBeenCalledWith("/reservas/5087/pagamento");

@@ -141,10 +141,10 @@ describe("FormularioLogin", () => {
     expect(senha).toHaveAttribute("type", "password");
   });
 
-  it("não mostra Esqueci minha senha enquanto ela está em espera, e leva ao cadastro", () => {
-    render(<FormularioLogin destino="/" />);
+  it("não mostra Esqueci minha senha enquanto ela está em espera, e leva ao cadastro com o mesmo destino", () => {
+    render(<FormularioLogin destino="/editar-perfil" />);
 
     expect(screen.queryByText(/Esqueci minha senha/)).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Criar conta" })).toHaveAttribute("href", "/cadastro");
+    expect(screen.getByRole("link", { name: "Criar conta" })).toHaveAttribute("href", "/cadastro?voltar=%2Feditar-perfil");
   });
 });

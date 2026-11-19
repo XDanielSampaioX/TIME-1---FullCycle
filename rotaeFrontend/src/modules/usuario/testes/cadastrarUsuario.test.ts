@@ -38,6 +38,18 @@ describe("cadastrarUsuario", () => {
     });
   });
 
+  it("usa como está um erro que não vem em lista, em vez de só a primeira letra", async () => {
+    responderCom(400, { detail: "JSON inválido." });
+
+    await expect(cadastrarUsuario(dados)).resolves.toEqual({ erros: { detail: "JSON inválido." } });
+  });
+
+  it("troca por uma mensagem padrão o que não é texto (objeto ou lista de objetos), para a tela não quebrar", async () => {
+    responderCom(400, { cpf: [{ codigo: "invalido" }], nome: { detalhe: "x" } });
+
+    await expect(cadastrarUsuario(dados)).resolves.toEqual({ erros: { cpf: "Verifique este campo.", nome: "Verifique este campo." } });
+  });
+
   it("lança erro quando o servidor falha", async () => {
     responderCom(500, {});
 

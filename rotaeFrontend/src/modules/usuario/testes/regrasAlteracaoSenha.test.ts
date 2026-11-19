@@ -15,8 +15,8 @@ describe("regrasAlteracaoSenha", () => {
   it("aponta os três campos quando estão vazios", () => {
     expect(regrasAlteracaoSenha.validar({ senhaAtual: "", novaSenha: "", confirmacaoNovaSenha: "" })).toEqual({
       senhaAtual: "Informe sua senha atual.",
-      novaSenha: "Informe a nova senha.",
-      confirmacaoNovaSenha: "Confirme a nova senha.",
+      novaSenha: "Informe uma senha.",
+      confirmacaoNovaSenha: "Confirme sua senha.",
     });
   });
 
@@ -28,7 +28,7 @@ describe("regrasAlteracaoSenha", () => {
 
   it("aponta confirmação diferente da nova senha", () => {
     expect(regrasAlteracaoSenha.validar({ ...dadosValidos, confirmacaoNovaSenha: "outra-senha-123" })).toEqual({
-      confirmacaoNovaSenha: "A confirmação não confere com a nova senha.",
+      confirmacaoNovaSenha: "A confirmação não confere com a senha.",
     });
   });
 
