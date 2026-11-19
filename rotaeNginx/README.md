@@ -17,7 +17,8 @@ Abra http://localhost. O Compose publica a porta 80 e conecta o Nginx à rede `a
 | Caminho | Destino |
 | --- | --- |
 | `/` e páginas da aplicação | `http://frontend:3000` |
-| `/api`, `/admin`, `/docs`, `/health`, `/media` e `/static`, com seus subcaminhos | `http://backend:8000`, preservando o caminho |
+| `/static/` (CSS, JS do Admin e DRF) | Servido direto pelo Nginx (`/app/staticfiles/` via volume) com cache e fallback para `http://backend:8000` |
+| `/api`, `/admin`, `/docs`, `/health` e `/media`, com seus subcaminhos | `http://backend:8000`, preservando o caminho |
 
 Não há `server_name` configurado: o único bloco de servidor atende qualquer host na porta 80, como `http://localhost`. A configuração não inclui certificados ou HTTPS.
 
