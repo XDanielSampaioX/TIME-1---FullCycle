@@ -27,7 +27,7 @@ function montar(reservas: Reserva[]) {
 describe("ListaReservas", () => {
   beforeEach(() => {
     jest.resetAllMocks();
-    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa(), passageiros: [passageiro, outroPassageiro] });
+    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa(), passageiros: [passageiro, outroPassageiro], passagens: [] });
     HTMLDialogElement.prototype.showModal = jest.fn(function mostrar(this: HTMLDialogElement) {
       this.open = true;
     });
@@ -63,7 +63,7 @@ describe("ListaReservas", () => {
 
     jest.mocked(buscarReserva).mockResolvedValue({
       ...criarReservaFalsa({ status: "PAGO" }),
-      passageiros: [passageiro, outroPassageiro],
+      passageiros: [passageiro, outroPassageiro], passagens: [],
     });
 
     // O detalhe é o mesmo da tela de confirmação.
@@ -158,7 +158,7 @@ describe("ListaReservas", () => {
   });
 
   it("abre o modal com os detalhes da reserva", async () => {
-    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa({ status: "PAGO" }), passageiros: [passageiro, outroPassageiro] });
+    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa({ status: "PAGO" }), passageiros: [passageiro, outroPassageiro], passagens: [] });
     montar([reservaComPassageiro({ status: "PAGO" })]);
 
     fireEvent.click(screen.getByRole("button", { name: "Detalhes" }));

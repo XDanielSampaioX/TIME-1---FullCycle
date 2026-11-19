@@ -13,7 +13,7 @@ describe("EtapaConfirmacao", () => {
   it("mostra o quadro de confirmação do Figma depois do pagamento", async () => {
     jest.mocked(buscarReserva).mockResolvedValue({
       ...criarReservaFalsa({ expiraEm: "2099-01-01T10:00:00-03:00", status: "PAGO" }),
-      passageiros: [passageiro, { ...passageiro, id: 2, usuarioId: null, nome: "Pedro Souza" }],
+      passageiros: [passageiro, { ...passageiro, id: 2, usuarioId: null, nome: "Pedro Souza" }], passagens: [],
     });
     render(<EtapaConfirmacao reservaId={5087} />);
 
@@ -30,7 +30,7 @@ describe("EtapaConfirmacao", () => {
   it("não emite o bilhete da reserva que ainda não tem passageiros", async () => {
     jest.mocked(buscarReserva).mockResolvedValue({
       ...criarReservaFalsa({ expiraEm: "2099-01-01T10:00:00-03:00" }),
-      passageiros: [],
+      passageiros: [], passagens: [],
     });
     render(<EtapaConfirmacao reservaId={5087} />);
 
@@ -41,7 +41,7 @@ describe("EtapaConfirmacao", () => {
   it("leva ao pagamento quando a página é aberta com a reserva ainda pendente", async () => {
     jest.mocked(buscarReserva).mockResolvedValue({
       ...criarReservaFalsa({ expiraEm: "2099-01-01T10:00:00-03:00" }),
-      passageiros: [passageiro],
+      passageiros: [passageiro], passagens: [],
     });
     render(<EtapaConfirmacao reservaId={5087} />);
 
@@ -50,7 +50,7 @@ describe("EtapaConfirmacao", () => {
   });
 
   it("leva a reserva em FALHA a escolher as poltronas de novo", async () => {
-    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa({ status: "FALHA" }), passageiros: [passageiro] });
+    jest.mocked(buscarReserva).mockResolvedValue({ ...criarReservaFalsa({ status: "FALHA" }), passageiros: [passageiro], passagens: [] });
     render(<EtapaConfirmacao reservaId={5087} />);
 
     expect(await screen.findByRole("link", { name: "Escolher poltronas" })).toHaveAttribute("href", "/viagens/7/assentos");

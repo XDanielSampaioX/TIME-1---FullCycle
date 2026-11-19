@@ -26,7 +26,7 @@ const usuario = {
 const pedro = { nome: "Pedro Souza", cpf: "111.444.777-35", dataNasc: "1996-05-15", celular: "(85) 98888-0000", email: "pedro@email.com" };
 
 function reservaCom(dados: Partial<ReservaDetalhe> = {}): ReservaDetalhe {
-  return { ...criarReservaFalsa({ expiraEm: "2099-01-01T10:00:00-03:00" }), passageiros: [], ...dados };
+  return { ...criarReservaFalsa({ expiraEm: "2099-01-01T10:00:00-03:00" }), passageiros: [], passagens: [], ...dados };
 }
 
 async function passageiro(numero: number) {

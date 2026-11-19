@@ -21,7 +21,7 @@ const passageiro = {
 function reservaCom(dados: Partial<ReservaDetalhe> = {}): ReservaDetalhe {
   return {
     ...criarReservaFalsa({ expiraEm: "2099-01-01T10:00:00-03:00" }),
-    passageiros: [passageiro, { ...passageiro, id: 2, nome: "Pedro Souza" }],
+    passageiros: [passageiro, { ...passageiro, id: 2, nome: "Pedro Souza" }], passagens: [],
     ...dados,
   };
 }

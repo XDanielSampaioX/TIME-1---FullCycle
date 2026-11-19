@@ -6,7 +6,7 @@ import { criarReservaFalsa } from "../fixtures/reserva";
 const passageiro = { id: 1, usuarioId: null, nome: "Mariana Oliveira", email: "", celular: "", dataNasc: "", cpf: "", criadoEm: "", atualizadoEm: "" };
 
 function reservaPaga(id: number): ReservaDetalhe {
-  return { ...criarReservaFalsa({ id, status: "PAGO" }), passageiros: [] };
+  return { ...criarReservaFalsa({ id, status: "PAGO" }), passageiros: [], passagens: [] };
 }
 
 function desenhoDoQrCode(id: number, poltrona = 45) {
